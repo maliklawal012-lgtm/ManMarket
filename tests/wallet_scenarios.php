@@ -103,7 +103,8 @@ function ws_webhook_service(PDO $db): WebhookService
         new WebhookEventRepository($db),
         new PaymentRepository($db),
         wallet_settlement_service(),
-        $db
+        $db,
+        wallet_notification_service()
     );
 }
 

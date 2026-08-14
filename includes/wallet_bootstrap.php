@@ -12,6 +12,7 @@ require_once __DIR__ . '/../config/autoload.php';
 require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/geniuspay.php';
+require_once __DIR__ . '/../config/mail.php';
 
 use App\Repositories\AuditLogRepository;
 use App\Repositories\CommissionRepository;
@@ -26,10 +27,12 @@ use App\Repositories\WalletTransactionRepository;
 use App\Services\CommissionService;
 use App\Services\GeniusPayService;
 use App\Repositories\WithdrawalRepository;
+use App\Services\NotificationService;
 use App\Services\OrderService;
 use App\Services\OrderSettlementService;
 use App\Services\PaymentService;
 use App\Services\RefundService;
+use App\Services\SmtpMailer;
 use App\Services\VendorAdminService;
 use App\Services\WalletReleaseService;
 use App\Services\WalletService;
@@ -44,8 +47,14 @@ function wallet_order_service(): OrderService
         new OrderRepository($db),
         new OrderItemRepository($db),
         new VendorRepository($db),
-        new CommissionService($db)
+        new CommissionService($db),
+        wallet_notification_service()
     );
+}
+
+function wallet_notification_service(): NotificationService
+{
+    return new NotificationService(get_db(), new SmtpMailer());
 }
 
 function wallet_payment_service(): PaymentService
@@ -96,7 +105,8 @@ function wallet_withdrawal_service(): WithdrawalService
         new WithdrawalRepository($db),
         new WalletRepository($db),
         new WalletService(new WalletRepository($db), new WalletTransactionRepository($db)),
-        new VendorRepository($db)
+        new VendorRepository($db),
+        wallet_notification_service()
     );
 }
 
@@ -164,7 +174,8 @@ function wallet_refund_service(): RefundService
         new PaymentRepository($db),
         new RefundRepository($db),
         new CommissionRepository($db),
-        new WalletService(new WalletRepository($db), new WalletTransactionRepository($db))
+        new WalletService(new WalletRepository($db), new WalletTransactionRepository($db)),
+        wallet_notification_service()
     );
 }
 

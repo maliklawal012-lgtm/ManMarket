@@ -34,7 +34,8 @@ final class RefundService
         private PaymentRepository $payments,
         private RefundRepository $refunds,
         private CommissionRepository $commissions,
-        private WalletService $walletService
+        private WalletService $walletService,
+        private ?NotificationService $notifications = null
     ) {
     }
 
@@ -104,6 +105,8 @@ final class RefundService
             Logger::info('refund', 'Remboursement effectue', [
                 'refund_id' => $refundId, 'order_item_id' => $orderItemId, 'quantity' => $quantity, 'net_amount' => $netAmount,
             ]);
+
+            $this->notifications?->refundProcessed($refundId);
 
             return RefundResult::success($refundId);
         } catch (\Throwable $e) {

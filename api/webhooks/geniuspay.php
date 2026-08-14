@@ -6,6 +6,7 @@ require_once __DIR__ . '/../../config/autoload.php';
 require_once __DIR__ . '/../../config/env.php';
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../config/geniuspay.php';
+require_once __DIR__ . '/../../config/mail.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/rate_limit.php';
 
@@ -26,7 +27,9 @@ use App\Repositories\WalletRepository;
 use App\Repositories\WalletTransactionRepository;
 use App\Repositories\WebhookEventRepository;
 use App\Services\GeniusPayService;
+use App\Services\NotificationService;
 use App\Services\OrderSettlementService;
+use App\Services\SmtpMailer;
 use App\Services\WalletService;
 use App\Services\WebhookService;
 
@@ -46,7 +49,9 @@ $settlement = new OrderSettlementService(
     new WalletService(new WalletRepository($db), new WalletTransactionRepository($db))
 );
 
-$webhookService = new WebhookService($geniusPay, $webhookEvents, $paymentRepo, $settlement, $db);
+$notifications = new NotificationService($db, new SmtpMailer());
+
+$webhookService = new WebhookService($geniusPay, $webhookEvents, $paymentRepo, $settlement, $db, $notifications);
 
 $rawBody = file_get_contents('php://input') ?: '';
 $signature = $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? '';

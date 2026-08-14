@@ -18,7 +18,8 @@ final class WebhookService
         private WebhookEventRepository $events,
         private PaymentRepository $payments,
         private OrderSettlementService $settlement,
-        private ?PDO $legacyDb = null
+        private ?PDO $legacyDb = null,
+        private ?NotificationService $notifications = null
     ) {
     }
 
@@ -123,6 +124,10 @@ final class WebhookService
 
         if ($status === 'completed') {
             $this->settlement->settleOrder((int) $payment['order_id']);
+        }
+
+        if (in_array($status, ['completed', 'failed', 'cancelled', 'expired'], true)) {
+            $this->notifications?->paymentResult((int) $payment['order_id'], $status);
         }
     }
 

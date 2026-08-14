@@ -41,7 +41,8 @@ final class WithdrawalService
         private WithdrawalRepository $withdrawals,
         private WalletRepository $wallets,
         private WalletService $walletService,
-        private ?VendorRepository $vendors = null
+        private ?VendorRepository $vendors = null,
+        private ?NotificationService $notifications = null
     ) {
     }
 
@@ -167,6 +168,7 @@ final class WithdrawalService
             $this->db->commit();
 
             Logger::info('withdrawal', 'Retrait complete', ['withdrawal_id' => $withdrawalId, 'amount' => $amount]);
+            $this->notifications?->withdrawalStatusChanged($withdrawalId);
 
             return WithdrawalResult::success($withdrawalId, (string) $withdrawal['reference']);
         } catch (\Throwable $e) {
@@ -238,6 +240,8 @@ final class WithdrawalService
 
             $this->withdrawals->updateStatus($withdrawalId, $newStatus, $actorUserId, $note);
             $this->db->commit();
+
+            $this->notifications?->withdrawalStatusChanged($withdrawalId);
 
             return WithdrawalResult::success($withdrawalId, (string) $withdrawal['reference']);
         } catch (\Throwable $e) {

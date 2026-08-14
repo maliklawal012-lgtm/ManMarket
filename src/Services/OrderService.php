@@ -22,7 +22,8 @@ final class OrderService
         private OrderRepository $orders,
         private OrderItemRepository $orderItems,
         private VendorRepository $vendors,
-        private CommissionService $commissionService
+        private CommissionService $commissionService,
+        private ?NotificationService $notifications = null
     ) {
     }
 
@@ -72,6 +73,9 @@ final class OrderService
             }
 
             $this->db->commit();
+
+            $this->notifications?->orderCreated($orderId);
+            $this->notifications?->newOrderForVendors($orderId, $resolvedItems);
 
             return new OrderCreationResult($orderId, $subtotal, $orderItemIds);
         } catch (\Throwable $e) {

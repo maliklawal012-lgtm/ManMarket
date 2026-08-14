@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status']) && ($_POST[
         if ($_POST['status'] === 'delivered') {
             wallet_release_service()->releaseMaturedHolds();
         }
+        wallet_notification_service()->orderStatusChanged($orderId, $_POST['status']);
     }
     header('Location: /market/admin/commande-detail.php?id=' . $orderId);
     exit;
