@@ -28,7 +28,7 @@ final class OrderService
     }
 
     /**
-     * @param array<int, array{id:int, qty:int}> $cartItems venant du navigateur — id/qty UNIQUEMENT.
+     * @param array<int, array{id:int, qty:int, size?:string}> $cartItems venant du navigateur — id/qty/size UNIQUEMENT.
      * @throws \InvalidArgumentException si le panier est vide apres validation serveur.
      */
     public function createFromCart(array $cartItems, array $customer, ?string $deliveryLocation, string $paymentChoice): OrderCreationResult
@@ -65,6 +65,7 @@ final class OrderService
                     'product_name' => $item['product_name'],
                     'unit_price' => $item['unit_price'],
                     'quantity' => $item['quantity'],
+                    'size' => $item['size'],
                     'subtotal' => $item['subtotal'],
                     'commission_rate' => $rate,
                     'commission_amount' => $item['commission_amount'],
@@ -98,11 +99,13 @@ final class OrderService
             JOIN shops s ON s.id = p.shop_id
             WHERE p.id = :id
         ');
+        $sizeStmt = $this->db->prepare('SELECT stock FROM product_sizes WHERE product_id = :product_id AND size = :size');
 
         $resolved = [];
         foreach (array_slice($cartItems, 0, 50) as $rawItem) {
             $productId = (int) ($rawItem['id'] ?? 0);
             $qty = (int) ($rawItem['qty'] ?? 0);
+            $size = isset($rawItem['size']) && is_string($rawItem['size']) && $rawItem['size'] !== '' ? $rawItem['size'] : null;
             if ($productId <= 0 || $qty <= 0 || $qty > 99) {
                 continue;
             }
@@ -118,7 +121,22 @@ final class OrderService
                 continue;
             }
 
-            $qty = min($qty, max(0, (int) $product['stock']));
+            $availableStock = max(0, (int) $product['stock']);
+            if ($product['size_type'] !== 'none') {
+                if ($size === null) {
+                    continue;
+                }
+                $sizeStmt->execute(['product_id' => $productId, 'size' => $size]);
+                $sizeStock = $sizeStmt->fetchColumn();
+                if ($sizeStock === false) {
+                    continue;
+                }
+                $availableStock = max(0, (int) $sizeStock);
+            } else {
+                $size = null;
+            }
+
+            $qty = min($qty, $availableStock);
             if ($qty <= 0) {
                 continue;
             }
@@ -134,6 +152,7 @@ final class OrderService
                 'product_name' => $product['name'],
                 'unit_price' => $unitPrice,
                 'quantity' => $qty,
+                'size' => $size,
                 'subtotal' => $subtotal,
                 'commission_amount' => $split['commission_amount'],
                 'net_amount' => $split['net_amount'],

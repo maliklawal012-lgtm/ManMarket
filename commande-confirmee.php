@@ -56,7 +56,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?php $orderTotal = 0; ?>
                         <?php foreach ($items as $item): $orderTotal += (int) $item['unit_price'] * (int) $item['quantity']; ?>
                             <div class="order-items-row">
-                                <span><span class="qty"><?= (int) $item['quantity'] ?> x</span><?= e($item['product_name']) ?></span>
+                                <span><span class="qty"><?= (int) $item['quantity'] ?> x</span><?= e($item['product_name']) ?><?= $item['size'] ? ' — Taille : ' . e($item['size']) : '' ?></span>
                                 <span><?= format_price((int) $item['unit_price'] * (int) $item['quantity']) ?></span>
                             </div>
                         <?php endforeach; ?>

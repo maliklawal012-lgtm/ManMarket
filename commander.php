@@ -54,11 +54,13 @@ function commander_load_summary(string $itemsJson): array
         FROM products p JOIN shops s ON s.id = p.shop_id
         WHERE p.id = :id
     ');
+    $sizeStmt = $db->prepare('SELECT stock FROM product_sizes WHERE product_id = :product_id AND size = :size');
 
     $summary = [];
     foreach (array_slice($rawItems, 0, 50) as $rawItem) {
         $productId = (int) ($rawItem['id'] ?? 0);
         $qty = (int) ($rawItem['qty'] ?? 0);
+        $size = isset($rawItem['size']) ? (string) $rawItem['size'] : null;
         if ($productId <= 0 || $qty <= 0 || $qty > 99) {
             continue;
         }
@@ -67,11 +69,28 @@ function commander_load_summary(string $itemsJson): array
         if (!$product || !$product['shop_is_open'] || !get_shop_active_subscription((int) $product['shop_id'])) {
             continue;
         }
+
+        $availableStock = (int) $product['stock'];
+        if ($product['size_type'] !== 'none') {
+            if ($size === null) {
+                continue;
+            }
+            $sizeStmt->execute(['product_id' => $productId, 'size' => $size]);
+            $sizeStock = $sizeStmt->fetchColumn();
+            if ($sizeStock === false) {
+                continue;
+            }
+            $availableStock = (int) $sizeStock;
+        } else {
+            $size = null;
+        }
+
         $priceInfo = get_product_price($product);
         $summary[] = [
             'product' => $product,
-            'qty' => min($qty, max(0, (int) $product['stock'])),
+            'qty' => min($qty, max(0, $availableStock)),
             'unit_price' => $priceInfo['price'],
+            'size' => $size,
         ];
     }
 
@@ -231,7 +250,7 @@ require_once __DIR__ . '/includes/header.php';
                     <div class="order-items-row">
                         <div class="order-item-left">
                             <div class="product-thumb"><?= product_thumb_html($p, 18) ?></div>
-                            <span><span class="qty"><?= (int) $row['qty'] ?> x</span><?= e($p['name']) ?> <span class="char-count">(<?= e($p['shop_name']) ?>)</span></span>
+                            <span><span class="qty"><?= (int) $row['qty'] ?> x</span><?= e($p['name']) ?><?= $row['size'] ? ' — Taille : ' . e($row['size']) : '' ?> <span class="char-count">(<?= e($p['shop_name']) ?>)</span></span>
                         </div>
                         <span><?= format_price($row['unit_price'] * $row['qty']) ?></span>
                     </div>

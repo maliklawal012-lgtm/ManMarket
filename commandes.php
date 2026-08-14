@@ -144,7 +144,7 @@ require_once __DIR__ . '/includes/header.php';
                                     <div class="order-item-left">
                                         <div class="product-thumb"><?= product_thumb_html(['name' => $item['product_name'], 'image' => $item['product_image'], 'icon' => $item['product_icon'] ?: 'shopping-basket'], 18) ?></div>
                                         <span>
-                                            <span class="qty"><?= (int) $item['quantity'] ?> x</span><?= e($item['product_name']) ?>
+                                            <span class="qty"><?= (int) $item['quantity'] ?> x</span><?= e($item['product_name']) ?><?= $item['size'] ? ' — Taille : ' . e($item['size']) : '' ?>
                                             <?php if ($item['fulfillment_status'] !== 'pending'): ?>
                                                 <span class="tag <?= vendor_item_status_tag_class($item['fulfillment_status']) ?>" style="margin-left:6px;"><?= e(vendor_item_status_label($item['fulfillment_status'])) ?></span>
                                             <?php endif; ?>

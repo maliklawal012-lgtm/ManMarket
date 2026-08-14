@@ -125,6 +125,7 @@ if ($vendorEntity) {
             <thead>
                 <tr>
                     <th>Produit</th>
+                    <th>Taille</th>
                     <th>Qté</th>
                     <th>Sous-total</th>
                     <th>Commission</th>
@@ -137,6 +138,7 @@ if ($vendorEntity) {
                 <?php foreach ($items as $item): ?>
                     <tr>
                         <td><?= e($item['product_name']) ?></td>
+                        <td><?= $item['size'] ? e($item['size']) : '—' ?></td>
                         <td><?= (int) $item['quantity'] ?></td>
                         <td><?= format_price((int) round((float) $item['subtotal'])) ?></td>
                         <td><?= format_price((int) round((float) $item['commission_amount'])) ?></td>

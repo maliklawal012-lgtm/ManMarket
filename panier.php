@@ -26,6 +26,15 @@ foreach ($products as $p) {
         'stock' => $p['shop_is_open'] ? (int) $p['stock'] : 0,
     ];
 }
+
+if ($productsMap) {
+    foreach (get_db()->query('SELECT product_id, size, stock FROM product_sizes')->fetchAll() as $row) {
+        $key = 'product-' . $row['product_id'];
+        if (isset($productsMap[$key])) {
+            $productsMap[$key]['sizeStocks'][$row['size']] = (int) $row['stock'];
+        }
+    }
+}
 ?>
 
 <section class="page-banner">

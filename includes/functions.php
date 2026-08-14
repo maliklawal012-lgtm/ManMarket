@@ -1,6 +1,28 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Listes canoniques de tailles pour les produits size_type='clothing'/'shoe'.
+ * Reutilisees partout ou une taille est proposee/validee (formulaire
+ * admin/vendeur, validation serveur dans OrderService) pour eviter toute
+ * divergence entre ce qui est propose au client et ce qui est accepte.
+ */
+const CLOTHING_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'];
+
+function shoe_sizes(): array
+{
+    return array_map('strval', range(20, 50));
+}
+
+function product_size_options(string $sizeType): array
+{
+    return match ($sizeType) {
+        'clothing' => CLOTHING_SIZES,
+        'shoe' => shoe_sizes(),
+        default => [],
+    };
+}
+
 function format_price(int $amount): string
 {
     return number_format($amount, 0, ',', ' ') . ' FCFA';
@@ -572,6 +594,10 @@ function add_to_cart_button_html(array $product, string $sizeClass = 'btn-sm btn
 
     if ($stock <= 0) {
         return '<button type="button" class="btn btn-outline-primary ' . $sizeClass . '" disabled>Rupture de stock</button>';
+    }
+
+    if (($product['size_type'] ?? 'none') !== 'none') {
+        return '<a href="/market/produit.php?slug=' . e($product['slug']) . '" class="btn btn-primary ' . $sizeClass . '">Voir le produit</a>';
     }
 
     return '<button type="button" class="btn btn-primary ' . $sizeClass . ' add-cart-btn" data-id="product-' . (int) $product['id'] . '" data-name="' . e($product['name']) . '">Ajouter au panier</button>';

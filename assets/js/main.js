@@ -171,22 +171,39 @@
         toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 1800);
     };
 
-    const addToCart = (id, name) => {
+    const addToCart = (id, name, size) => {
+        size = size || null;
         const list = readList(CART_KEY);
-        const existing = list.find((item) => item.id === id);
+        const existing = list.find((item) => item.id === id && (item.size || null) === size);
         if (existing) {
             existing.qty = (existing.qty || 1) + 1;
         } else {
-            list.push({ id, name, qty: 1 });
+            list.push({ id, name, qty: 1, size });
         }
         writeList(CART_KEY, list);
         refreshCartCount();
         showToast(`${name} ajouté au panier`);
     };
 
+    const getButtonSize = (btn) => {
+        if (!btn.hasAttribute('data-requires-size')) return null;
+        const picker = document.querySelector('.product-size-picker');
+        const checked = picker ? picker.querySelector('input[name="product_size"]:checked') : null;
+        return checked ? checked.value : null;
+    };
+
     document.querySelectorAll('.add-cart-btn[data-id]').forEach((btn) => {
         btn.addEventListener('click', () => {
-            addToCart(btn.getAttribute('data-id'), btn.getAttribute('data-name') || 'Produit');
+            const size = getButtonSize(btn);
+            if (btn.hasAttribute('data-requires-size') && !size) return;
+            addToCart(btn.getAttribute('data-id'), btn.getAttribute('data-name') || 'Produit', size);
+        });
+    });
+
+    document.querySelectorAll('.product-size-picker input[name="product_size"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            const btn = document.querySelector('.add-cart-btn[data-requires-size]');
+            if (btn) btn.disabled = false;
         });
     });
 
@@ -378,9 +395,11 @@
                 const oldPrice = p.originalPrice ? `<span class="price-old">${formatPrice(p.originalPrice)}</span>` : '';
                 const cartBtn = p.shopOpen === false
                     ? `<button type="button" class="btn btn-outline-primary btn-sm btn-block" disabled>Boutique fermée</button>`
-                    : p.stock > 0
-                        ? `<button type="button" class="btn btn-primary btn-sm btn-block add-cart-btn" data-id="${escapeHtml(id)}" data-name="${escapeHtml(p.name)}">Ajouter au panier</button>`
-                        : `<button type="button" class="btn btn-outline-primary btn-sm btn-block" disabled>Rupture de stock</button>`;
+                    : p.stock <= 0
+                        ? `<button type="button" class="btn btn-outline-primary btn-sm btn-block" disabled>Rupture de stock</button>`
+                        : p.sizeType && p.sizeType !== 'none'
+                            ? `<a href="/market/produit.php?slug=${escapeHtml(p.slug)}" class="btn btn-primary btn-sm btn-block">Voir le produit</a>`
+                            : `<button type="button" class="btn btn-primary btn-sm btn-block add-cart-btn" data-id="${escapeHtml(id)}" data-name="${escapeHtml(p.name)}">Ajouter au panier</button>`;
                 return `
                     <article class="product-card">
                         <button type="button" class="fav-btn is-active" data-fav-id="${escapeHtml(id)}" aria-label="Retirer des favoris">${HEART_SVG}</button>
@@ -426,11 +445,20 @@
         const checkoutBtn = document.getElementById('cart-checkout-btn');
         const products = window.MM_PRODUCTS || {};
 
+        const sizeCap = (item) => {
+            const p = products[item.id];
+            if (!p) return 0;
+            if (p.sizeStocks) {
+                return item.size && Object.prototype.hasOwnProperty.call(p.sizeStocks, item.size) ? p.sizeStocks[item.size] : 0;
+            }
+            return p.stock;
+        };
+
         const renderCart = () => {
             const rawList = readList(CART_KEY);
             const list = rawList
                 .filter((item) => products[item.id] && item.qty > 0)
-                .map((item) => ({ ...item, qty: Math.min(item.qty, products[item.id].stock) }))
+                .map((item) => ({ ...item, qty: Math.min(item.qty, sizeCap(item)) }))
                 .filter((item) => item.qty > 0);
 
             if (JSON.stringify(list) !== JSON.stringify(rawList)) {
@@ -443,15 +471,18 @@
                 const p = products[item.id];
                 const lineTotal = p.price * item.qty;
                 subtotal += lineTotal;
-                const atMaxStock = item.qty >= p.stock;
+                const maxQty = sizeCap(item);
+                const atMaxStock = item.qty >= maxQty;
+                const sizeLine = item.size ? `<span class="cart-item-size">Taille : ${escapeHtml(item.size)}</span>` : '';
                 return `
-                    <div class="cart-item" data-id="${escapeHtml(item.id)}">
+                    <div class="cart-item" data-id="${escapeHtml(item.id)}" data-size="${escapeHtml(item.size || '')}">
                         <div class="product-thumb product-thumb-avatar" style="${productThumbStyle(p)}">${productThumbHtml(p)}</div>
                         <div class="cart-item-info">
                             <h3>${escapeHtml(p.name)}</h3>
+                            ${sizeLine}
                             <span class="cart-item-shop">${escapeHtml(p.shopName)}</span>
                             <span class="cart-item-price">${formatPrice(p.price)}</span>
-                            ${atMaxStock ? `<span class="cart-item-stock-note">Stock maximum atteint (${p.stock})</span>` : ''}
+                            ${atMaxStock ? `<span class="cart-item-stock-note">Stock maximum atteint (${maxQty})</span>` : ''}
                         </div>
                         <div class="cart-item-qty">
                             <button type="button" class="qty-btn" data-action="dec" aria-label="Diminuer la quantité">&minus;</button>
@@ -466,21 +497,23 @@
 
             cartItemsEl.querySelectorAll('.cart-item').forEach((row) => {
                 const id = row.getAttribute('data-id');
-                const stock = products[id] ? products[id].stock : 0;
+                const size = row.getAttribute('data-size') || null;
+                const matches = (item) => item.id === id && (item.size || null) === size;
+                const maxQty = sizeCap({ id, size });
                 const update = (mutate) => {
                     const l = readList(CART_KEY);
-                    const item = l.find((i) => i.id === id);
+                    const item = l.find(matches);
                     if (!item) return;
                     mutate(item);
-                    item.qty = Math.min(item.qty, stock);
-                    writeList(CART_KEY, item.qty > 0 ? l : l.filter((i) => i.id !== id));
+                    item.qty = Math.min(item.qty, maxQty);
+                    writeList(CART_KEY, item.qty > 0 ? l : l.filter((i) => !matches(i)));
                     renderCart();
                 };
 
                 row.querySelector('[data-action="inc"]').addEventListener('click', () => update((item) => { item.qty += 1; }));
                 row.querySelector('[data-action="dec"]').addEventListener('click', () => update((item) => { item.qty -= 1; }));
                 row.querySelector('.cart-item-remove').addEventListener('click', () => {
-                    writeList(CART_KEY, readList(CART_KEY).filter((i) => i.id !== id));
+                    writeList(CART_KEY, readList(CART_KEY).filter((i) => !matches(i)));
                     renderCart();
                 });
             });
@@ -491,10 +524,11 @@
             if (cartSubtotalEl) cartSubtotalEl.textContent = formatPrice(subtotal);
 
             if (checkoutBtn) {
-                const itemsPayload = list.map((item) => ({
-                    id: parseInt(item.id.replace('product-', ''), 10),
-                    qty: item.qty,
-                }));
+                const itemsPayload = list.map((item) => {
+                    const payload = { id: parseInt(item.id.replace('product-', ''), 10), qty: item.qty };
+                    if (item.size) payload.size = item.size;
+                    return payload;
+                });
                 checkoutBtn.href = `/market/commander.php?items=${encodeURIComponent(JSON.stringify(itemsPayload))}`;
             }
         };

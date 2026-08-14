@@ -58,10 +58,10 @@ final class OrderItemRepository
     {
         $stmt = $this->db->prepare('
             INSERT INTO order_items (
-                order_id, product_id, shop_id, vendor_id, product_name, unit_price, quantity,
+                order_id, product_id, shop_id, vendor_id, product_name, unit_price, quantity, size,
                 subtotal, commission_rate, commission_amount, vendor_net_amount
             ) VALUES (
-                :order_id, :product_id, :shop_id, :vendor_id, :product_name, :unit_price, :quantity,
+                :order_id, :product_id, :shop_id, :vendor_id, :product_name, :unit_price, :quantity, :size,
                 :subtotal, :commission_rate, :commission_amount, :vendor_net_amount
             )
         ');
@@ -73,6 +73,7 @@ final class OrderItemRepository
             'product_name' => $data['product_name'],
             'unit_price' => $data['unit_price'],
             'quantity' => $data['quantity'],
+            'size' => $data['size'] ?? null,
             'subtotal' => $data['subtotal'],
             'commission_rate' => $data['commission_rate'],
             'commission_amount' => $data['commission_amount'],

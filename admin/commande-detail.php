@@ -139,6 +139,7 @@ $refunds = $stmt->fetchAll();
                 <tr>
                     <th>Boutique / Vendeur</th>
                     <th>Produit</th>
+                    <th>Taille</th>
                     <th>Qté</th>
                     <th>Sous-total</th>
                     <th>Commission</th>
@@ -156,6 +157,7 @@ $refunds = $stmt->fetchAll();
                     <tr>
                         <td><?= e($item['shop_name']) ?><?php if ($item['vendor_name']): ?><br><span class="char-count"><?= e($item['vendor_name']) ?></span><?php endif; ?></td>
                         <td><?= e($item['product_name']) ?></td>
+                        <td><?= $item['size'] ? e($item['size']) : '—' ?></td>
                         <td><?= (int) $item['quantity'] ?></td>
                         <td><?= format_price((int) round((float) $item['subtotal'])) ?></td>
                         <td><?= format_price((int) round((float) $item['commission_amount'])) ?></td>

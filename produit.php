@@ -150,13 +150,31 @@ $relatedProducts = $relatedStmt->fetchAll();
 
             <?= stock_badge_html($product) ?>
 
+            <?php if ($product['size_type'] !== 'none'):
+                $sizeStmt = get_db()->prepare('SELECT size, stock FROM product_sizes WHERE product_id = :id ORDER BY sort_order');
+                $sizeStmt->execute(['id' => $product['id']]);
+                $productSizes = $sizeStmt->fetchAll();
+            ?>
+                <div class="product-size-picker" data-size-type="<?= e($product['size_type']) ?>">
+                    <span class="product-size-picker-label"><?= $product['size_type'] === 'shoe' ? 'Pointure' : 'Taille' ?> :</span>
+                    <div class="product-size-options">
+                        <?php foreach ($productSizes as $s): ?>
+                            <label class="product-size-option <?= (int) $s['stock'] <= 0 ? 'is-disabled' : '' ?>">
+                                <input type="radio" name="product_size" value="<?= e($s['size']) ?>" <?= (int) $s['stock'] <= 0 ? 'disabled' : '' ?>>
+                                <span><?= e($s['size']) ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <div class="product-detail-actions">
                 <?php if (!shop_is_open_value($product)): ?>
                     <button type="button" class="btn btn-outline-primary" disabled>
                         <?= icon('cart', 16) ?> Boutique fermée
                     </button>
                 <?php elseif ((int) $product['stock'] > 0): ?>
-                    <button type="button" class="btn btn-primary add-cart-btn" data-id="product-<?= (int) $product['id'] ?>" data-name="<?= e($product['name']) ?>">
+                    <button type="button" class="btn btn-primary add-cart-btn" data-id="product-<?= (int) $product['id'] ?>" data-name="<?= e($product['name']) ?>" <?= $product['size_type'] !== 'none' ? 'data-requires-size="1" disabled' : '' ?>>
                         <?= icon('cart', 16) ?> Ajouter au panier
                     </button>
                 <?php else: ?>

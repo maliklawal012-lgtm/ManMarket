@@ -29,6 +29,8 @@ foreach ($products as $p) {
         'shopSlug' => $p['shop_slug'],
         'stock' => (int) $p['stock'],
         'shopOpen' => (bool) $p['shop_is_open'],
+        'sizeType' => $p['size_type'],
+        'slug' => $p['slug'],
     ];
 }
 ?>

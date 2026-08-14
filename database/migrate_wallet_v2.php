@@ -205,4 +205,41 @@ migrate_step(
     }
 );
 
+// ----------------------------------------------------------------------
+// Etape 8 : tailles produit (vetements/chaussures). products.size_type +
+// table product_sizes (stock par taille) + order_items.size (taille
+// choisie, historisee independamment d'une modification ulterieure des
+// tailles du produit).
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter products.size_type',
+    fn (PDO $db) => migrate_column_exists($db, 'products', 'size_type'),
+    fn (PDO $db) => $db->exec("ALTER TABLE products ADD COLUMN size_type ENUM('none','clothing','shoe') NOT NULL DEFAULT 'none' AFTER stock")
+);
+
+migrate_step(
+    'Creer la table product_sizes',
+    fn (PDO $db) => migrate_table_exists($db, 'product_sizes'),
+    function (PDO $db) {
+        $db->exec("
+            CREATE TABLE product_sizes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                product_id INT NOT NULL,
+                size VARCHAR(10) NOT NULL,
+                stock INT NOT NULL DEFAULT 0,
+                sort_order INT NOT NULL DEFAULT 0,
+                UNIQUE KEY uniq_product_size (product_id, size),
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB
+        ");
+    }
+);
+
+migrate_step(
+    'Ajouter order_items.size',
+    fn (PDO $db) => migrate_column_exists($db, 'order_items', 'size'),
+    fn (PDO $db) => $db->exec('ALTER TABLE order_items ADD COLUMN size VARCHAR(10) NULL AFTER quantity')
+);
+
 echo "\nMigration terminee.\n";

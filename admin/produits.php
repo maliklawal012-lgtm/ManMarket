@@ -48,6 +48,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
     $sortOrder = (int) ($_POST['sort_order'] ?? 0);
     $removeImage = isset($_POST['remove_image']);
 
+    $sizeType = in_array($_POST['size_type'] ?? 'none', ['none', 'clothing', 'shoe'], true) ? $_POST['size_type'] : 'none';
+    $sizeStocks = [];
+    if ($sizeType !== 'none') {
+        foreach (product_size_options($sizeType) as $sizeOption) {
+            $qty = max(0, (int) ($_POST['size_stock'][$sizeOption] ?? 0));
+            if ($qty > 0) {
+                $sizeStocks[$sizeOption] = $qty;
+            }
+        }
+        if (!$sizeStocks) {
+            $errors['size_type'] = 'Ajoutez au moins une taille avec un stock disponible.';
+        }
+        $stock = array_sum($sizeStocks);
+    }
+
     $currentImage = null;
     if ($id > 0) {
         $stmt = $db->prepare('SELECT image FROM products WHERE id = :id');
@@ -111,25 +126,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             $stmt = $db->prepare('
                 UPDATE products
                 SET name = :name, slug = :slug, description = :description, category_id = :category_id, shop_id = :shop_id,
-                    price = :price, original_price = :original_price, stock = :stock, icon = :icon, image = :image,
+                    price = :price, original_price = :original_price, stock = :stock, size_type = :size_type, icon = :icon, image = :image,
                     is_featured = :is_featured, sort_order = :sort_order
                 WHERE id = :id
             ');
             $stmt->execute([
                 'name' => $name, 'slug' => $slug, 'description' => $description !== '' ? $description : null, 'category_id' => $categoryId, 'shop_id' => $shopId,
-                'price' => $price, 'original_price' => $originalPrice, 'stock' => $stock, 'icon' => $productIcon, 'image' => $finalImage,
+                'price' => $price, 'original_price' => $originalPrice, 'stock' => $stock, 'size_type' => $sizeType, 'icon' => $productIcon, 'image' => $finalImage,
                 'is_featured' => $isFeatured, 'sort_order' => $sortOrder, 'id' => $id,
             ]);
+            $productId = $id;
         } else {
             $stmt = $db->prepare('
-                INSERT INTO products (name, slug, description, category_id, shop_id, price, original_price, stock, icon, image, is_featured, sort_order)
-                VALUES (:name, :slug, :description, :category_id, :shop_id, :price, :original_price, :stock, :icon, :image, :is_featured, :sort_order)
+                INSERT INTO products (name, slug, description, category_id, shop_id, price, original_price, stock, size_type, icon, image, is_featured, sort_order)
+                VALUES (:name, :slug, :description, :category_id, :shop_id, :price, :original_price, :stock, :size_type, :icon, :image, :is_featured, :sort_order)
             ');
             $stmt->execute([
                 'name' => $name, 'slug' => $slug, 'description' => $description !== '' ? $description : null, 'category_id' => $categoryId, 'shop_id' => $shopId,
-                'price' => $price, 'original_price' => $originalPrice, 'stock' => $stock, 'icon' => $productIcon, 'image' => $finalImage,
+                'price' => $price, 'original_price' => $originalPrice, 'stock' => $stock, 'size_type' => $sizeType, 'icon' => $productIcon, 'image' => $finalImage,
                 'is_featured' => $isFeatured, 'sort_order' => $sortOrder,
             ]);
+            $productId = (int) $db->lastInsertId();
+        }
+
+        $db->prepare('DELETE FROM product_sizes WHERE product_id = :id')->execute(['id' => $productId]);
+        if ($sizeStocks) {
+            $insertSize = $db->prepare('INSERT INTO product_sizes (product_id, size, stock, sort_order) VALUES (:product_id, :size, :stock, :sort_order)');
+            $order = 0;
+            foreach (product_size_options($sizeType) as $sizeOption) {
+                if (isset($sizeStocks[$sizeOption])) {
+                    $insertSize->execute(['product_id' => $productId, 'size' => $sizeOption, 'stock' => $sizeStocks[$sizeOption], 'sort_order' => $order]);
+                }
+                $order++;
+            }
         }
 
         header('Location: /market/admin/produits.php');
@@ -141,22 +170,32 @@ $categories = $db->query('SELECT id, name FROM categories ORDER BY sort_order')-
 $shops = $db->query('SELECT id, name FROM shops ORDER BY sort_order')->fetchAll();
 
 $editing = null;
+$editingSizeStocks = [];
 $formAction = (string) ($_GET['action'] ?? '');
 
 if ($formAction === 'new') {
     $editing = [
         'id' => 0, 'name' => '', 'description' => '', 'category_id' => '', 'shop_id' => '',
-        'price' => '', 'original_price' => '', 'stock' => 0, 'icon' => '', 'image' => null, 'is_featured' => 0, 'sort_order' => 0,
+        'price' => '', 'original_price' => '', 'stock' => 0, 'size_type' => 'none', 'icon' => '', 'image' => null, 'is_featured' => 0, 'sort_order' => 0,
     ];
 } elseif ($formAction === 'edit' && isset($_GET['id'])) {
     $stmt = $db->prepare('SELECT * FROM products WHERE id = :id');
     $stmt->execute(['id' => (int) $_GET['id']]);
     $editing = $stmt->fetch() ?: null;
+
+    if ($editing) {
+        $stmt = $db->prepare('SELECT size, stock FROM product_sizes WHERE product_id = :id ORDER BY sort_order');
+        $stmt->execute(['id' => (int) $editing['id']]);
+        foreach ($stmt->fetchAll() as $row) {
+            $editingSizeStocks[$row['size']] = (int) $row['stock'];
+        }
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errors) {
     $editing = $_POST;
     $editing['image'] = $currentImage ?? null;
+    $editingSizeStocks = $_POST['size_stock'] ?? [];
 }
 
 $pageTitle = $editing ? (($editing['id'] ?? 0) ? 'Modifier le produit' : 'Nouveau produit') : 'Produits';
@@ -221,12 +260,74 @@ if ($editing):
                     <input type="number" id="original_price" name="original_price" min="1" value="<?= e((string) ($editing['original_price'] ?? '')) ?>">
                     <?php if (isset($errors['original_price'])): ?><span class="field-error"><?= e($errors['original_price']) ?></span><?php endif; ?>
                 </div>
-                <div class="form-field">
+                <div class="form-field" id="stock-field-global">
                     <label for="stock">Stock disponible *</label>
                     <input type="number" id="stock" name="stock" min="0" value="<?= e((string) ($editing['stock'] ?? 0)) ?>" required>
                     <span class="char-count">0 = rupture de stock, la commande sera bloquée.</span>
                 </div>
             </div>
+
+            <div class="form-field <?= isset($errors['size_type']) ? 'has-error' : '' ?>">
+                <label for="size_type">Type de taille</label>
+                <select id="size_type" name="size_type">
+                    <option value="none" <?= (string) ($editing['size_type'] ?? 'none') === 'none' ? 'selected' : '' ?>>Aucune (produit sans taille)</option>
+                    <option value="clothing" <?= (string) ($editing['size_type'] ?? '') === 'clothing' ? 'selected' : '' ?>>Vêtement (XXS à 5XL)</option>
+                    <option value="shoe" <?= (string) ($editing['size_type'] ?? '') === 'shoe' ? 'selected' : '' ?>>Chaussure (pointure 20 à 50)</option>
+                </select>
+                <span class="char-count">Si une taille est choisie, le client devra sélectionner une taille à la commande. Le stock global ci-dessus sera alors calculé automatiquement (somme des stocks par taille).</span>
+                <?php if (isset($errors['size_type'])): ?><span class="field-error"><?= e($errors['size_type']) ?></span><?php endif; ?>
+            </div>
+
+            <div class="form-field" id="size-stock-clothing" style="display:none;">
+                <label>Stock par taille (vêtement)</label>
+                <div class="admin-size-grid">
+                    <?php foreach (CLOTHING_SIZES as $sizeOption): ?>
+                        <div class="admin-size-grid-item">
+                            <label for="size_stock_<?= e($sizeOption) ?>"><?= e($sizeOption) ?></label>
+                            <input type="number" id="size_stock_<?= e($sizeOption) ?>" name="size_stock[<?= e($sizeOption) ?>]" min="0" value="<?= (int) ($editingSizeStocks[$sizeOption] ?? 0) ?>">
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <div class="form-field" id="size-stock-shoe" style="display:none;">
+                <label>Stock par pointure (chaussure)</label>
+                <div class="admin-size-grid">
+                    <?php foreach (shoe_sizes() as $sizeOption): ?>
+                        <div class="admin-size-grid-item">
+                            <label for="size_stock_<?= e($sizeOption) ?>"><?= e($sizeOption) ?></label>
+                            <input type="number" id="size_stock_<?= e($sizeOption) ?>" name="size_stock[<?= e($sizeOption) ?>]" min="0" value="<?= (int) ($editingSizeStocks[$sizeOption] ?? 0) ?>">
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <script>
+                (function () {
+                    var sizeTypeSelect = document.getElementById('size_type');
+                    var stockGlobalField = document.getElementById('stock-field-global');
+                    var stockInput = document.getElementById('stock');
+                    var grids = {
+                        clothing: document.getElementById('size-stock-clothing'),
+                        shoe: document.getElementById('size-stock-shoe'),
+                    };
+
+                    function refresh() {
+                        var type = sizeTypeSelect.value;
+                        grids.clothing.style.display = type === 'clothing' ? '' : 'none';
+                        grids.shoe.style.display = type === 'shoe' ? '' : 'none';
+                        if (type === 'none') {
+                            stockGlobalField.style.display = '';
+                            stockInput.removeAttribute('readonly');
+                        } else {
+                            stockGlobalField.style.display = 'none';
+                        }
+                    }
+
+                    sizeTypeSelect.addEventListener('change', refresh);
+                    refresh();
+                })();
+            </script>
 
             <div class="form-field <?= isset($errors['image']) ? 'has-error' : '' ?>">
                 <label for="image">Image du produit</label>
