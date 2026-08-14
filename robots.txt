@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /vendeur/
+Disallow: /panier.php
+Disallow: /favoris.php
+Disallow: /compte.php
+Disallow: /commandes.php

@@ -1,0 +1,12 @@
+ErrorDocument 404 /market/404.php
+
+# Bloque l'acces direct aux fichiers sensibles (cles API, logs, schema SQL)
+<FilesMatch "^(\.env.*|.*\.sql|.*\.log)$">
+    Require all denied
+</FilesMatch>
+
+# Bloque l'acces direct aux dossiers internes (le code y est execute via require,
+# jamais servi directement par Apache)
+RewriteEngine On
+RewriteRule ^(src|logs|database|cron|tests)/ - [F,L]
+
