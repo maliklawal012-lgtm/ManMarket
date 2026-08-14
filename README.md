@@ -93,3 +93,7 @@ Voir [`DEPLOYMENT.md`](DEPLOYMENT.md) pour la procédure complète : configurati
 - Rate limiting sur connexion, inscription, webhook et retraits (`includes/rate_limit.php`)
 - RBAC à trois rôles (client / vendeur / admin) — voir `DEPLOYMENT.md` §11
 - `.env` jamais committé (voir `.gitignore`) et bloqué en accès web par `.htaccess`
+
+## Licence
+
+Propriétaire — tous droits réservés. Voir [`LICENSE`](LICENSE).
