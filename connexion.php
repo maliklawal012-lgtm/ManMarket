@@ -72,6 +72,13 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
 
+        <?php if (($_GET['reset'] ?? '') === 'ok'): ?>
+            <div class="alert alert-success">
+                <?= icon('check-circle', 18) ?>
+                <span>Votre mot de passe a été modifié. Connectez-vous avec votre nouveau mot de passe.</span>
+            </div>
+        <?php endif; ?>
+
         <form method="post" action="/market/connexion.php" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
@@ -86,6 +93,7 @@ require_once __DIR__ . '/includes/header.php';
                 <label for="password">Mot de passe *</label>
                 <input type="password" id="password" name="password" required>
                 <?php if (isset($errors['password'])): ?><span class="field-error"><?= e($errors['password']) ?></span><?php endif; ?>
+                <a href="/market/mot-de-passe-oublie.php" class="char-count">Mot de passe oublié ?</a>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">Se connecter</button>

@@ -242,4 +242,28 @@ migrate_step(
     fn (PDO $db) => $db->exec('ALTER TABLE order_items ADD COLUMN size VARCHAR(10) NULL AFTER quantity')
 );
 
+// ----------------------------------------------------------------------
+// Etape 9 : mot de passe oublie. Table password_resets (token a usage
+// unique, expirant, seul son hash SHA-256 est stocke).
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Creer la table password_resets',
+    fn (PDO $db) => migrate_table_exists($db, 'password_resets'),
+    function (PDO $db) {
+        $db->exec("
+            CREATE TABLE password_resets (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                token_hash VARCHAR(64) NOT NULL,
+                expires_at TIMESTAMP NOT NULL,
+                used_at TIMESTAMP NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_password_resets_token_hash (token_hash),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB
+        ");
+    }
+);
+
 echo "\nMigration terminee.\n";

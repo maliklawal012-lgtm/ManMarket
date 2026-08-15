@@ -219,6 +219,25 @@ final class NotificationService
         }, 'refundProcessed', $refundId);
     }
 
+    public function passwordResetRequested(int $userId, string $resetUrl): void
+    {
+        $this->guard(function () use ($userId, $resetUrl): void {
+            $stmt = $this->db->prepare('SELECT name, email FROM users WHERE id = :id');
+            $stmt->execute(['id' => $userId]);
+            $user = $stmt->fetch();
+            if (!$user) {
+                return;
+            }
+
+            $body = "Bonjour {$user['name']},\n\n"
+                . "Vous avez demande la reinitialisation de votre mot de passe ManMarket.\n\n"
+                . "Cliquez sur le lien suivant pour choisir un nouveau mot de passe (valable 1 heure) :\n{$resetUrl}\n\n"
+                . "Si vous n'etes pas a l'origine de cette demande, ignorez cet email : votre mot de passe restera inchange.\n\nL'equipe ManMarket";
+
+            $this->send($user['email'], $user['name'], 'Reinitialisation de votre mot de passe ManMarket', $body, 'password_reset_requested', $userId);
+        }, 'passwordResetRequested', $userId);
+    }
+
     private function guard(\Closure $fn, string $event, int $refId): void
     {
         try {
