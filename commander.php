@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $loggedInUser = current_user();
 $errors = [];
 $paymentInitError = null;
+$paymentRestricted = $loggedInUser && (int) ($loggedInUser['payment_restricted'] ?? 0) === 1;
 
 $onlinePaymentMethods = [
     'wave' => ['label' => 'Wave', 'logo' => 'assets/images/payment-logos/wave.svg'],
@@ -113,6 +114,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $old['delivery_neighborhood'] = (int) ($_POST['delivery_neighborhood'] ?? 0);
     $old['payment_choice'] = ($_POST['payment_choice'] ?? 'cod') === 'online' ? 'online' : 'cod';
     $old['payment_method'] = trim((string) ($_POST['payment_method'] ?? ''));
+
+    if ($paymentRestricted) {
+        // Client restreint (2 non-retraits) : jamais confiance dans le choix
+        // soumis, meme si le radio "a la livraison" a ete manipule/renvoye.
+        $old['payment_choice'] = 'online';
+    }
 
     $summary = commander_load_summary($old['items']);
     $orderTotal = 0;
@@ -322,11 +329,19 @@ require_once __DIR__ . '/includes/header.php';
 
                 <div class="form-field">
                     <label>Mode de paiement</label>
+                    <?php if ($paymentRestricted): ?>
+                        <div class="alert alert-error">
+                            <?= icon('x', 18) ?>
+                            <span>Suite à des commandes non retirées, le paiement en ligne est requis pour cette commande.</span>
+                        </div>
+                    <?php endif; ?>
                     <div class="payment-choice-options">
-                        <label class="payment-choice-option">
-                            <input type="radio" name="payment_choice" value="cod" <?= $old['payment_choice'] !== 'online' ? 'checked' : '' ?>>
-                            <span><?= icon('truck', 16) ?> Paiement à la livraison</span>
-                        </label>
+                        <?php if (!$paymentRestricted): ?>
+                            <label class="payment-choice-option">
+                                <input type="radio" name="payment_choice" value="cod" <?= $old['payment_choice'] !== 'online' ? 'checked' : '' ?>>
+                                <span><?= icon('truck', 16) ?> Paiement à la livraison</span>
+                            </label>
+                        <?php endif; ?>
                         <label class="payment-choice-option">
                             <input type="radio" name="payment_choice" value="online" <?= $old['payment_choice'] === 'online' ? 'checked' : '' ?>>
                             <span><?= icon('cart', 16) ?> Payer en ligne maintenant (Wave, Orange Money, MTN, carte...)</span>

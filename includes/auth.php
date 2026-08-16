@@ -18,7 +18,7 @@ function current_user(): ?array
     if ($user === null) {
         $stmt = get_db()->prepare('
             SELECT id, name, email, phone, avatar, is_vendor, is_admin, is_blocked, blocked_reason,
-                last_login_at, last_activity_at, created_at
+                payment_restricted, last_login_at, last_activity_at, created_at
             FROM users WHERE id = :id
         ');
         $stmt->execute(['id' => $_SESSION['user_id']]);

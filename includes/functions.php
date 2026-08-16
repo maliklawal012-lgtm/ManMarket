@@ -305,6 +305,7 @@ function order_status_label(string $status): string
         'shipping' => 'En livraison',
         'delivered' => 'Livrée',
         'cancelled' => 'Annulée',
+        'not_collected' => 'Non retirée',
         'processed' => 'Traitée',
     ][$status] ?? ucfirst($status);
 }
@@ -317,8 +318,55 @@ function order_status_tag_class(string $status): string
         'shipping' => 'tag-shipping',
         'delivered' => 'tag-green',
         'cancelled' => 'tag-closed',
+        'not_collected' => 'tag-closed',
         'processed' => 'tag-green',
     ][$status] ?? '';
+}
+
+/**
+ * Comptabilise un non-retrait pour un client connecte. Au 2e non-retrait
+ * depuis la derniere remise a zero, le client doit payer en ligne pour sa
+ * prochaine commande (voir commander.php).
+ */
+function record_failed_pickup(int $userId): void
+{
+    $db = get_db();
+    $stmt = $db->prepare('SELECT failed_pickup_count FROM users WHERE id = :id');
+    $stmt->execute(['id' => $userId]);
+    $count = (int) $stmt->fetchColumn() + 1;
+
+    if ($count >= 2) {
+        $db->prepare('UPDATE users SET payment_restricted = 1, failed_pickup_count = 0 WHERE id = :id')->execute(['id' => $userId]);
+    } else {
+        $db->prepare('UPDATE users SET failed_pickup_count = :count WHERE id = :id')->execute(['count' => $count, 'id' => $userId]);
+    }
+}
+
+/**
+ * Comptabilise un paiement en ligne reussi pour un client actuellement
+ * restreint (payment_restricted=1). Apres 2 paiements en ligne reussis
+ * consecutifs, le client retrouve le choix du paiement a la livraison.
+ * Sans effet si le client n'est pas restreint (le compteur ne sert qu'a
+ * un rachat en cours).
+ */
+function record_successful_online_payment(int $userId): void
+{
+    $db = get_db();
+    $stmt = $db->prepare('SELECT payment_restricted, online_payment_streak FROM users WHERE id = :id');
+    $stmt->execute(['id' => $userId]);
+    $row = $stmt->fetch();
+
+    if (!$row || (int) $row['payment_restricted'] !== 1) {
+        return;
+    }
+
+    $streak = (int) $row['online_payment_streak'] + 1;
+
+    if ($streak >= 2) {
+        $db->prepare('UPDATE users SET payment_restricted = 0, online_payment_streak = 0 WHERE id = :id')->execute(['id' => $userId]);
+    } else {
+        $db->prepare('UPDATE users SET online_payment_streak = :streak WHERE id = :id')->execute(['streak' => $streak, 'id' => $userId]);
+    }
 }
 
 function vendor_item_status_label(string $status): string

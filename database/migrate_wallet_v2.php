@@ -309,4 +309,47 @@ migrate_step(
     fn (PDO $db) => $db->exec('ALTER TABLE orders ADD COLUMN delivery_fee_amount DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER subtotal_amount')
 );
 
+// ----------------------------------------------------------------------
+// Etape 12 : systeme de fiabilite paiement. Un client connecte qui ne
+// retire pas sa commande au moins deux fois doit payer en ligne pour
+// sa prochaine commande ; il retrouve le choix du paiement a la
+// livraison apres deux paiements en ligne reussis consecutifs.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter users.payment_restricted',
+    fn (PDO $db) => migrate_column_exists($db, 'users', 'payment_restricted'),
+    fn (PDO $db) => $db->exec('ALTER TABLE users ADD COLUMN payment_restricted TINYINT(1) NOT NULL DEFAULT 0')
+);
+
+migrate_step(
+    'Ajouter users.failed_pickup_count',
+    fn (PDO $db) => migrate_column_exists($db, 'users', 'failed_pickup_count'),
+    fn (PDO $db) => $db->exec('ALTER TABLE users ADD COLUMN failed_pickup_count INT NOT NULL DEFAULT 0')
+);
+
+migrate_step(
+    'Ajouter users.online_payment_streak',
+    fn (PDO $db) => migrate_column_exists($db, 'users', 'online_payment_streak'),
+    fn (PDO $db) => $db->exec('ALTER TABLE users ADD COLUMN online_payment_streak INT NOT NULL DEFAULT 0')
+);
+
+migrate_step(
+    "Ajouter 'not_collected' a orders.fulfillment_status",
+    function (PDO $db) {
+        $col = $db->query("SHOW COLUMNS FROM orders LIKE 'fulfillment_status'")->fetch();
+        return $col && str_contains($col['Type'], 'not_collected');
+    },
+    fn (PDO $db) => $db->exec("ALTER TABLE orders MODIFY COLUMN fulfillment_status ENUM('pending','processing','shipping','delivered','cancelled','not_collected') NOT NULL DEFAULT 'pending'")
+);
+
+migrate_step(
+    "Ajouter 'not_collected' a order_items.fulfillment_status",
+    function (PDO $db) {
+        $col = $db->query("SHOW COLUMNS FROM order_items LIKE 'fulfillment_status'")->fetch();
+        return $col && str_contains($col['Type'], 'not_collected');
+    },
+    fn (PDO $db) => $db->exec("ALTER TABLE order_items MODIFY COLUMN fulfillment_status ENUM('pending','confirmed','rejected','shipped','delivered','cancelled','not_collected') NOT NULL DEFAULT 'pending'")
+);
+
 echo "\nMigration terminee.\n";

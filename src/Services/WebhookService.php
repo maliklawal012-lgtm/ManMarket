@@ -124,10 +124,34 @@ final class WebhookService
 
         if ($status === 'completed') {
             $this->settlement->settleOrder((int) $payment['order_id']);
+            $this->recordReliabilityOnSuccess((int) $payment['order_id']);
         }
 
         if (in_array($status, ['completed', 'failed', 'cancelled', 'expired'], true)) {
             $this->notifications?->paymentResult((int) $payment['order_id'], $status);
+        }
+    }
+
+    /**
+     * Systeme de fiabilite paiement (voir includes/functions.php) : un paiement
+     * en ligne confirme par webhook est la seule source jugee fiable pour
+     * compter les paiements en ligne reussis consecutifs d'un client restreint.
+     * $legacyDb est en realite la connexion PDO principale (voir constructeur) —
+     * reutilisee ici pour cette lecture simple plutot que d'introduire une
+     * nouvelle dependance au constructeur pour un seul SELECT.
+     */
+    private function recordReliabilityOnSuccess(int $orderId): void
+    {
+        if ($this->legacyDb === null) {
+            return;
+        }
+
+        $stmt = $this->legacyDb->prepare('SELECT customer_user_id, payment_choice FROM orders WHERE id = :id');
+        $stmt->execute(['id' => $orderId]);
+        $order = $stmt->fetch();
+
+        if ($order && $order['customer_user_id'] && $order['payment_choice'] === 'online') {
+            \record_successful_online_payment((int) $order['customer_user_id']);
         }
     }
 

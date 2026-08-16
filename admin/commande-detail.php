@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $db = get_db();
-$orderStatuses = ['pending', 'processing', 'shipping', 'delivered', 'cancelled'];
+$orderStatuses = ['pending', 'processing', 'shipping', 'delivered', 'cancelled', 'not_collected'];
 $orderId = (int) ($_GET['id'] ?? 0);
 
 $stmt = $db->prepare('SELECT * FROM orders WHERE id = :id');
@@ -34,6 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status']) && ($_POST[
         wallet_order_item_repo()->setFulfillmentStatusByOrderId($orderId, $_POST['status']);
         if ($_POST['status'] === 'delivered') {
             wallet_release_service()->releaseMaturedHolds();
+        }
+        if ($_POST['status'] === 'not_collected' && $order['customer_user_id']) {
+            record_failed_pickup((int) $order['customer_user_id']);
         }
         wallet_notification_service()->orderStatusChanged($orderId, $_POST['status']);
     }
