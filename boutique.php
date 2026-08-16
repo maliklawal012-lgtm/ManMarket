@@ -11,7 +11,7 @@ if ($slug !== '') {
     $stmt = get_db()->prepare('SELECT * FROM shops WHERE slug = :slug LIMIT 1');
     $stmt->execute(['slug' => $slug]);
     $shop = $stmt->fetch() ?: null;
-    if ($shop && !get_shop_active_subscription((int) $shop['id'])) {
+    if ($shop && ($shop['approval_status'] !== 'approved' || !get_shop_active_subscription((int) $shop['id']))) {
         $shop = null;
     }
     if ($shop) {

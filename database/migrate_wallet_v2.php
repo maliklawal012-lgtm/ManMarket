@@ -352,4 +352,24 @@ migrate_step(
     fn (PDO $db) => $db->exec("ALTER TABLE order_items MODIFY COLUMN fulfillment_status ENUM('pending','confirmed','rejected','shipped','delivered','cancelled','not_collected') NOT NULL DEFAULT 'pending'")
 );
 
+// ----------------------------------------------------------------------
+// Etape 13 : boutique en libre-service avec validation admin. Une
+// boutique creee par un vendeur (vendeur/demande-boutique.php) reste
+// invisible et inoperante tant que l'admin ne l'a pas approuvee.
+// DEFAULT 'approved' pour que les boutiques existantes (creees par
+// l'admin) restent inchangees.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter shops.approval_status',
+    fn (PDO $db) => migrate_column_exists($db, 'shops', 'approval_status'),
+    fn (PDO $db) => $db->exec("ALTER TABLE shops ADD COLUMN approval_status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved'")
+);
+
+migrate_step(
+    'Ajouter shops.rejection_reason',
+    fn (PDO $db) => migrate_column_exists($db, 'shops', 'rejection_reason'),
+    fn (PDO $db) => $db->exec('ALTER TABLE shops ADD COLUMN rejection_reason VARCHAR(255) NULL')
+);
+
 echo "\nMigration terminee.\n";

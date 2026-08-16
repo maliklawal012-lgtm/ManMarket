@@ -14,7 +14,7 @@ $product = null;
 
 if ($slug !== '') {
     $stmt = get_db()->prepare('
-        SELECT p.*, s.name AS shop_name, s.slug AS shop_slug, s.is_open AS shop_is_open, s.whatsapp AS shop_whatsapp, c.name AS category_name, c.slug AS category_slug
+        SELECT p.*, s.name AS shop_name, s.slug AS shop_slug, s.is_open AS shop_is_open, s.whatsapp AS shop_whatsapp, s.approval_status AS shop_approval_status, c.name AS category_name, c.slug AS category_slug
         FROM products p
         JOIN shops s ON s.id = p.shop_id
         JOIN categories c ON c.id = p.category_id
@@ -23,7 +23,7 @@ if ($slug !== '') {
     ');
     $stmt->execute(['slug' => $slug]);
     $product = $stmt->fetch() ?: null;
-    if ($product && !get_shop_active_subscription((int) $product['shop_id'])) {
+    if ($product && ($product['shop_approval_status'] !== 'approved' || !get_shop_active_subscription((int) $product['shop_id']))) {
         $product = null;
     }
 }

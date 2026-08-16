@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/wallet_bootstrap.php';
 
 require_admin();
 
@@ -41,6 +42,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     } catch (PDOException $e) {
         $deleteError = "Impossible de supprimer cette boutique : des produits y sont encore associés.";
     }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'approve_request') {
+    $requestId = (int) ($_POST['id'] ?? 0);
+    $stmt = $db->prepare("UPDATE shops SET approval_status = 'approved', rejection_reason = NULL WHERE id = :id AND approval_status = 'pending'");
+    $stmt->execute(['id' => $requestId]);
+    if ($stmt->rowCount() > 0) {
+        wallet_notification_service()->shopApprovalDecision($requestId, true, null);
+    }
+    header('Location: /market/admin/boutiques.php');
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'reject_request') {
+    $requestId = (int) ($_POST['id'] ?? 0);
+    $reason = trim((string) ($_POST['reason'] ?? '')) ?: null;
+    $stmt = $db->prepare("UPDATE shops SET approval_status = 'rejected', rejection_reason = :reason WHERE id = :id AND approval_status = 'pending'");
+    $stmt->execute(['reason' => $reason, 'id' => $requestId]);
+    if ($stmt->rowCount() > 0) {
+        wallet_notification_service()->shopApprovalDecision($requestId, false, $reason);
+    }
+    header('Location: /market/admin/boutiques.php');
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save') {
@@ -279,7 +303,70 @@ if ($editing):
         ORDER BY s.sort_order
     ')->fetchAll();
     $shops = attach_live_shop_ratings($shops);
+
+    $pendingRequests = $db->query("
+        SELECT s.*, u.name AS owner_name, u.email AS owner_email
+        FROM shops s
+        JOIN users u ON u.id = s.owner_id
+        WHERE s.approval_status = 'pending'
+        ORDER BY s.id
+    ")->fetchAll();
 ?>
+
+    <?php if ($pendingRequests): ?>
+    <div class="card">
+        <div class="admin-toolbar">
+            <h2>Demandes de boutique en attente (<?= count($pendingRequests) ?>)</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Boutique</th>
+                        <th>Quartier</th>
+                        <th>Demandeur</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($pendingRequests as $req): ?>
+                        <tr>
+                            <td>
+                                <div class="shop-logo" style="background:<?= e($req['color']) ?>; width:32px; height:32px; font-size:.72rem; display:inline-flex; vertical-align:middle; margin-right:8px;"><?= shop_logo_html($req) ?></div>
+                                <?= e($req['name']) ?>
+                            </td>
+                            <td><?= e($req['neighborhood']) ?></td>
+                            <td><?= e($req['owner_name']) ?> (<?= e($req['owner_email']) ?>)</td>
+                            <td>
+                                <div class="admin-table-actions">
+                                    <form method="post" action="/market/admin/boutiques.php" onsubmit="return confirm('Approuver cette demande de boutique ?');">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="action" value="approve_request">
+                                        <input type="hidden" name="id" value="<?= (int) $req['id'] ?>">
+                                        <button type="submit" class="btn btn-primary btn-sm">Approuver</button>
+                                    </form>
+                                    <details>
+                                        <summary class="btn btn-outline-primary btn-sm" style="display:inline-block; cursor:pointer;">Refuser</summary>
+                                        <form method="post" action="/market/admin/boutiques.php" style="margin-top:8px; min-width:220px;" onsubmit="return confirm('Refuser cette demande de boutique ?');">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="action" value="reject_request">
+                                            <input type="hidden" name="id" value="<?= (int) $req['id'] ?>">
+                                            <div class="form-field">
+                                                <label>Motif</label>
+                                                <input type="text" name="reason" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-sm">Confirmer le refus</button>
+                                        </form>
+                                    </details>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="card">
         <div class="admin-toolbar">
@@ -324,7 +411,14 @@ if ($editing):
                                 <td><?= (int) $shop['product_count'] ?></td>
                                 <td><span class="tag <?= $shop['is_open'] ? 'tag-open' : 'tag-closed' ?>"><?= $shop['is_open'] ? 'Ouvert' : 'Fermé' ?></span></td>
                                 <td>
-                                    <span class="tag <?= $shopSub ? 'tag-open' : 'tag-closed' ?>"><?= $shopSub ? 'Visible (abonnement actif)' : 'Invisible (sans abonnement)' ?></span>
+                                    <?php $isVisible = $shopSub && $shop['approval_status'] === 'approved'; ?>
+                                    <span class="tag <?= $isVisible ? 'tag-open' : 'tag-closed' ?>">
+                                        <?php if ($shop['approval_status'] === 'pending'): ?>Invisible (en attente d'approbation)
+                                        <?php elseif ($shop['approval_status'] === 'rejected'): ?>Invisible (demande refusée)
+                                        <?php elseif ($shopSub): ?>Visible (abonnement actif)
+                                        <?php else: ?>Invisible (sans abonnement)
+                                        <?php endif; ?>
+                                    </span>
                                 </td>
                                 <td>
                                     <div class="admin-table-actions">

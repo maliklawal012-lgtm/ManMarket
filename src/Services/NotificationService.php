@@ -257,6 +257,33 @@ final class NotificationService
         }, 'twoFactorCode', $userId);
     }
 
+    public function shopApprovalDecision(int $shopId, bool $approved, ?string $reason): void
+    {
+        $this->guard(function () use ($shopId, $approved, $reason): void {
+            $stmt = $this->db->prepare('SELECT s.name, u.email, u.name AS owner_name FROM shops s JOIN users u ON u.id = s.owner_id WHERE s.id = :id');
+            $stmt->execute(['id' => $shopId]);
+            $shop = $stmt->fetch();
+            if (!$shop) {
+                return;
+            }
+
+            if ($approved) {
+                $subject = "Votre boutique \"{$shop['name']}\" a ete approuvee";
+                $body = "Bonjour {$shop['owner_name']},\n\n"
+                    . "Bonne nouvelle : votre boutique \"{$shop['name']}\" a ete approuvee par l'equipe ManMarket.\n\n"
+                    . "Vous pouvez maintenant payer votre abonnement depuis votre espace vendeur pour la rendre visible sur le site.\n\nL'equipe ManMarket";
+            } else {
+                $subject = "Votre demande de boutique \"{$shop['name']}\" n'a pas ete retenue";
+                $body = "Bonjour {$shop['owner_name']},\n\n"
+                    . "Votre demande de boutique \"{$shop['name']}\" n'a pas ete retenue par l'equipe ManMarket.\n\n"
+                    . ($reason ? "Motif : {$reason}\n\n" : '')
+                    . "Vous pouvez corriger et resoumettre votre demande depuis votre espace vendeur.\n\nL'equipe ManMarket";
+            }
+
+            $this->send($shop['email'], $shop['owner_name'], $subject, $body, 'shop_approval_' . ($approved ? 'approved' : 'rejected'), $shopId);
+        }, 'shopApprovalDecision', $shopId);
+    }
+
     private function guard(\Closure $fn, string $event, int $refId): void
     {
         try {

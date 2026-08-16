@@ -101,6 +101,22 @@ function require_vendor(): array
 
 function current_vendor_shop(int $userId): ?array
 {
+    $stmt = get_db()->prepare("SELECT * FROM shops WHERE owner_id = :id AND approval_status = 'approved'");
+    $stmt->execute(['id' => $userId]);
+
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * Comme current_vendor_shop() mais sans filtre de statut — utilisee par
+ * includes/vendor_header.php (etat "pas de boutique operationnelle") et
+ * vendeur/demande-boutique.php pour savoir POURQUOI il n'y a pas de
+ * boutique operationnelle (aucune demande / en attente / refusee) et
+ * afficher le bon message. Toutes les autres pages vendeur doivent
+ * continuer a utiliser current_vendor_shop().
+ */
+function current_vendor_shop_request(int $userId): ?array
+{
     $stmt = get_db()->prepare('SELECT * FROM shops WHERE owner_id = :id');
     $stmt->execute(['id' => $userId]);
 

@@ -122,6 +122,8 @@ require_once __DIR__ . '/includes/header.php';
             <div class="account-actions">
                 <?php if ($user['is_vendor']): ?>
                     <a href="/market/vendeur/index.php" class="btn btn-outline-primary"><?= icon('store', 16) ?> Mon espace vendeur</a>
+                <?php else: ?>
+                    <a href="/market/vendeur/demande-boutique.php" class="btn btn-outline-primary"><?= icon('store', 16) ?> Devenir vendeur</a>
                 <?php endif; ?>
                 <a href="/market/commandes.php" class="btn btn-outline-primary"><?= icon('clock', 16) ?> Mes commandes</a>
                 <a href="/market/favoris.php" class="btn btn-outline-primary"><?= icon('heart', 16) ?> Mes favoris</a>

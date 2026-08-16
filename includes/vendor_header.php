@@ -8,12 +8,23 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
+    $vendorShopRequest = current_vendor_shop_request((int) $vendorUser['id']);
+
     require_once __DIR__ . '/header.php';
     ?>
     <section class="container not-found">
-        <h1>Boutique en attente d'assignation</h1>
-        <p>Votre compte vendeur est actif, mais aucune boutique ne vous a encore été assignée. Notre équipe vous contactera prochainement pour finaliser l'ouverture de votre boutique sur ManMarket.</p>
-        <a href="/market/compte.php" class="btn btn-primary">Retour à mon compte</a>
+        <?php if ($vendorShopRequest && $vendorShopRequest['approval_status'] === 'pending'): ?>
+            <h1>Boutique en cours d'examen</h1>
+            <p>Votre demande pour "<?= e($vendorShopRequest['name']) ?>" a bien été reçue et est en cours d'examen par l'équipe ManMarket. Vous serez prévenu(e) par email dès qu'elle sera traitée.</p>
+        <?php elseif ($vendorShopRequest && $vendorShopRequest['approval_status'] === 'rejected'): ?>
+            <h1>Demande refusée</h1>
+            <p><?= $vendorShopRequest['rejection_reason'] ? e($vendorShopRequest['rejection_reason']) : "Votre demande de boutique n'a pas été retenue." ?> Vous pouvez corriger et resoumettre votre demande.</p>
+            <a href="/market/vendeur/demande-boutique.php" class="btn btn-primary">Modifier ma demande</a>
+        <?php else: ?>
+            <h1>Créez votre boutique</h1>
+            <p>Votre compte vendeur est actif. Créez votre boutique pour commencer à vendre sur ManMarket.</p>
+            <a href="/market/vendeur/demande-boutique.php" class="btn btn-primary">Créer ma boutique</a>
+        <?php endif; ?>
     </section>
     <?php
     require_once __DIR__ . '/footer.php';

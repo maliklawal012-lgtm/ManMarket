@@ -132,7 +132,7 @@ function pagination_html(int $page, int $totalPages, string $baseUrl, array $ext
  */
 function active_subscription_shops_subquery(): string
 {
-    return '(SELECT DISTINCT shop_id FROM shop_subscriptions WHERE CURDATE() BETWEEN starts_at AND ends_at)';
+    return "(SELECT DISTINCT ss.shop_id FROM shop_subscriptions ss JOIN shops s ON s.id = ss.shop_id WHERE CURDATE() BETWEEN ss.starts_at AND ss.ends_at AND s.approval_status = 'approved')";
 }
 
 function get_shop_active_subscription(int $shopId): ?array

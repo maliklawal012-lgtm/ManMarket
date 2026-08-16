@@ -91,6 +91,7 @@ $currentPage = basename($_SERVER['SCRIPT_NAME']);
                 <li><a href="/market/boutiques.php" class="<?= $currentPage === 'boutiques.php' ? 'active' : '' ?>">Boutiques</a></li>
                 <li><a href="/market/offres.php" class="<?= $currentPage === 'offres.php' ? 'active' : '' ?>">Offres</a></li>
                 <li><a href="/market/services.php" class="<?= $currentPage === 'services.php' ? 'active' : '' ?>">Services</a></li>
+                <li><a href="/market/vendeur/demande-boutique.php" class="<?= $currentPage === 'demande-boutique.php' ? 'active' : '' ?>">Devenir propriétaire de boutique</a></li>
                 <li><a href="/market/commandes.php" class="<?= $currentPage === 'commandes.php' ? 'active' : '' ?>">Suivre ma commande</a></li>
                 <li><a href="/market/actualites.php" class="<?= $currentPage === 'actualites.php' ? 'active' : '' ?>">Actualités</a></li>
                 <li><a href="/market/contact.php" class="<?= $currentPage === 'contact.php' ? 'active' : '' ?>">Contact</a></li>
