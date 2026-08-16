@@ -54,7 +54,12 @@ function require_login(): array
 
 function require_admin(): array
 {
-    $user = require_login();
+    $user = current_user();
+
+    if (!$user) {
+        header('Location: /market/admin/connexion.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+        exit;
+    }
 
     if (!$user['is_admin']) {
         http_response_code(403);

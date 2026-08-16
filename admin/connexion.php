@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
 
-$pageTitle = 'Connexion';
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/csrf.php';
-require_once __DIR__ . '/includes/rate_limit.php';
+$pageTitle = 'Connexion administrateur';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/rate_limit.php';
+require_once __DIR__ . '/../includes/wallet_bootstrap.php';
 
-if (current_user()) {
-    header('Location: /market/compte.php');
+$currentUser = current_user();
+if ($currentUser) {
+    header('Location: ' . ((int) $currentUser['is_admin'] === 1 ? '/market/admin/index.php' : '/market/compte.php'));
     exit;
 }
 
@@ -15,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
 }
 
-$redirect = safe_redirect_target((string) ($_GET['redirect'] ?? $_POST['redirect'] ?? ''), '/market/compte.php');
+$redirect = safe_redirect_target((string) ($_GET['redirect'] ?? $_POST['redirect'] ?? ''), '/market/admin/index.php');
 $errors = [];
 $old = ['email' => ''];
 
@@ -23,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $old['email'] = trim((string) ($_POST['email'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
 
-    if (!rate_limit_check('login:' . rate_limit_client_ip(), 10, 900)) {
+    if (!rate_limit_check('admin_login:' . rate_limit_client_ip(), 10, 900)) {
         $errors['login'] = 'Trop de tentatives de connexion. Veuillez réessayer dans quelques minutes.';
     } elseif ($old['email'] === '' || !filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Veuillez indiquer une adresse email valide.';
@@ -37,32 +39,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute(['email' => $old['email']]);
         $user = $stmt->fetch();
 
-        if (!$user || !password_verify($password, $user['password_hash']) || (int) $user['is_admin'] === 1) {
+        if (!$user || !password_verify($password, $user['password_hash']) || (int) $user['is_admin'] !== 1) {
             $errors['login'] = 'Email ou mot de passe incorrect.';
         } elseif ((int) $user['is_blocked'] === 1) {
             $errors['login'] = 'Votre compte a été bloqué.' . ($user['blocked_reason'] ? ' Motif : ' . $user['blocked_reason'] . '.' : '') . ' Contactez l\'équipe ManMarket pour plus d\'informations.';
         } else {
-            login_user((int) $user['id']);
-            header('Location: ' . $redirect);
+            $code = issue_login_2fa_code((int) $user['id']);
+            wallet_notification_service()->twoFactorCode((int) $user['id'], $code);
+
+            session_regenerate_id(true);
+            $_SESSION['pending_2fa_user_id'] = (int) $user['id'];
+            $_SESSION['pending_2fa_redirect'] = $redirect;
+
+            header('Location: /market/verification-2fa.php');
             exit;
         }
     }
 }
 
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="page-banner">
     <div class="container page-banner-inner">
-        <h1>Connexion</h1>
-        <p>Accédez à votre compte ManMarket.</p>
+        <h1>Connexion administrateur</h1>
+        <p>Accès réservé à l'équipe ManMarket.</p>
     </div>
 </section>
 
 <section class="container auth-page">
     <div class="card auth-card">
         <div class="card-header">
-            <h2>Se connecter</h2>
+            <h2>Se connecter (administrateur)</h2>
         </div>
 
         <?php if (isset($errors['login'])): ?>
@@ -79,7 +87,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
 
-        <form method="post" action="/market/connexion.php" novalidate>
+        <form method="post" action="/market/admin/connexion.php" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
 
@@ -98,9 +106,7 @@ require_once __DIR__ . '/includes/header.php';
 
             <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
         </form>
-
-        <p class="auth-switch">Pas encore de compte ? <a href="/market/inscription.php">Créer un compte</a></p>
     </div>
 </section>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

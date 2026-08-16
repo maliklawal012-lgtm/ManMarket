@@ -47,7 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
         ]);
         $db->prepare('DELETE FROM password_resets WHERE user_id = :id')->execute(['id' => $reset['user_id']]);
 
-        header('Location: /market/connexion.php?reset=ok');
+        $stmt = $db->prepare('SELECT is_admin FROM users WHERE id = :id');
+        $stmt->execute(['id' => $reset['user_id']]);
+        $isAdmin = (int) $stmt->fetchColumn() === 1;
+
+        header('Location: ' . ($isAdmin ? '/market/admin/connexion.php?reset=ok' : '/market/connexion.php?reset=ok'));
         exit;
     }
 }
