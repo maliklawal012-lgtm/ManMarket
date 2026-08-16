@@ -5,6 +5,7 @@ $pageTitle = 'Contact';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/csrf.php';
+require_once __DIR__ . '/includes/rate_limit.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
@@ -49,17 +50,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if ($old['name'] === '') {
-        $errors['name'] = 'Veuillez indiquer votre nom.';
-    }
-    if ($old['email'] === '' || !filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
-        $errors['email'] = 'Veuillez indiquer une adresse email valide.';
-    }
-    if ($old['subject'] === '') {
-        $errors['subject'] = 'Veuillez indiquer un sujet.';
-    }
-    if ($old['message'] === '' || mb_strlen($old['message']) < 10) {
-        $errors['message'] = 'Votre message doit contenir au moins 10 caractères.';
+    if (!rate_limit_check('contact:' . rate_limit_client_ip(), 5, 3600)) {
+        $errors['message'] = 'Trop de messages envoyés. Veuillez réessayer dans quelques instants.';
+    } else {
+        if ($old['name'] === '') {
+            $errors['name'] = 'Veuillez indiquer votre nom.';
+        }
+        if ($old['email'] === '' || !filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Veuillez indiquer une adresse email valide.';
+        }
+        if ($old['subject'] === '') {
+            $errors['subject'] = 'Veuillez indiquer un sujet.';
+        }
+        if ($old['message'] === '' || mb_strlen($old['message']) < 10) {
+            $errors['message'] = 'Votre message doit contenir au moins 10 caractères.';
+        }
     }
 
     if (!$errors) {

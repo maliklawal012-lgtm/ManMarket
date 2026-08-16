@@ -1,0 +1,10 @@
+# Defense en profondeur : ce dossier ne doit jamais executer de code PHP,
+# meme si un fichier y echappait un jour aux controles de validate_uploaded_image()
+# (verification par contenu reel via getimagesize(), pas par extension).
+<FilesMatch "\.ph(p[3457]?|t|tml)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
