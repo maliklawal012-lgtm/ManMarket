@@ -144,6 +144,7 @@ Ce job bascule `pending_balance` → `available_balance` pour toute commande liv
 3. Connexion admin réelle → `/market/admin/connexion.php` (formulaire dédié, distinct de `/market/connexion.php`) avec un compte `is_admin = 1`, saisir le code reçu par email sur `/market/verification-2fa.php`, puis vérifier l'accès à `/market/admin/index.php` et `/market/admin/finances.php`.
 4. Un vrai parcours client : ajout panier → `/market/commander.php` → paiement en ligne → vérifier la redirection vers la vraie page de paiement Genius Pay.
 5. Vérifier que `GET /market/.env` et `GET /market/database/schema.sql` renvoient bien une erreur 403/404 (pas le contenu du fichier).
+6. Remplacer `VOTRE-DOMAINE` par le vrai nom de domaine dans `robots.txt` (ligne `Sitemap:`), puis vérifier que `/market/sitemap.php` renvoie bien du XML valide.
 
 ## 11. Modèle de sécurité (RBAC)
 

@@ -5,3 +5,5 @@ Disallow: /panier.php
 Disallow: /favoris.php
 Disallow: /compte.php
 Disallow: /commandes.php
+
+Sitemap: https://VOTRE-DOMAINE/market/sitemap.php
