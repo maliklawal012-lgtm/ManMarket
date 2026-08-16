@@ -100,6 +100,10 @@ final class RefundService
 
             $this->orderItems->applyRefund($orderItemId, $quantity, $grossAmount, $isFull ? 'full' : 'partial');
 
+            if ($item['product_id'] !== null) {
+                \restore_product_stock((int) $item['product_id'], $item['size'], $quantity);
+            }
+
             $this->db->commit();
 
             Logger::info('refund', 'Remboursement effectue', [

@@ -30,6 +30,9 @@ $refundFeedback = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status']) && ($_POST['action'] ?? '') === 'change_status') {
     if (in_array($_POST['status'], $orderStatuses, true)) {
+        if ($_POST['status'] === 'cancelled' && $order['fulfillment_status'] !== 'cancelled') {
+            restore_order_stock($orderId);
+        }
         wallet_order_repo()->setFulfillmentStatus($orderId, $_POST['status']);
         wallet_order_item_repo()->setFulfillmentStatusByOrderId($orderId, $_POST['status']);
         if ($_POST['status'] === 'delivered') {

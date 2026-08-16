@@ -20,6 +20,15 @@ $releaseFeedback = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['status'])) {
     if (in_array($_POST['status'], $orderStatuses, true)) {
         $orderId = (int) $_POST['order_id'];
+
+        if ($_POST['status'] === 'cancelled') {
+            $currentStatusStmt = $db->prepare('SELECT fulfillment_status FROM orders WHERE id = :id');
+            $currentStatusStmt->execute(['id' => $orderId]);
+            if ($currentStatusStmt->fetchColumn() !== 'cancelled') {
+                restore_order_stock($orderId);
+            }
+        }
+
         wallet_order_repo()->setFulfillmentStatus($orderId, $_POST['status']);
         wallet_order_item_repo()->setFulfillmentStatusByOrderId($orderId, $_POST['status']);
 

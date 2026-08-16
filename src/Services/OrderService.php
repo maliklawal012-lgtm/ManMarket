@@ -34,17 +34,18 @@ final class OrderService
     public function createFromCart(array $cartItems, array $customer, ?string $deliveryLocation, string $paymentChoice, int $deliveryFee = 0): OrderCreationResult
     {
         $rate = $this->commissionService->currentRate();
-        $resolvedItems = $this->resolveCartItems($cartItems, $rate);
-
-        if (!$resolvedItems) {
-            throw new \InvalidArgumentException('Panier vide ou produits indisponibles.');
-        }
-
-        $subtotal = array_sum(array_column($resolvedItems, 'subtotal'));
-        $totalAmount = $subtotal + $deliveryFee;
 
         $this->db->beginTransaction();
         try {
+            $resolvedItems = $this->resolveCartItems($cartItems, $rate);
+
+            if (!$resolvedItems) {
+                throw new \InvalidArgumentException('Panier vide ou produits indisponibles.');
+            }
+
+            $subtotal = array_sum(array_column($resolvedItems, 'subtotal'));
+            $totalAmount = $subtotal + $deliveryFee;
+
             $orderId = $this->orders->create([
                 'customer_user_id' => $customer['user_id'] ?? null,
                 'customer_name' => $customer['name'],
@@ -92,6 +93,12 @@ final class OrderService
      * abonnement actif) et calcule le sous-total/commission. Ignore silencieusement
      * les lignes invalides (produit inexistant, boutique fermee, quantite absurde)
      * exactement comme le fait deja le code de commande actuel du site.
+     *
+     * Appelee UNIQUEMENT depuis createFromCart() a l'interieur de sa transaction :
+     * les lectures de stock utilisent FOR UPDATE (verrou de ligne) et le stock est
+     * decremente immediatement ici, sous ce meme verrou, pour empecher deux clients
+     * d'acheter simultanement le meme dernier exemplaire (aucune autre transaction
+     * ne peut lire ce stock tant que celle-ci n'a pas commit ou annule).
      */
     private function resolveCartItems(array $cartItems, float $rate): array
     {
@@ -100,8 +107,11 @@ final class OrderService
             FROM products p
             JOIN shops s ON s.id = p.shop_id
             WHERE p.id = :id
+            FOR UPDATE
         ');
-        $sizeStmt = $this->db->prepare('SELECT stock FROM product_sizes WHERE product_id = :product_id AND size = :size');
+        $sizeStmt = $this->db->prepare('SELECT stock FROM product_sizes WHERE product_id = :product_id AND size = :size FOR UPDATE');
+        $decrementProductStmt = $this->db->prepare('UPDATE products SET stock = stock - :qty WHERE id = :id');
+        $decrementSizeStmt = $this->db->prepare('UPDATE product_sizes SET stock = stock - :qty WHERE product_id = :product_id AND size = :size');
 
         $resolved = [];
         foreach (array_slice($cartItems, 0, 50) as $rawItem) {
@@ -141,6 +151,11 @@ final class OrderService
             $qty = min($qty, $availableStock);
             if ($qty <= 0) {
                 continue;
+            }
+
+            $decrementProductStmt->execute(['qty' => $qty, 'id' => $productId]);
+            if ($size !== null) {
+                $decrementSizeStmt->execute(['qty' => $qty, 'product_id' => $productId, 'size' => $size]);
             }
 
             $unitPrice = (int) round((float) $product['price']);

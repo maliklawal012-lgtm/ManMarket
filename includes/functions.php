@@ -355,6 +355,54 @@ function record_failed_pickup(int $userId): void
 }
 
 /**
+ * Recredite le stock d'UN produit (et, s'il est vendu par taille, de la
+ * taille concernee) suite a une annulation de commande ou un remboursement.
+ * Symetrique de la decrementation faite sous verrou dans
+ * OrderService::resolveCartItems(). $productId peut correspondre a un
+ * produit depuis supprime (order_items.product_id passe alors a NULL,
+ * voir ON DELETE SET NULL) : dans ce cas l'appelant ne doit pas appeler
+ * cette fonction (rien a recrediter).
+ */
+function restore_product_stock(int $productId, ?string $size, int $quantity): void
+{
+    if ($quantity <= 0) {
+        return;
+    }
+
+    $db = get_db();
+    $db->prepare('UPDATE products SET stock = stock + :qty WHERE id = :id')->execute(['qty' => $quantity, 'id' => $productId]);
+    if ($size !== null) {
+        $db->prepare('UPDATE product_sizes SET stock = stock + :qty WHERE product_id = :product_id AND size = :size')
+            ->execute(['qty' => $quantity, 'product_id' => $productId, 'size' => $size]);
+    }
+}
+
+/**
+ * Recredite le stock de TOUTES les lignes d'une commande annulee, moins ce
+ * qui a deja ete rembourse individuellement (deja recredite par
+ * restore_product_stock() au moment du remboursement, ne pas compter deux
+ * fois). A appeler UNE SEULE FOIS, uniquement au moment ou le statut de la
+ * commande passe A 'cancelled' (l'appelant doit verifier que ce n'etait
+ * pas deja son statut avant d'appeler cette fonction).
+ */
+function restore_order_stock(int $orderId): void
+{
+    $db = get_db();
+    $stmt = $db->prepare('SELECT product_id, size, quantity, refunded_quantity FROM order_items WHERE order_id = :id');
+    $stmt->execute(['id' => $orderId]);
+
+    foreach ($stmt->fetchAll() as $item) {
+        if ($item['product_id'] === null) {
+            continue;
+        }
+        $qty = (int) $item['quantity'] - (int) $item['refunded_quantity'];
+        if ($qty > 0) {
+            restore_product_stock((int) $item['product_id'], $item['size'], $qty);
+        }
+    }
+}
+
+/**
  * Comptabilise un paiement en ligne reussi pour un client actuellement
  * restreint (payment_restricted=1). Apres 2 paiements en ligne reussis
  * consecutifs, le client retrouve le choix du paiement a la livraison.
