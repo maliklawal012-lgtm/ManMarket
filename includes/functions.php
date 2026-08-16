@@ -41,6 +41,18 @@ function issue_login_2fa_code(int $userId): string
     return $code;
 }
 
+function issue_email_verification_token(int $userId): string
+{
+    $db = get_db();
+    $db->prepare('DELETE FROM email_verifications WHERE user_id = :id')->execute(['id' => $userId]);
+
+    $token = bin2hex(random_bytes(32));
+    $stmt = $db->prepare('INSERT INTO email_verifications (user_id, token_hash, expires_at) VALUES (:user_id, :hash, DATE_ADD(NOW(), INTERVAL 24 HOUR))');
+    $stmt->execute(['user_id' => $userId, 'hash' => hash('sha256', $token)]);
+
+    return $token;
+}
+
 function format_price(int $amount): string
 {
     return number_format($amount, 0, ',', ' ') . ' FCFA';

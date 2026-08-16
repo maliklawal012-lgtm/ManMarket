@@ -5,6 +5,8 @@ $pageTitle = 'Mon compte';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/csrf.php';
+require_once __DIR__ . '/includes/rate_limit.php';
+require_once __DIR__ . '/includes/wallet_bootstrap.php';
 
 $user = require_login();
 
@@ -91,8 +93,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'passwor
     }
 }
 
+$verificationError = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'resend_verification' && !$user['email_verified_at']) {
+    if (!rate_limit_check('resend_verification:' . $user['id'], 3, 3600)) {
+        $verificationError = 'Trop de demandes. Veuillez réessayer dans quelques instants.';
+    } else {
+        $verifyToken = issue_email_verification_token((int) $user['id']);
+        wallet_notification_service()->emailVerificationRequested((int) $user['id'], site_base_url() . '/verifier-email.php?token=' . $verifyToken);
+        header('Location: /market/compte.php?verification_sent=1');
+        exit;
+    }
+}
+
 $profileSuccess = ($_GET['profile'] ?? '') === 'ok';
 $passwordSuccess = ($_GET['password'] ?? '') === 'ok';
+$verificationSent = ($_GET['verification_sent'] ?? '') === '1';
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -106,6 +122,25 @@ require_once __DIR__ . '/includes/header.php';
 
 <section class="container auth-page">
     <div class="auth-page-stack">
+
+        <?php if (!$user['email_verified_at']): ?>
+            <div class="alert alert-warning">
+                <?= icon('headset', 18) ?>
+                <span>
+                    Votre adresse email n'est pas encore vérifiée.
+                    <?php if ($verificationSent): ?>
+                        Un nouveau lien de vérification vient de vous être envoyé.
+                    <?php else: ?>
+                        <form method="post" action="/market/compte.php" style="display:inline;">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="form" value="resend_verification">
+                            <button type="submit" class="link-more" style="display:inline; background:none; border:none; padding:0; text-decoration:underline; cursor:pointer; color:inherit; font:inherit;">Renvoyer l'email de vérification</button>
+                        </form>
+                    <?php endif; ?>
+                    <?php if ($verificationError): ?><br><?= e($verificationError) ?><?php endif; ?>
+                </span>
+            </div>
+        <?php endif; ?>
 
         <div class="card auth-card">
             <div class="card-header">

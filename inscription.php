@@ -5,6 +5,7 @@ $pageTitle = 'Inscription';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/rate_limit.php';
+require_once __DIR__ . '/includes/wallet_bootstrap.php';
 
 if (current_user()) {
     header('Location: /market/compte.php');
@@ -59,7 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'is_vendor' => $isVendor ? 1 : 0,
         ]);
 
-        login_user((int) get_db()->lastInsertId());
+        $newUserId = (int) get_db()->lastInsertId();
+        $verifyToken = issue_email_verification_token($newUserId);
+        wallet_notification_service()->emailVerificationRequested($newUserId, site_base_url() . '/verifier-email.php?token=' . $verifyToken);
+
+        login_user($newUserId);
         header('Location: /market/compte.php');
         exit;
     }

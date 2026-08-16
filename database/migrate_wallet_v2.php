@@ -372,4 +372,41 @@ migrate_step(
     fn (PDO $db) => $db->exec('ALTER TABLE shops ADD COLUMN rejection_reason VARCHAR(255) NULL')
 );
 
+// ----------------------------------------------------------------------
+// Etape 14 : verification d'adresse email a l'inscription. Table
+// email_verifications (meme patron que password_resets : token a usage
+// unique, expirant, seul son hash SHA-256 est stocke). Les comptes
+// EXISTANTS sont consideres verifies d'office (backfill sur created_at)
+// pour ne pas les bloquer retroactivement ; seuls les NOUVEAUX comptes
+// demarrent non verifies.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter users.email_verified_at',
+    fn (PDO $db) => migrate_column_exists($db, 'users', 'email_verified_at'),
+    function (PDO $db) {
+        $db->exec('ALTER TABLE users ADD COLUMN email_verified_at TIMESTAMP NULL');
+        $db->exec('UPDATE users SET email_verified_at = created_at');
+    }
+);
+
+migrate_step(
+    'Creer la table email_verifications',
+    fn (PDO $db) => migrate_table_exists($db, 'email_verifications'),
+    function (PDO $db) {
+        $db->exec("
+            CREATE TABLE email_verifications (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                token_hash VARCHAR(64) NOT NULL,
+                expires_at TIMESTAMP NOT NULL,
+                used_at TIMESTAMP NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_email_verifications_token_hash (token_hash),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB
+        ");
+    }
+);
+
 echo "\nMigration terminee.\n";

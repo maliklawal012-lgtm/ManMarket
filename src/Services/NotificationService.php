@@ -270,6 +270,24 @@ final class NotificationService
         }, 'passwordResetRequested', $userId);
     }
 
+    public function emailVerificationRequested(int $userId, string $verifyUrl): void
+    {
+        $this->guard(function () use ($userId, $verifyUrl): void {
+            $stmt = $this->db->prepare('SELECT name, email FROM users WHERE id = :id');
+            $stmt->execute(['id' => $userId]);
+            $user = $stmt->fetch();
+            if (!$user) {
+                return;
+            }
+
+            $body = "Bonjour {$user['name']},\n\n"
+                . "Bienvenue sur ManMarket ! Cliquez sur le lien suivant pour confirmer votre adresse email (valable 24 heures) :\n{$verifyUrl}\n\n"
+                . "Si vous n'etes pas a l'origine de cette inscription, vous pouvez ignorer cet email.\n\nL'equipe ManMarket";
+
+            $this->send($user['email'], $user['name'], 'Confirmez votre adresse email ManMarket', $body, 'email_verification_requested', $userId);
+        }, 'emailVerificationRequested', $userId);
+    }
+
     public function twoFactorCode(int $userId, string $code): void
     {
         $this->guard(function () use ($userId, $code): void {
