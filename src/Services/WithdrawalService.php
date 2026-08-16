@@ -97,6 +97,7 @@ final class WithdrawalService
             $this->db->commit();
 
             Logger::info('withdrawal', 'Demande de retrait creee', ['withdrawal_id' => $withdrawalId, 'vendor_id' => $vendorId, 'amount' => $amount]);
+            $this->notifications?->withdrawalRequested($withdrawalId);
 
             return WithdrawalResult::success($withdrawalId, $reference);
         } catch (\Throwable $e) {

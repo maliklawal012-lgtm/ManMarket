@@ -173,6 +173,38 @@ final class NotificationService
         }, 'withdrawalStatusChanged', $withdrawalId);
     }
 
+    public function withdrawalRequested(int $withdrawalId): void
+    {
+        $this->guard(function () use ($withdrawalId): void {
+            $stmt = $this->db->prepare('SELECT * FROM withdrawals WHERE id = :id');
+            $stmt->execute(['id' => $withdrawalId]);
+            $withdrawal = $stmt->fetch();
+            if (!$withdrawal) {
+                return;
+            }
+
+            $admins = $this->db->query('SELECT name, email FROM users WHERE is_admin = 1')->fetchAll();
+            if (!$admins) {
+                return;
+            }
+
+            $vendor = $this->findVendorContact((int) $withdrawal['vendor_id']);
+            $vendorName = $vendor['name'] ?? ('Vendeur #' . $withdrawal['vendor_id']);
+
+            $subject = "Nouvelle demande de retrait #{$withdrawalId}";
+            $body = "Bonjour,\n\n"
+                . "Une nouvelle demande de retrait a ete soumise sur ManMarket.\n\n"
+                . "Vendeur : {$vendorName}\n"
+                . "Montant : " . $this->money((float) $withdrawal['amount']) . "\n"
+                . "Moyen de reception : {$withdrawal['payment_method']} — {$withdrawal['account_number']}\n\n"
+                . "Connectez-vous a l'espace admin pour la traiter.\n\nL'equipe ManMarket";
+
+            foreach ($admins as $admin) {
+                $this->send($admin['email'], $admin['name'], $subject, $body, 'withdrawal_requested', $withdrawalId);
+            }
+        }, 'withdrawalRequested', $withdrawalId);
+    }
+
     public function refundProcessed(int $refundId): void
     {
         $this->guard(function () use ($refundId): void {
