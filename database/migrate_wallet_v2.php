@@ -266,4 +266,29 @@ migrate_step(
     }
 );
 
+// ----------------------------------------------------------------------
+// Etape 10 : 2FA par email pour les comptes admin. Table login_2fa_codes
+// (code a 6 chiffres a usage unique, expirant, hash SHA-256 uniquement,
+// compteur d'essais pour contrer le brute-force).
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Creer la table login_2fa_codes',
+    fn (PDO $db) => migrate_table_exists($db, 'login_2fa_codes'),
+    function (PDO $db) {
+        $db->exec("
+            CREATE TABLE login_2fa_codes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                code_hash VARCHAR(64) NOT NULL,
+                expires_at TIMESTAMP NOT NULL,
+                attempts INT NOT NULL DEFAULT 0,
+                used_at TIMESTAMP NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB
+        ");
+    }
+);
+
 echo "\nMigration terminee.\n";

@@ -5,6 +5,7 @@ $pageTitle = 'Connexion';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/rate_limit.php';
+require_once __DIR__ . '/includes/wallet_bootstrap.php';
 
 if (current_user()) {
     header('Location: /market/compte.php');
@@ -33,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$errors) {
-        $stmt = get_db()->prepare('SELECT id, password_hash, is_blocked, blocked_reason FROM users WHERE email = :email');
+        $stmt = get_db()->prepare('SELECT id, password_hash, is_admin, is_blocked, blocked_reason FROM users WHERE email = :email');
         $stmt->execute(['email' => $old['email']]);
         $user = $stmt->fetch();
 
@@ -41,6 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['login'] = 'Email ou mot de passe incorrect.';
         } elseif ((int) $user['is_blocked'] === 1) {
             $errors['login'] = 'Votre compte a été bloqué.' . ($user['blocked_reason'] ? ' Motif : ' . $user['blocked_reason'] . '.' : '') . ' Contactez l\'équipe ManMarket pour plus d\'informations.';
+        } elseif ((int) $user['is_admin'] === 1) {
+            $code = issue_login_2fa_code((int) $user['id']);
+            wallet_notification_service()->twoFactorCode((int) $user['id'], $code);
+
+            session_regenerate_id(true);
+            $_SESSION['pending_2fa_user_id'] = (int) $user['id'];
+            $_SESSION['pending_2fa_redirect'] = $redirect;
+
+            header('Location: /market/verification-2fa.php');
+            exit;
         } else {
             login_user((int) $user['id']);
             header('Location: ' . $redirect);

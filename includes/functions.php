@@ -23,6 +23,24 @@ function product_size_options(string $sizeType): array
     };
 }
 
+/**
+ * Genere et enregistre un nouveau code de verification en deux etapes
+ * (connexion admin). Invalide tout code precedent pour cet utilisateur.
+ * Seul son hash SHA-256 est stocke ; le code en clair n'est renvoye que
+ * pour permettre son envoi immediat par email (jamais persiste ailleurs).
+ */
+function issue_login_2fa_code(int $userId): string
+{
+    $db = get_db();
+    $db->prepare('DELETE FROM login_2fa_codes WHERE user_id = :id')->execute(['id' => $userId]);
+
+    $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    $stmt = $db->prepare('INSERT INTO login_2fa_codes (user_id, code_hash, expires_at) VALUES (:user_id, :hash, DATE_ADD(NOW(), INTERVAL 10 MINUTE))');
+    $stmt->execute(['user_id' => $userId, 'hash' => hash('sha256', $code)]);
+
+    return $code;
+}
+
 function format_price(int $amount): string
 {
     return number_format($amount, 0, ',', ' ') . ' FCFA';

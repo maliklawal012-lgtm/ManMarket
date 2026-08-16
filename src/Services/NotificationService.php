@@ -238,6 +238,25 @@ final class NotificationService
         }, 'passwordResetRequested', $userId);
     }
 
+    public function twoFactorCode(int $userId, string $code): void
+    {
+        $this->guard(function () use ($userId, $code): void {
+            $stmt = $this->db->prepare('SELECT name, email FROM users WHERE id = :id');
+            $stmt->execute(['id' => $userId]);
+            $user = $stmt->fetch();
+            if (!$user) {
+                return;
+            }
+
+            $body = "Bonjour {$user['name']},\n\n"
+                . "Voici votre code de verification pour vous connecter a votre compte administrateur ManMarket :\n\n"
+                . "{$code}\n\n"
+                . "Ce code est valable 10 minutes. Si vous n'etes pas a l'origine de cette tentative de connexion, changez votre mot de passe immediatement.\n\nL'equipe ManMarket";
+
+            $this->send($user['email'], $user['name'], 'Votre code de connexion ManMarket', $body, 'login_2fa_code', $userId);
+        }, 'twoFactorCode', $userId);
+    }
+
     private function guard(\Closure $fn, string $event, int $refId): void
     {
         try {
