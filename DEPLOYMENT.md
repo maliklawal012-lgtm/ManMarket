@@ -30,6 +30,10 @@ Renseigner :
 | `GENIUSPAY_PUBLIC_KEY`, `GENIUSPAY_SECRET_KEY` | Clés API du compte marchand Genius Pay |
 | `GENIUSPAY_MERCHANT_CODE` | Code marchand |
 | `GENIUSPAY_WEBHOOK_SECRET` | Voir étape 8 — obtenu à l'enregistrement du webhook, jamais avant |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_ENCRYPTION`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Compte SMTP (ex. Brevo) pour l'envoi d'emails |
+| `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME` | Expéditeur affiché sur les emails envoyés |
+
+**`SMTP_*` n'est plus purement optionnel** : tant qu'il n'est pas configuré, `SmtpMailer::isConfigured()` retourne faux et **tout** email applicatif est silencieusement ignoré (juste loggé dans `logs/notifications.log`, jamais envoyé) — y compris le code de vérification en deux étapes (2FA) requis pour toute connexion admin (`admin/connexion.php`) et les liens de réinitialisation de mot de passe (`mot-de-passe-oublie.php`). **Sans SMTP configuré en production, personne ne peut se connecter à l'espace admin.** À vérifier avant toute mise en ligne.
 
 **Ne jamais commiter `.env`** — déjà bloqué en accès web par `.htaccess` (`<FilesMatch "^(\.env.*|...)$">`), mais à garder hors du contrôle de version également.
 
@@ -137,7 +141,7 @@ Ce job bascule `pending_balance` → `available_balance` pour toute commande liv
    php tests/wallet_scenarios.php
    ```
    Doit afficher `15/15 scenarios reussis`. Utilise des données 100% jetables, nettoyées automatiquement — sans impact sur les données réelles.
-3. Connexion admin réelle → `/market/admin/index.php`, `/market/admin/finances.php`.
+3. Connexion admin réelle → `/market/admin/connexion.php` (formulaire dédié, distinct de `/market/connexion.php`) avec un compte `is_admin = 1`, saisir le code reçu par email sur `/market/verification-2fa.php`, puis vérifier l'accès à `/market/admin/index.php` et `/market/admin/finances.php`.
 4. Un vrai parcours client : ajout panier → `/market/commander.php` → paiement en ligne → vérifier la redirection vers la vraie page de paiement Genius Pay.
 5. Vérifier que `GET /market/.env` et `GET /market/database/schema.sql` renvoient bien une erreur 403/404 (pas le contenu du fichier).
 
@@ -151,10 +155,14 @@ Trois rôles, portés par `users.is_admin` / `users.is_vendor` (booléens) :
 
 Toutes les pages `/admin/*` et `/vendeur/*` sont protégées (vérifié par audit systématique — soit un appel direct à `require_admin()`/`require_vendor()`, soit via l'inclusion de `admin_header.php`/`vendor_header.php` qui l'appelle en interne). Toute action sensible (suspension, ajustement manuel de wallet) est tracée dans `audit_logs` avec l'admin responsable et la justification.
 
-Protection CSRF sur tous les formulaires (`includes/csrf.php`), rate limiting sur connexion/inscription/webhook/retraits (`includes/rate_limit.php`) — voir le code pour le détail des seuils.
+**Connexion admin séparée + 2FA email** — un compte `is_admin = 1` ne peut plus s'authentifier via le formulaire public `/connexion.php` (rejeté avec un message générique, comme un email/mot de passe incorrect — aucune fuite d'information). Seul `/admin/connexion.php` accepte les comptes admin, et uniquement eux (symétrique : un compte client/vendeur y est rejeté de la même façon). Après mot de passe valide, un code à 6 chiffres est envoyé par email (usage unique, expire en 10 min, verrouillage après 5 essais incorrects — voir `login_2fa_codes`) avant l'ouverture de session (`verification-2fa.php`). `require_admin()` redirige tout visiteur non connecté directement vers `/admin/connexion.php`. Aucun compte admin n'est créé par défaut à l'installation (voir §4c) — le tout premier admin s'obtient en passant `is_admin = 1` en base directement sur un compte déjà inscrit.
+
+Récupération de mot de passe (`/mot-de-passe-oublie.php`, commune aux trois rôles) : token à usage unique haché en base (SHA-256), expire en 1h, aucune énumération d'email. Redirige vers `/admin/connexion.php` ou `/connexion.php` selon le rôle du compte concerné.
+
+Protection CSRF sur tous les formulaires (`includes/csrf.php`), rate limiting sur connexion/inscription/webhook/retraits/2FA/reset (`includes/rate_limit.php`) — voir le code pour le détail des seuils.
 
 ## 12. En cas de problème
 
-- Logs applicatifs : `logs/{geniuspay,payment,webhook,settlement,wallet,wallet_release,withdrawal,vendor_admin,refund}.log` (format JSON par ligne, voir `src/Support/Logger.php`).
+- Logs applicatifs : `logs/{geniuspay,payment,webhook,settlement,wallet,wallet_release,withdrawal,vendor_admin,refund,notifications}.log` (format JSON par ligne, voir `src/Support/Logger.php`). `notifications.log` trace chaque email (envoyé, échoué, ou ignoré si SMTP non configuré) — premier réflexe en cas de 2FA ou de reset de mot de passe non reçu.
 - Échec de rapprochement paiement (somme des parts vendeurs + commission ≠ montant payé) : jamais de crédit silencieux, la commande reste non réglée et un incident est enregistré dans `settlement_failures` — visible en haut de `/admin/finances.php` tant que non résolu.
 - Un webhook reçu deux fois (retry Genius Pay) est automatiquement ignoré (`webhook_events.event_id` UNIQUE) — vérifier `logs/webhook.log` en cas de doute plutôt que de re-déclencher manuellement.
