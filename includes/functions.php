@@ -765,6 +765,8 @@ function icon(string $name, int $size = 20): string
         'instagram' => '<rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/>',
         'twitter' => '<path d="M23 3a10.9 10.9 0 0 1-3.1 1.5 4.5 4.5 0 0 0-7.9 3v1A10.7 10.7 0 0 1 3 4s-4 9 5 13a11.6 11.6 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.1-1A7.7 7.7 0 0 0 23 3z"/>',
         'whatsapp' => '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+        'tiktok' => '<path d="M14 3v11.5a3.5 3.5 0 1 1-3-3.46"/><path d="M14 7a4 4 0 0 0 4 4"/>',
+        'youtube' => '<path d="M22.5 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C18.8 5 12 5 12 5s-6.8 0-8.3.5a2.5 2.5 0 0 0-1.8 1.8C1.5 8.8 1.5 12 1.5 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8c1.5.5 8.3.5 8.3.5s6.8 0 8.3-.5a2.5 2.5 0 0 0 1.8-1.8c.4-1.5.4-4.7.4-4.7z"/><polygon points="10 9 16 12 10 15" fill="currentColor" stroke="none"/>',
         'settings' => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
         'bar-chart' => '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
         'send' => '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
@@ -799,6 +801,34 @@ function get_setting(string $key, string $default = ''): string
     }
 
     return $settings[$key] ?? $default;
+}
+
+/**
+ * Reseaux sociaux configurables depuis admin/parametres.php (settings
+ * social_{cle}_url / social_{cle}_enabled). Un reseau n'apparait que s'il
+ * est actif ET qu'une URL a ete renseignee — evite les liens "#" morts
+ * qui existaient avant en dur dans includes/footer.php.
+ */
+function social_networks(): array
+{
+    $networks = [
+        'facebook' => 'Facebook',
+        'instagram' => 'Instagram',
+        'twitter' => 'X (Twitter)',
+        'tiktok' => 'TikTok',
+        'youtube' => 'YouTube',
+    ];
+
+    $result = [];
+    foreach ($networks as $key => $label) {
+        $url = get_setting('social_' . $key . '_url');
+        $enabled = get_setting('social_' . $key . '_enabled') === '1';
+        if ($enabled && $url !== '') {
+            $result[$key] = ['label' => $label, 'url' => $url];
+        }
+    }
+
+    return $result;
 }
 
 function get_recent_activity(int $perTypeLimit = 10): array

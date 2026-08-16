@@ -62,8 +62,8 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
             <div class="hero-media" <?= $heroImage ? 'style="background-image: linear-gradient(180deg, rgba(10,30,18,.35) 0%, rgba(8,20,13,.88) 100%), url(\'/market/' . e($heroImage) . '\'); background-size: cover; background-position: center;"' : '' ?>>
                 <div class="hero-overlay"></div>
                 <div class="hero-content">
-                    <h1>Le plus grand marché en ligne de <span class="text-accent">la ville de Man</span></h1>
-                    <p>Achetez local, soutenez nos commerçants, faites-vous livrer partout à Man.</p>
+                    <h1><?= e(get_setting('site_hero_title_main', 'Le plus grand marché en ligne de')) ?> <span class="text-accent"><?= e(get_setting('site_hero_title_accent', 'la ville de Man')) ?></span></h1>
+                    <p><?= e(get_setting('site_hero_subtitle', 'Achetez local, soutenez nos commerçants, faites-vous livrer partout à Man.')) ?></p>
                     <div class="hero-actions">
                         <a href="/market/offres.php" class="btn btn-primary">Acheter maintenant</a>
                         <a href="#categories" class="btn btn-outline">Découvrir</a>
