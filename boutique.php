@@ -86,7 +86,7 @@ $products = $stmt->fetchAll();
     </div>
 
     <?php if ($products): ?>
-        <div class="products-grid">
+        <div class="products-grid reveal">
             <?php foreach ($products as $p): $p['shop_is_open'] = $shop['is_open']; $pp = get_product_price($p); ?>
                 <article class="product-card product-card-static">
                     <button type="button" class="fav-btn" data-fav-id="product-<?= (int) $p['id'] ?>" aria-label="Ajouter aux favoris">

@@ -88,7 +88,7 @@ $vendorNavItems = [
 
     <div class="admin-main">
         <header class="admin-topbar">
-            <button type="button" class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Ouvrir le menu">
+            <button type="button" class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Ouvrir le menu" aria-expanded="false">
                 <?= icon('menu', 20) ?>
             </button>
             <h1><?= isset($pageTitle) ? e($pageTitle) : 'Espace vendeur' ?></h1>

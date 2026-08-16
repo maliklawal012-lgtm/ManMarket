@@ -41,7 +41,7 @@ $shops = attach_live_shop_ratings($shops);
 
     <p class="results-count"><span id="shop-results-count"><?= count($shops) ?></span> boutique(s) trouvée(s)</p>
 
-    <div class="shops-grid" id="shops-grid">
+    <div class="shops-grid reveal" id="shops-grid">
         <?php foreach ($shops as $s): ?>
             <article class="shop-card-lg"
                 data-name="<?= e(mb_strtolower($s['name'])) ?>"

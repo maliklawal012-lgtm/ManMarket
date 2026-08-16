@@ -81,7 +81,7 @@ $products = $stmt->fetchAll();
     <p class="results-count"><span id="offer-results-count"><?= count($products) ?></span> produit(s) trouvé(s)</p>
 
     <?php if ($products): ?>
-        <div class="products-grid" id="offers-grid">
+        <div class="products-grid reveal" id="offers-grid">
             <?php foreach ($products as $p): $pp = get_product_price($p); ?>
                 <article class="product-card product-card-static"
                     data-name="<?= e(mb_strtolower($p['name'])) ?>"

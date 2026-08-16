@@ -294,7 +294,7 @@ require_once __DIR__ . '/includes/header.php';
                         </select>
                         <?php if (isset($errors['delivery_city'])): ?><span class="field-error"><?= e($errors['delivery_city']) ?></span><?php endif; ?>
                     </div>
-                    <div class="form-field <?= isset($errors['delivery_neighborhood']) ? 'has-error' : '' ?>" id="delivery-neighborhood-wrap" style="<?= ($deliveryChildrenByParent[$old['delivery_city']] ?? null) ? '' : 'display:none;' ?>">
+                    <div class="form-field <?= isset($errors['delivery_neighborhood']) ? 'has-error' : '' ?> <?= ($deliveryChildrenByParent[$old['delivery_city']] ?? null) ? '' : 'is-hidden' ?>" id="delivery-neighborhood-wrap">
                         <label for="delivery_neighborhood">Quartier *</label>
                         <select id="delivery_neighborhood" name="delivery_neighborhood">
                             <option value="">Choisir un quartier...</option>
@@ -320,7 +320,7 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
                 </div>
 
-                <div class="form-field <?= isset($errors['payment_method']) ? 'has-error' : '' ?>" id="payment-method-field" style="<?= $old['payment_choice'] === 'online' ? '' : 'display:none;' ?>">
+                <div class="form-field <?= isset($errors['payment_method']) ? 'has-error' : '' ?> <?= $old['payment_choice'] === 'online' ? '' : 'is-hidden' ?>" id="payment-method-field">
                     <label>Choisissez votre moyen de paiement</label>
                     <div class="payment-choice-options payment-choice-options-grid">
                         <?php foreach ($onlinePaymentMethods as $methodKey => $method): ?>

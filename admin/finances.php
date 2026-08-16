@@ -290,7 +290,7 @@ $recentPayments = $db->query("
         <div class="admin-toolbar">
             <h2>Remboursements</h2>
         </div>
-        <div class="admin-stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 14px;">
+        <div class="admin-stats-grid admin-stats-grid-2" style="margin-bottom: 14px;">
             <div>
                 <span class="admin-stat-value" style="font-size:1.3rem;"><?= format_price($totalRefunded) ?></span>
                 <span class="admin-stat-label">Total remboursé</span>

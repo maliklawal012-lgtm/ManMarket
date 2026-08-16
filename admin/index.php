@@ -146,7 +146,7 @@ $recentNewOrders = $db->query("
             <h2><?= icon('cart', 18) ?> Compte Genius Pay (<?= e((string) ($gpData['environment'] ?? '?')) ?>)</h2>
             <span class="tag <?= ($gpData['status'] ?? '') === 'active' ? 'tag-open' : 'tag-closed' ?>"><?= e((string) ($gpData['status'] ?? '?')) ?></span>
         </div>
-        <div class="admin-stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="admin-stats-grid admin-stats-grid-3">
             <div>
                 <span class="admin-stat-value" style="font-size:1.3rem;"><?= format_price((int) ($gpData['balance']['available'] ?? 0)) ?></span>
                 <span class="admin-stat-label">Solde disponible</span>

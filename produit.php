@@ -207,7 +207,7 @@ $relatedProducts = $relatedStmt->fetchAll();
                 <h2>Produits similaires</h2>
                 <a href="/market/categorie.php?slug=<?= e($product['category_slug']) ?>" class="link-more">Voir la catégorie <?= icon('chevron-right', 14) ?></a>
             </div>
-            <div class="scroll-row">
+            <div class="scroll-row reveal">
                 <?php foreach ($relatedProducts as $p): $pp = get_product_price($p); ?>
                     <article class="product-card">
                         <button type="button" class="fav-btn" data-fav-id="product-<?= (int) $p['id'] ?>" aria-label="Ajouter aux favoris">
@@ -271,7 +271,7 @@ $relatedProducts = $relatedStmt->fetchAll();
                 <?php foreach ($reviews as $r): ?>
                     <div class="review-item">
                         <div class="review-item-header">
-                            <span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span class="review-item-name">
                                 <strong><?= e($r['name']) ?></strong>
                                 <?php if ($r['is_verified_purchase']): ?><span class="tag tag-green"><?= icon('check-circle', 12) ?> Achat vérifié</span><?php endif; ?>
                             </span>

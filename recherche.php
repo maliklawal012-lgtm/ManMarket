@@ -67,7 +67,7 @@ $totalResults = count($products) + count($shops);
             <div class="card-header">
                 <h2>Produits (<?= count($products) ?>)</h2>
             </div>
-            <div class="products-grid">
+            <div class="products-grid reveal">
                 <?php foreach ($products as $p): $pp = get_product_price($p); ?>
                     <article class="product-card product-card-static">
                         <button type="button" class="fav-btn" data-fav-id="product-<?= (int) $p['id'] ?>" aria-label="Ajouter aux favoris">
@@ -96,7 +96,7 @@ $totalResults = count($products) + count($shops);
             <div class="card-header">
                 <h2>Boutiques (<?= count($shops) ?>)</h2>
             </div>
-            <div class="shops-grid">
+            <div class="shops-grid reveal">
                 <?php foreach ($shops as $s): ?>
                     <article class="shop-card-lg">
                         <div class="shop-card-lg-top">

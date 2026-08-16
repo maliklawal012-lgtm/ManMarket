@@ -14,6 +14,24 @@
     const writeList = (key, list) => localStorage.setItem(key, JSON.stringify(list));
     const normalize = (str) => str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
+    /* ---------- Scroll-reveal (apparition au defilement) ---------- */
+    const revealEls = document.querySelectorAll('.reveal');
+    if (revealEls.length) {
+        if ('IntersectionObserver' in window) {
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+            revealEls.forEach((el) => revealObserver.observe(el));
+        } else {
+            revealEls.forEach((el) => el.classList.add('is-visible'));
+        }
+    }
+
     /* ---------- Menu mobile ---------- */
     const menuToggle = document.getElementById('mobile-menu-toggle');
     const navLinks = document.getElementById('mainnav-links');
@@ -82,14 +100,44 @@
     const adminMenuToggle = document.getElementById('admin-mobile-toggle');
     const adminSidebar = document.getElementById('admin-sidebar');
     if (adminMenuToggle && adminSidebar) {
+        let adminBackdrop = document.querySelector('.admin-sidebar-backdrop');
+        if (!adminBackdrop) {
+            adminBackdrop = document.createElement('div');
+            adminBackdrop.className = 'admin-sidebar-backdrop';
+            document.body.appendChild(adminBackdrop);
+        }
+
+        const closeAdminSidebar = () => {
+            adminSidebar.classList.remove('open');
+            adminBackdrop.classList.remove('open');
+            adminMenuToggle.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('no-scroll');
+        };
+        const openAdminSidebar = () => {
+            adminSidebar.classList.add('open');
+            adminBackdrop.classList.add('open');
+            adminMenuToggle.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('no-scroll');
+        };
+
         adminMenuToggle.addEventListener('click', () => {
-            adminSidebar.classList.toggle('open');
+            if (adminSidebar.classList.contains('open')) {
+                closeAdminSidebar();
+            } else {
+                openAdminSidebar();
+            }
         });
+        adminBackdrop.addEventListener('click', closeAdminSidebar);
         document.addEventListener('click', (event) => {
             if (adminSidebar.classList.contains('open')
                 && !adminSidebar.contains(event.target)
                 && !adminMenuToggle.contains(event.target)) {
-                adminSidebar.classList.remove('open');
+                closeAdminSidebar();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && adminSidebar.classList.contains('open')) {
+                closeAdminSidebar();
             }
         });
     }
@@ -346,7 +394,7 @@
         const togglePaymentMethodField = () => {
             if (!paymentMethodField) return;
             const selected = document.querySelector('input[name="payment_choice"]:checked');
-            paymentMethodField.style.display = selected && selected.value === 'online' ? '' : 'none';
+            paymentMethodField.classList.toggle('is-hidden', !(selected && selected.value === 'online'));
         };
 
         paymentChoiceRadios.forEach((radio) => {
@@ -363,7 +411,7 @@
                 if (selectedId && String(n.id) === String(selectedId)) opt.selected = true;
                 neighborhoodSelect.appendChild(opt);
             });
-            neighborhoodWrap.style.display = list.length ? '' : 'none';
+            neighborhoodWrap.classList.toggle('is-hidden', !list.length);
         };
 
         if (subjectSelect) {

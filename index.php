@@ -96,7 +96,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                 <h2>Catégories populaires</h2>
                 <a href="/market/categories.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
             </div>
-            <div class="categories-grid">
+            <div class="categories-grid reveal">
                 <?php foreach ($categories as $cat): ?>
                     <a class="category-item" href="/market/categorie.php?slug=<?= e($cat['slug']) ?>">
                         <span class="category-icon" style="background:<?= e($cat['color']) ?>1a; color:<?= e($cat['color']) ?>">
@@ -119,7 +119,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                 <h2>Meilleures offres du moment</h2>
                 <a href="/market/offres.php" class="link-more">Voir toutes les offres <?= icon('chevron-right', 14) ?></a>
             </div>
-            <div class="scroll-row">
+            <div class="scroll-row reveal">
                 <?php foreach ($offers as $p): $pp = get_product_price($p); ?>
                     <article class="product-card">
                         <button type="button" class="fav-btn" data-fav-id="product-<?= (int) $p['id'] ?>" aria-label="Ajouter aux favoris">
@@ -147,7 +147,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                     <h2>Nouveaux produits</h2>
                     <a href="/market/offres.php" class="link-more">Voir tout <?= icon('chevron-right', 14) ?></a>
                 </div>
-                <div class="scroll-row">
+                <div class="scroll-row reveal">
                     <?php foreach ($newProducts as $p): $pp = get_product_price($p); ?>
                         <article class="product-card">
                             <button type="button" class="fav-btn" data-fav-id="product-<?= (int) $p['id'] ?>" aria-label="Ajouter aux favoris">
@@ -204,7 +204,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                 <h2>Boutiques populaires</h2>
                 <a href="/market/boutiques.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
             </div>
-            <div class="scroll-row">
+            <div class="scroll-row reveal">
                 <?php foreach ($shops as $s): ?>
                     <a class="shop-card" href="/market/boutique.php?slug=<?= e($s['slug']) ?>">
                         <div class="shop-logo" style="background:<?= e($s['color']) ?>"><?= shop_logo_html($s) ?></div>

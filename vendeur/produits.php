@@ -248,7 +248,7 @@ require_once __DIR__ . '/../includes/vendor_header.php';
                 </div>
             </div>
 
-            <div class="form-row">
+            <div class="form-row form-row-3">
                 <div class="form-field <?= isset($errors['price']) ? 'has-error' : '' ?>">
                     <label for="price">Prix (FCFA) *</label>
                     <input type="number" id="price" name="price" min="1" value="<?= e((string) ($editing['price'] ?? '')) ?>" required>

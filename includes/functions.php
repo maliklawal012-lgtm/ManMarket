@@ -596,7 +596,7 @@ function stock_badge_html(array $product): string
         return '<span class="tag tag-closed">Rupture de stock</span>';
     }
     if ($stock <= 5) {
-        return '<span class="tag tag-pending">Plus que ' . $stock . ' en stock</span>';
+        return '<span class="tag tag-urgent">Vite, il ne reste que ' . $stock . ' en stock !</span>';
     }
 
     return '<span class="tag tag-open">En stock</span>';
