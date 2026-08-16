@@ -291,4 +291,22 @@ migrate_step(
     }
 );
 
+// ----------------------------------------------------------------------
+// Etape 11 : frais de livraison par lieu (locations.delivery_fee) et
+// montant reellement facture, historise a la commande
+// (orders.delivery_fee_amount).
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter locations.delivery_fee',
+    fn (PDO $db) => migrate_column_exists($db, 'locations', 'delivery_fee'),
+    fn (PDO $db) => $db->exec('ALTER TABLE locations ADD COLUMN delivery_fee INT NOT NULL DEFAULT 0 AFTER sort_order')
+);
+
+migrate_step(
+    'Ajouter orders.delivery_fee_amount',
+    fn (PDO $db) => migrate_column_exists($db, 'orders', 'delivery_fee_amount'),
+    fn (PDO $db) => $db->exec('ALTER TABLE orders ADD COLUMN delivery_fee_amount DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER subtotal_amount')
+);
+
 echo "\nMigration terminee.\n";

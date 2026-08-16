@@ -401,6 +401,32 @@
             radio.addEventListener('change', togglePaymentMethodField);
         });
 
+        const orderSubtotal = parseInt(deliveryFields.getAttribute('data-subtotal') || '0', 10);
+        const deliveryFeeValueEl = document.getElementById('delivery-fee-value');
+        const orderGrandTotalValueEl = document.getElementById('order-grand-total-value');
+        const formatFcfa = (amount) => `${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`;
+
+        const currentDeliveryFee = () => {
+            const cityOption = citySelect.selectedOptions[0];
+            const cityFee = cityOption ? parseInt(cityOption.getAttribute('data-fee') || '0', 10) : 0;
+            const list = neighborhoodsByParent[citySelect.value] || [];
+            if (list.length) {
+                const neighborhoodOption = neighborhoodSelect.selectedOptions[0];
+                if (neighborhoodOption && neighborhoodOption.value) {
+                    const match = list.find((n) => String(n.id) === neighborhoodOption.value);
+                    if (match) return parseInt(match.delivery_fee || 0, 10);
+                }
+            }
+            return cityFee;
+        };
+
+        const updateDeliveryFeeDisplay = () => {
+            if (!deliveryFeeValueEl || !orderGrandTotalValueEl) return;
+            const fee = currentDeliveryFee();
+            deliveryFeeValueEl.textContent = fee > 0 ? formatFcfa(fee) : 'Gratuit';
+            orderGrandTotalValueEl.textContent = formatFcfa(orderSubtotal + fee);
+        };
+
         const rebuildNeighborhoods = (selectedId) => {
             const list = neighborhoodsByParent[citySelect.value] || [];
             neighborhoodSelect.innerHTML = '<option value="">Choisir un quartier...</option>';
@@ -412,6 +438,7 @@
                 neighborhoodSelect.appendChild(opt);
             });
             neighborhoodWrap.classList.toggle('is-hidden', !list.length);
+            updateDeliveryFeeDisplay();
         };
 
         if (subjectSelect) {
@@ -419,6 +446,9 @@
         }
         if (citySelect) {
             citySelect.addEventListener('change', () => rebuildNeighborhoods(null));
+        }
+        if (neighborhoodSelect) {
+            neighborhoodSelect.addEventListener('change', updateDeliveryFeeDisplay);
         }
     }
 

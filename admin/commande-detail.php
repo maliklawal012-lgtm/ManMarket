@@ -109,6 +109,7 @@ $refunds = $stmt->fetchAll();
         <li><span class="account-info-label"><?= icon('user', 16) ?> Client</span><span><?= e($order['customer_name']) ?> — <?= e($order['customer_email']) ?><?php if ($order['customer_phone']): ?> — <?= e($order['customer_phone']) ?><?php endif; ?></span></li>
         <li><span class="account-info-label"><?= icon('map-pin', 16) ?> Livraison</span><span><?= $order['delivery_location'] ? e($order['delivery_location']) : '—' ?></span></li>
         <li><span class="account-info-label"><?= icon('clock', 16) ?> Passée le</span><span><?= e(date('d/m/Y à H:i', strtotime((string) $order['created_at']))) ?></span></li>
+        <li><span class="account-info-label"><?= icon('truck', 16) ?> Frais de livraison</span><span><?= (float) $order['delivery_fee_amount'] > 0 ? format_price((int) round((float) $order['delivery_fee_amount'])) : 'Gratuit' ?></span></li>
         <li><span class="account-info-label"><?= icon('cart', 16) ?> Total</span><span><?= format_price((int) round((float) $order['total_amount'])) ?></span></li>
         <li><span class="account-info-label"><?= icon('shield', 16) ?> Paiement choisi</span><span><?= $order['payment_choice'] === 'online' ? 'En ligne' : 'À la livraison' ?></span></li>
     </ul>

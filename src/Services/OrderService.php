@@ -31,7 +31,7 @@ final class OrderService
      * @param array<int, array{id:int, qty:int, size?:string}> $cartItems venant du navigateur — id/qty/size UNIQUEMENT.
      * @throws \InvalidArgumentException si le panier est vide apres validation serveur.
      */
-    public function createFromCart(array $cartItems, array $customer, ?string $deliveryLocation, string $paymentChoice): OrderCreationResult
+    public function createFromCart(array $cartItems, array $customer, ?string $deliveryLocation, string $paymentChoice, int $deliveryFee = 0): OrderCreationResult
     {
         $rate = $this->commissionService->currentRate();
         $resolvedItems = $this->resolveCartItems($cartItems, $rate);
@@ -41,6 +41,7 @@ final class OrderService
         }
 
         $subtotal = array_sum(array_column($resolvedItems, 'subtotal'));
+        $totalAmount = $subtotal + $deliveryFee;
 
         $this->db->beginTransaction();
         try {
@@ -51,7 +52,8 @@ final class OrderService
                 'customer_phone' => $customer['phone'] ?? null,
                 'delivery_location' => $deliveryLocation,
                 'subtotal_amount' => $subtotal,
-                'total_amount' => $subtotal,
+                'delivery_fee_amount' => $deliveryFee,
+                'total_amount' => $totalAmount,
                 'payment_choice' => $paymentChoice,
             ]);
 
@@ -78,7 +80,7 @@ final class OrderService
             $this->notifications?->orderCreated($orderId);
             $this->notifications?->newOrderForVendors($orderId, $resolvedItems);
 
-            return new OrderCreationResult($orderId, $subtotal, $orderItemIds);
+            return new OrderCreationResult($orderId, $totalAmount, $orderItemIds);
         } catch (\Throwable $e) {
             $this->db->rollBack();
             throw $e;

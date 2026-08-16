@@ -108,10 +108,6 @@ require_once __DIR__ . '/includes/header.php';
                 <?php
                 $itemsStmt->execute(['order_id' => $order['id']]);
                 $items = $itemsStmt->fetchAll();
-                $orderTotal = 0;
-                foreach ($items as $item) {
-                    $orderTotal += (int) $item['unit_price'] * (int) $item['quantity'];
-                }
                 $payment = wallet_payment_repo()->findByOrderId((int) $order['id']);
                 ?>
                 <div class="card order-card">
@@ -153,9 +149,17 @@ require_once __DIR__ . '/includes/header.php';
                                     <span><?= format_price((int) $item['unit_price'] * (int) $item['quantity']) ?></span>
                                 </div>
                             <?php endforeach; ?>
+                            <div class="order-items-row">
+                                <span>Sous-total</span>
+                                <span><?= format_price((int) round((float) $order['subtotal_amount'])) ?></span>
+                            </div>
+                            <div class="order-items-row">
+                                <span>Frais de livraison</span>
+                                <span><?= (float) $order['delivery_fee_amount'] > 0 ? format_price((int) round((float) $order['delivery_fee_amount'])) : 'Gratuit' ?></span>
+                            </div>
                             <div class="order-items-total">
                                 <span>Total</span>
-                                <span><?= format_price($orderTotal) ?></span>
+                                <span><?= format_price((int) round((float) $order['total_amount'])) ?></span>
                             </div>
                         </div>
                     <?php endif; ?>

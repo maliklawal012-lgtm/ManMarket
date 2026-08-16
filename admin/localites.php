@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
     $parentId = $parentIdRaw > 0 ? $parentIdRaw : null;
     $isActive = isset($_POST['is_active']) ? 1 : 0;
     $sortOrder = (int) ($_POST['sort_order'] ?? 0);
+    $deliveryFee = max(0, (int) ($_POST['delivery_fee'] ?? 0));
 
     if ($name === '') {
         $errors['name'] = 'Veuillez indiquer un nom.';
@@ -50,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
 
     if (!$errors) {
         if ($id > 0) {
-            $stmt = $db->prepare('UPDATE locations SET name = :name, parent_id = :parent_id, is_active = :is_active, sort_order = :sort_order WHERE id = :id');
-            $stmt->execute(['name' => $name, 'parent_id' => $parentId, 'is_active' => $isActive, 'sort_order' => $sortOrder, 'id' => $id]);
+            $stmt = $db->prepare('UPDATE locations SET name = :name, parent_id = :parent_id, is_active = :is_active, sort_order = :sort_order, delivery_fee = :delivery_fee WHERE id = :id');
+            $stmt->execute(['name' => $name, 'parent_id' => $parentId, 'is_active' => $isActive, 'sort_order' => $sortOrder, 'delivery_fee' => $deliveryFee, 'id' => $id]);
         } else {
-            $stmt = $db->prepare('INSERT INTO locations (name, parent_id, is_active, sort_order) VALUES (:name, :parent_id, :is_active, :sort_order)');
-            $stmt->execute(['name' => $name, 'parent_id' => $parentId, 'is_active' => $isActive, 'sort_order' => $sortOrder]);
+            $stmt = $db->prepare('INSERT INTO locations (name, parent_id, is_active, sort_order, delivery_fee) VALUES (:name, :parent_id, :is_active, :sort_order, :delivery_fee)');
+            $stmt->execute(['name' => $name, 'parent_id' => $parentId, 'is_active' => $isActive, 'sort_order' => $sortOrder, 'delivery_fee' => $deliveryFee]);
         }
         header('Location: /market/admin/localites.php');
         exit;
@@ -67,7 +68,7 @@ $editing = null;
 $formAction = (string) ($_GET['action'] ?? '');
 
 if ($formAction === 'new') {
-    $editing = ['id' => 0, 'name' => '', 'parent_id' => (int) ($_GET['parent_id'] ?? 0), 'is_active' => 1, 'sort_order' => 0];
+    $editing = ['id' => 0, 'name' => '', 'parent_id' => (int) ($_GET['parent_id'] ?? 0), 'is_active' => 1, 'sort_order' => 0, 'delivery_fee' => 0];
 } elseif ($formAction === 'edit' && isset($_GET['id'])) {
     $stmt = $db->prepare('SELECT * FROM locations WHERE id = :id');
     $stmt->execute(['id' => (int) $_GET['id']]);
@@ -113,9 +114,16 @@ if ($editing):
                 <?php if (isset($errors['parent_id'])): ?><span class="field-error"><?= e($errors['parent_id']) ?></span><?php endif; ?>
             </div>
 
-            <div class="form-field">
-                <label for="sort_order">Ordre d'affichage</label>
-                <input type="number" id="sort_order" name="sort_order" value="<?= e((string) ($editing['sort_order'] ?? 0)) ?>">
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="sort_order">Ordre d'affichage</label>
+                    <input type="number" id="sort_order" name="sort_order" value="<?= e((string) ($editing['sort_order'] ?? 0)) ?>">
+                </div>
+                <div class="form-field">
+                    <label for="delivery_fee">Frais de livraison (FCFA)</label>
+                    <input type="number" id="delivery_fee" name="delivery_fee" min="0" value="<?= e((string) ($editing['delivery_fee'] ?? 0)) ?>">
+                    <span class="char-count">0 = livraison gratuite pour ce lieu.</span>
+                </div>
             </div>
 
             <div class="form-field">
@@ -157,6 +165,7 @@ if ($editing):
                         <h2>
                             <?= e($city['name']) ?>
                             <span class="tag <?= $city['is_active'] ? 'tag-open' : 'tag-closed' ?>"><?= $city['is_active'] ? 'Active' : 'Désactivée' ?></span>
+                            <span class="tag tag-processing"><?= (int) $city['delivery_fee'] > 0 ? format_price((int) $city['delivery_fee']) : 'Gratuit' ?></span>
                         </h2>
                         <div class="admin-table-actions">
                             <a href="/market/admin/localite-detail.php?id=<?= (int) $city['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
@@ -184,6 +193,7 @@ if ($editing):
                                         <tr>
                                             <td><?= e($n['name']) ?></td>
                                             <td><span class="tag <?= $n['is_active'] ? 'tag-open' : 'tag-closed' ?>"><?= $n['is_active'] ? 'Actif' : 'Désactivé' ?></span></td>
+                                            <td><?= (int) $n['delivery_fee'] > 0 ? format_price((int) $n['delivery_fee']) : 'Gratuit' ?></td>
                                             <td>
                                                 <div class="admin-table-actions">
                                                     <a href="/market/admin/localite-detail.php?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>

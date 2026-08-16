@@ -33,6 +33,7 @@ $old = [
     'payment_choice' => 'cod',
     'payment_method' => '',
 ];
+$deliveryFee = 0;
 
 $deliveryCities = get_db()->query('SELECT * FROM locations WHERE parent_id IS NULL AND is_active = 1 ORDER BY sort_order, name')->fetchAll();
 $deliveryChildrenByParent = [];
@@ -140,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$chosenCity) {
         $errors['delivery_city'] = 'Veuillez choisir votre ville de livraison.';
     } else {
+        $deliveryFee = (int) $chosenCity['delivery_fee'];
         $availableNeighborhoods = $deliveryChildrenByParent[(int) $chosenCity['id']] ?? [];
         $deliveryLocationText = $chosenCity['name'];
         if ($availableNeighborhoods) {
@@ -154,6 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors['delivery_neighborhood'] = 'Veuillez choisir votre quartier de livraison.';
             } else {
                 $deliveryLocationText .= ' - ' . $chosenNeighborhood['name'];
+                $deliveryFee = (int) $chosenNeighborhood['delivery_fee'];
             }
         }
     }
@@ -161,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($old['payment_choice'] === 'online') {
         if (!isset($onlinePaymentMethods[$old['payment_method']])) {
             $errors['payment_method'] = 'Veuillez choisir un moyen de paiement.';
-        } elseif ($orderTotal < 200) {
+        } elseif ($orderTotal + $deliveryFee < 200) {
             $errors['payment_method'] = 'Le paiement en ligne nécessite un montant minimum de 200 FCFA. Choisissez "Paiement à la livraison" ou ajoutez un article.';
         }
     }
@@ -180,7 +183,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'phone' => $old['phone'] !== '' ? $old['phone'] : null,
                 ],
                 $deliveryLocationText,
-                $old['payment_choice']
+                $old['payment_choice'],
+                $deliveryFee
             );
         } catch (InvalidArgumentException $e) {
             $errors['items'] = 'Votre panier est vide ou aucun des produits sélectionnés n\'est actuellement disponible à la vente (boutique sans vendeur assigné). Merci de contacter le support.';
@@ -219,6 +223,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$grandTotal = $orderTotal + $deliveryFee;
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -255,9 +261,17 @@ require_once __DIR__ . '/includes/header.php';
                         <span><?= format_price($row['unit_price'] * $row['qty']) ?></span>
                     </div>
                 <?php endforeach; ?>
+                <div class="order-items-row">
+                    <span>Sous-total</span>
+                    <span id="order-subtotal-value"><?= format_price($orderTotal) ?></span>
+                </div>
+                <div class="order-items-row">
+                    <span>Frais de livraison</span>
+                    <span id="delivery-fee-value"><?= $deliveryFee > 0 ? format_price($deliveryFee) : 'Gratuit' ?></span>
+                </div>
                 <div class="order-items-total">
                     <span>Total</span>
-                    <span><?= format_price($orderTotal) ?></span>
+                    <span id="order-grand-total-value"><?= format_price($grandTotal) ?></span>
                 </div>
             </div>
 
@@ -283,13 +297,13 @@ require_once __DIR__ . '/includes/header.php';
                     <input type="tel" id="phone" name="phone" value="<?= e($old['phone']) ?>">
                 </div>
 
-                <div class="form-row" id="delivery-location-fields" data-neighborhoods="<?= e(json_encode($deliveryChildrenByParent, JSON_UNESCAPED_UNICODE)) ?>">
+                <div class="form-row" id="delivery-location-fields" data-neighborhoods="<?= e(json_encode($deliveryChildrenByParent, JSON_UNESCAPED_UNICODE)) ?>" data-subtotal="<?= (int) $orderTotal ?>">
                     <div class="form-field <?= isset($errors['delivery_city']) ? 'has-error' : '' ?>">
                         <label for="delivery_city">Ville de livraison *</label>
                         <select id="delivery_city" name="delivery_city">
                             <option value="">Choisir une ville...</option>
                             <?php foreach ($deliveryCities as $c): ?>
-                                <option value="<?= (int) $c['id'] ?>" <?= $old['delivery_city'] === (int) $c['id'] ? 'selected' : '' ?>><?= e($c['name']) ?></option>
+                                <option value="<?= (int) $c['id'] ?>" data-fee="<?= (int) $c['delivery_fee'] ?>" <?= $old['delivery_city'] === (int) $c['id'] ? 'selected' : '' ?>><?= e($c['name']) ?></option>
                             <?php endforeach; ?>
                         </select>
                         <?php if (isset($errors['delivery_city'])): ?><span class="field-error"><?= e($errors['delivery_city']) ?></span><?php endif; ?>
