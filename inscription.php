@@ -51,22 +51,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$errors) {
-        $stmt = get_db()->prepare('INSERT INTO users (name, email, phone, password_hash, is_vendor) VALUES (:name, :email, :phone, :password_hash, :is_vendor)');
-        $stmt->execute([
-            'name' => $old['name'],
-            'email' => $old['email'],
-            'phone' => $old['phone'] !== '' ? $old['phone'] : null,
-            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-            'is_vendor' => $isVendor ? 1 : 0,
-        ]);
+        try {
+            $stmt = get_db()->prepare('INSERT INTO users (name, email, phone, password_hash, is_vendor) VALUES (:name, :email, :phone, :password_hash, :is_vendor)');
+            $stmt->execute([
+                'name' => $old['name'],
+                'email' => $old['email'],
+                'phone' => $old['phone'] !== '' ? $old['phone'] : null,
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                'is_vendor' => $isVendor ? 1 : 0,
+            ]);
 
-        $newUserId = (int) get_db()->lastInsertId();
-        $verifyToken = issue_email_verification_token($newUserId);
-        wallet_notification_service()->emailVerificationRequested($newUserId, site_base_url() . '/verifier-email.php?token=' . $verifyToken);
+            $newUserId = (int) get_db()->lastInsertId();
+            $verifyToken = issue_email_verification_token($newUserId);
+            wallet_notification_service()->emailVerificationRequested($newUserId, site_base_url() . '/verifier-email.php?token=' . $verifyToken);
 
-        login_user($newUserId);
-        header('Location: /market/compte.php');
-        exit;
+            login_user($newUserId);
+            header('Location: /market/compte.php');
+            exit;
+        } catch (PDOException $e) {
+            // Deux inscriptions simultanees avec le meme email : la verification
+            // SELECT ci-dessus ne peut pas empecher cette course, seule la
+            // contrainte UNIQUE en base le peut (code SQLSTATE 23000).
+            if ($e->getCode() !== '23000') {
+                throw $e;
+            }
+            $errors['email'] = 'Cette adresse email est déjà utilisée.';
+        }
     }
 }
 
