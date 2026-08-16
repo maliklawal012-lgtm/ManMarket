@@ -141,6 +141,11 @@ Ce job bascule `pending_balance` → `available_balance` pour toute commande liv
    php tests/wallet_scenarios.php
    ```
    Doit afficher `15/15 scenarios reussis`. Utilise des données 100% jetables, nettoyées automatiquement — sans impact sur les données réelles.
+2bis. Suite de tests HTTP (connexion, recherche, contrôle d'accès admin) — **nécessite que le serveur web soit déjà démarré** (contrairement à la suite ci-dessus, purement en base) :
+   ```
+   php tests/http_scenarios.php
+   ```
+   Doit afficher `13/13 scenarios reussis`. Données 100% jetables (préfixe `httptest-`), nettoyées automatiquement.
 3. Connexion admin réelle → `/market/admin/connexion.php` (formulaire dédié, distinct de `/market/connexion.php`) avec un compte `is_admin = 1`, saisir le code reçu par email sur `/market/verification-2fa.php`, puis vérifier l'accès à `/market/admin/index.php` et `/market/admin/finances.php`.
 4. Un vrai parcours client : ajout panier → `/market/commander.php` → paiement en ligne → vérifier la redirection vers la vraie page de paiement Genius Pay.
 5. Vérifier que `GET /market/.env` et `GET /market/database/schema.sql` renvoient bien une erreur 403/404 (pas le contenu du fichier).
