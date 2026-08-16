@@ -891,6 +891,70 @@ function social_networks(): array
     return $result;
 }
 
+/**
+ * Traduit le code d'action stocke dans audit_logs.action en phrase lisible
+ * (a la 3e personne, prefixee par le nom de l'admin dans get_recent_activity()).
+ * Couvre a la fois les actions historiques (vendor_suspended, vendor_reactivated,
+ * wallet_adjustment - deja enregistrees par VendorAdminService) et les
+ * nouvelles actions journalisees ici.
+ */
+function audit_action_label(string $action): string
+{
+    return [
+        'vendor_suspended' => 'a suspendu le vendeur',
+        'vendor_reactivated' => 'a réactivé le vendeur',
+        'wallet_adjustment' => 'a ajusté manuellement le portefeuille du vendeur',
+        'shop_approved' => 'a approuvé la boutique',
+        'shop_rejected' => 'a refusé la demande de boutique',
+        'refund_processed' => 'a traité un remboursement pour la commande',
+        'withdrawal_approved' => 'a approuvé le retrait',
+        'withdrawal_rejected' => 'a rejeté le retrait',
+        'withdrawal_processing' => 'a marqué le retrait en cours de paiement',
+        'withdrawal_completed' => 'a marqué le retrait comme payé',
+        'withdrawal_failed' => 'a marqué le retrait comme échoué',
+        'withdrawal_reversed' => 'a annulé/recrédité le retrait',
+        'order_processing' => 'a mis la commande en préparation',
+        'order_shipping' => 'a mis la commande en livraison',
+        'order_delivered' => 'a marqué la commande comme livrée',
+        'order_cancelled' => 'a annulé la commande',
+        'order_not_collected' => 'a marqué la commande comme non retirée',
+        'order_pending' => 'a remis la commande en attente',
+        'user_blocked' => "a bloqué l'utilisateur",
+        'user_unblocked' => "a débloqué l'utilisateur",
+    ][$action] ?? ('a effectué "' . $action . '" sur');
+}
+
+/**
+ * Nom lisible de l'entite ciblee par une ligne audit_logs, pour l'affichage
+ * dans le journal d'activite (plutot qu'un simple identifiant numerique).
+ * Repli sur "#id" si l'entite a ete supprimee depuis ou si le type est
+ * inconnu — ne doit jamais faire echouer l'affichage du journal.
+ */
+function audit_entity_label(string $entityType, int $entityId): string
+{
+    $db = get_db();
+    $name = match ($entityType) {
+        'shop' => (function () use ($db, $entityId) {
+            $stmt = $db->prepare('SELECT name FROM shops WHERE id = :id');
+            $stmt->execute(['id' => $entityId]);
+            return $stmt->fetchColumn();
+        })(),
+        'vendor' => (function () use ($db, $entityId) {
+            $stmt = $db->prepare('SELECT business_name FROM vendors WHERE id = :id');
+            $stmt->execute(['id' => $entityId]);
+            return $stmt->fetchColumn();
+        })(),
+        'user' => (function () use ($db, $entityId) {
+            $stmt = $db->prepare('SELECT name FROM users WHERE id = :id');
+            $stmt->execute(['id' => $entityId]);
+            return $stmt->fetchColumn();
+        })(),
+        default => false,
+    };
+
+    return $name !== false && $name !== null ? (string) $name . " (#{$entityId})" : "#{$entityId}";
+}
+
 function get_recent_activity(int $perTypeLimit = 10): array
 {
     $db = get_db();
@@ -922,6 +986,25 @@ function get_recent_activity(int $perTypeLimit = 10): array
     $stmt->execute();
     foreach ($stmt as $row) {
         $activity[] = ['type' => 'produit', 'icon' => 'shopping-basket', 'text' => 'Produit ajouté : ' . $row['name'], 'time' => $row['created_at']];
+    }
+
+    $stmt = $db->prepare('
+        SELECT al.action, al.entity_type, al.entity_id, al.reason, al.created_at, u.name AS admin_name
+        FROM audit_logs al
+        JOIN users u ON u.id = al.admin_user_id
+        ORDER BY al.created_at DESC
+        LIMIT :n
+    ');
+    $stmt->bindValue('n', $perTypeLimit, PDO::PARAM_INT);
+    $stmt->execute();
+    foreach ($stmt as $row) {
+        // Texte brut, non echappe : admin/activite.php applique e() une seule
+        // fois au rendu (comme pour les autres types d'activite ci-dessus).
+        $text = $row['admin_name'] . ' ' . audit_action_label($row['action']) . ' ' . audit_entity_label($row['entity_type'], (int) $row['entity_id']);
+        if ($row['reason']) {
+            $text .= ' — ' . $row['reason'];
+        }
+        $activity[] = ['type' => 'admin', 'icon' => 'shield', 'text' => $text, 'time' => $row['created_at']];
     }
 
     usort($activity, fn ($a, $b) => strtotime((string) $b['time']) <=> strtotime((string) $a['time']));

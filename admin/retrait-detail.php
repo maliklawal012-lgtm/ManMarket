@@ -54,6 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') !== '') {
     } elseif (!$result->ok) {
         $actionError = $result->error;
     } else {
+        $auditAction = [
+            'approve' => 'withdrawal_approved', 'reject' => 'withdrawal_rejected', 'processing' => 'withdrawal_processing',
+            'complete' => 'withdrawal_completed', 'fail' => 'withdrawal_failed', 'reverse' => 'withdrawal_reversed',
+        ][$action] ?? 'withdrawal_' . $action;
+        wallet_audit_log_repo()->record($adminId, $auditAction, 'withdrawal', $withdrawalId, $note !== '' ? $note : null, $_SERVER['REMOTE_ADDR'] ?? null);
         header('Location: /market/admin/retrait-detail.php?id=' . $withdrawalId);
         exit;
     }

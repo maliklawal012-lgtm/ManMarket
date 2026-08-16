@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['s
             }
         }
         wallet_notification_service()->orderStatusChanged($orderId, $_POST['status']);
+        wallet_audit_log_repo()->record((int) $adminUser['id'], 'order_' . $_POST['status'], 'order', $orderId, null, $_SERVER['REMOTE_ADDR'] ?? null);
     }
     header('Location: /market/admin/commandes-actives.php' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
     exit;

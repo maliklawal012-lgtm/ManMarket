@@ -10,6 +10,7 @@ $typeLabels = [
     'message' => 'Messages',
     'utilisateur' => 'Utilisateurs',
     'produit' => 'Produits',
+    'admin' => 'Actions admin',
 ];
 
 $activity = get_recent_activity(50);

@@ -24,6 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
     if ($id === (int) $currentAdmin['id'] && (!$isAdmin || $isBlocked)) {
         $saveError = "Vous ne pouvez pas retirer vos propres droits administrateur ni vous bloquer vous-même.";
     } else {
+        $previouslyBlockedStmt = $db->prepare('SELECT is_blocked FROM users WHERE id = :id');
+        $previouslyBlockedStmt->execute(['id' => $id]);
+        $wasBlocked = (int) $previouslyBlockedStmt->fetchColumn() === 1;
+
         $stmt = $db->prepare('
             UPDATE users
             SET is_vendor = :is_vendor, is_admin = :is_admin, is_blocked = :is_blocked, blocked_reason = :reason
@@ -36,6 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
             'reason' => $isBlocked && $blockedReason !== '' ? $blockedReason : null,
             'id' => $id,
         ]);
+
+        if (!$wasBlocked && $isBlocked === 1) {
+            wallet_audit_log_repo()->record((int) $currentAdmin['id'], 'user_blocked', 'user', $id, $blockedReason !== '' ? $blockedReason : null, $_SERVER['REMOTE_ADDR'] ?? null);
+        } elseif ($wasBlocked && $isBlocked === 0) {
+            wallet_audit_log_repo()->record((int) $currentAdmin['id'], 'user_unblocked', 'user', $id, null, $_SERVER['REMOTE_ADDR'] ?? null);
+        }
+
         header('Location: /market/admin/utilisateurs.php');
         exit;
     }

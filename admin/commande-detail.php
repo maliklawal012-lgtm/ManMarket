@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status']) && ($_POST[
             record_failed_pickup((int) $order['customer_user_id']);
         }
         wallet_notification_service()->orderStatusChanged($orderId, $_POST['status']);
+        wallet_audit_log_repo()->record((int) $adminUser['id'], 'order_' . $_POST['status'], 'order', $orderId, null, $_SERVER['REMOTE_ADDR'] ?? null);
     }
     header('Location: /market/admin/commande-detail.php?id=' . $orderId);
     exit;
@@ -57,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'refun
     } else {
         $result = wallet_refund_service()->refundOrderItem($orderItemId, $quantity, $reason, (int) $adminUser['id']);
         if ($result->ok) {
+            wallet_audit_log_repo()->record((int) $adminUser['id'], 'refund_processed', 'order', $orderId, $reason, $_SERVER['REMOTE_ADDR'] ?? null);
             header('Location: /market/admin/commande-detail.php?id=' . $orderId);
             exit;
         }

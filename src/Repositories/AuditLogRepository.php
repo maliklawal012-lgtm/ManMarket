@@ -43,4 +43,19 @@ final class AuditLogRepository
 
         return $stmt->fetchAll();
     }
+
+    public function findRecent(int $limit = 50): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT al.*, u.name AS admin_name
+            FROM audit_logs al
+            JOIN users u ON u.id = al.admin_user_id
+            ORDER BY al.created_at DESC
+            LIMIT :limit
+        ');
+        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
 }

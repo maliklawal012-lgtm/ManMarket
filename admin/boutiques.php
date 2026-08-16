@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/wallet_bootstrap.php';
 
-require_admin();
+$adminUser = require_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'appro
     $stmt->execute(['id' => $requestId]);
     if ($stmt->rowCount() > 0) {
         wallet_notification_service()->shopApprovalDecision($requestId, true, null);
+        wallet_audit_log_repo()->record((int) $adminUser['id'], 'shop_approved', 'shop', $requestId, null, $_SERVER['REMOTE_ADDR'] ?? null);
     }
     header('Location: /market/admin/boutiques.php');
     exit;
@@ -62,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'rejec
     $stmt->execute(['reason' => $reason, 'id' => $requestId]);
     if ($stmt->rowCount() > 0) {
         wallet_notification_service()->shopApprovalDecision($requestId, false, $reason);
+        wallet_audit_log_repo()->record((int) $adminUser['id'], 'shop_rejected', 'shop', $requestId, $reason, $_SERVER['REMOTE_ADDR'] ?? null);
     }
     header('Location: /market/admin/boutiques.php');
     exit;
