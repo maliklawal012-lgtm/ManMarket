@@ -107,10 +107,10 @@ button { font-family: inherit; cursor: pointer; }
 
 .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .logo-mark {
-    width: 48px; height: 48px; border-radius: 10px;
+    width: 60px; height: 60px; border-radius: 10px;
     background: var(--primary); color: #fff;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 1.1rem;
+    font-weight: 800; font-size: 1.4rem;
 }
 .logo-mark-img { object-fit: cover; background: transparent; }
 .logo-text { display: flex; flex-direction: column; font-weight: 800; font-size: 1.15rem; color: var(--text); }
@@ -365,7 +365,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .product-thumb {
-    height: 84px; border-radius: var(--radius-sm); overflow: hidden;
+    height: 140px; border-radius: var(--radius-sm); overflow: hidden;
     background: var(--primary-light); color: var(--primary);
     display: flex; align-items: center; justify-content: center;
 }
