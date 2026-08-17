@@ -526,6 +526,7 @@
         const sizeCap = (item) => {
             const p = products[item.id];
             if (!p) return 0;
+            if (p.shopOpen === false) return 0;
             if (p.sizeStocks) {
                 return item.size && Object.prototype.hasOwnProperty.call(p.sizeStocks, item.size) ? p.sizeStocks[item.size] : 0;
             }

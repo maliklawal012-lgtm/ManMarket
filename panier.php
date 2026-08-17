@@ -23,6 +23,7 @@ foreach ($products as $p) {
         'image' => $p['image'] ? '/market/' . $p['image'] : null,
         'shopName' => $p['shop_name'],
         'shopSlug' => $p['shop_slug'],
+        'shopOpen' => (bool) $p['shop_is_open'],
         'stock' => $p['shop_is_open'] ? (int) $p['stock'] : 0,
     ];
 }
