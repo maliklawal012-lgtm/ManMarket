@@ -26,7 +26,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['v
     if (in_array($_POST['vendor_status'], $vendorStatuses, true)) {
         $postedOrderId = (int) $_POST['order_id'];
         if ($_POST['vendor_status'] === 'rejected') {
-            restore_rejected_order_items_stock($postedOrderId, $shopId);
+            $justRejectedItems = restore_rejected_order_items_stock($postedOrderId, $shopId);
+            if ($justRejectedItems) {
+                wallet_notification_service()->orderItemRejected($postedOrderId, $shopId, $justRejectedItems);
+            }
         }
         $stmt = $db->prepare('UPDATE order_items SET fulfillment_status = :status WHERE order_id = :order_id AND shop_id = :shop_id');
         $stmt->execute(['status' => $_POST['vendor_status'], 'order_id' => $postedOrderId, 'shop_id' => $shopId]);

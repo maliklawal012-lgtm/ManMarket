@@ -409,18 +409,23 @@ function restore_order_stock(int $orderId): void
  * restore_order_stock() mais limitee aux articles de cette boutique,
  * utilisee quand un vendeur rejette sa part d'une commande multi-boutiques
  * sans que la commande entiere ne soit annulee.
+ *
+ * Retourne les lignes effectivement concernees (vide si tout etait deja
+ * rejete) : l'appelant s'en sert pour ne notifier le client qu'une seule
+ * fois, au moment du vrai passage a 'rejected'.
  */
-function restore_rejected_order_items_stock(int $orderId, int $shopId): void
+function restore_rejected_order_items_stock(int $orderId, int $shopId): array
 {
     $db = get_db();
     $stmt = $db->prepare("
-        SELECT product_id, size, quantity, refunded_quantity
+        SELECT product_id, product_name, size, quantity, refunded_quantity
         FROM order_items
         WHERE order_id = :order_id AND shop_id = :shop_id AND fulfillment_status != 'rejected'
     ");
     $stmt->execute(['order_id' => $orderId, 'shop_id' => $shopId]);
+    $items = $stmt->fetchAll();
 
-    foreach ($stmt->fetchAll() as $item) {
+    foreach ($items as $item) {
         if ($item['product_id'] === null) {
             continue;
         }
@@ -429,6 +434,8 @@ function restore_rejected_order_items_stock(int $orderId, int $shopId): void
             restore_product_stock((int) $item['product_id'], $item['size'], $qty);
         }
     }
+
+    return $items;
 }
 
 /**

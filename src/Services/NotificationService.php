@@ -334,6 +334,36 @@ final class NotificationService
         }, 'shopApprovalDecision', $shopId);
     }
 
+    /**
+     * @param array<int, array{product_name:string, quantity:int}> $items
+     */
+    public function orderItemRejected(int $orderId, int $shopId, array $items): void
+    {
+        $this->guard(function () use ($orderId, $shopId, $items): void {
+            $order = $this->findOrder($orderId);
+            if (!$order || !$items) {
+                return;
+            }
+
+            $stmt = $this->db->prepare('SELECT name FROM shops WHERE id = :id');
+            $stmt->execute(['id' => $shopId]);
+            $shopName = (string) ($stmt->fetchColumn() ?: 'La boutique');
+
+            $lines = array_map(
+                fn (array $i) => "  - {$i['quantity']} x {$i['product_name']}",
+                $items
+            );
+
+            $subject = "Un article de votre commande #{$orderId} n'est pas disponible";
+            $body = "Bonjour {$order['customer_name']},\n\n"
+                . "\"{$shopName}\" n'est pas en mesure de fournir le ou les articles suivants pour votre commande #{$orderId} :\n\n"
+                . implode("\n", $lines) . "\n\n"
+                . "Le reste de votre commande suit son cours normalement. Si vous aviez deja paye ces articles en ligne, contactez-nous pour etre rembourse.\n\nL'equipe ManMarket";
+
+            $this->send($order['customer_email'], $order['customer_name'], $subject, $body, 'order_item_rejected', $orderId);
+        }, 'orderItemRejected', $orderId);
+    }
+
     private function guard(\Closure $fn, string $event, int $refId): void
     {
         try {
