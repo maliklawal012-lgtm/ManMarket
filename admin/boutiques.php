@@ -83,6 +83,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
     $ownerIdRaw = (int) ($_POST['owner_id'] ?? 0);
     $ownerId = $ownerIdRaw > 0 ? $ownerIdRaw : null;
     $removeLogo = isset($_POST['remove_logo']);
+    $latRaw = trim((string) ($_POST['lat'] ?? ''));
+    $lngRaw = trim((string) ($_POST['lng'] ?? ''));
+    $lat = $latRaw !== '' ? (float) $latRaw : null;
+    $lng = $lngRaw !== '' ? (float) $lngRaw : null;
 
     if ($name === '') {
         $errors['name'] = 'Veuillez indiquer un nom.';
@@ -92,6 +96,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
     }
     if (!preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
         $errors['color'] = 'Couleur invalide.';
+    }
+    if ($lat !== null && ($lat < -90 || $lat > 90)) {
+        $errors['lat'] = 'Latitude invalide (doit être entre -90 et 90).';
+    }
+    if ($lng !== null && ($lng < -180 || $lng > 180)) {
+        $errors['lng'] = 'Longitude invalide (doit être entre -180 et 180).';
     }
     if ($logoLetter === '') {
         $logoLetter = mb_substr($name, 0, 2);
@@ -164,23 +174,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
                 UPDATE shops
                 SET name = :name, slug = :slug, neighborhood = :neighborhood, phone = :phone, whatsapp = :whatsapp, color = :color,
                     logo_letter = :logo_letter, logo = :logo, fast_delivery = :fast_delivery, is_open = :is_open, sort_order = :sort_order,
-                    owner_id = :owner_id, vendor_id = :vendor_id
+                    owner_id = :owner_id, vendor_id = :vendor_id, lat = :lat, lng = :lng
                 WHERE id = :id
             ');
             $stmt->execute([
                 'name' => $name, 'slug' => $slug, 'neighborhood' => $neighborhood, 'phone' => $phone !== '' ? $phone : null, 'whatsapp' => $whatsapp !== '' ? $whatsapp : null, 'color' => $color,
                 'logo_letter' => $logoLetter, 'logo' => $finalLogo, 'fast_delivery' => $fastDelivery, 'is_open' => $isOpen, 'sort_order' => $sortOrder,
-                'owner_id' => $ownerId, 'vendor_id' => $vendorId, 'id' => $id,
+                'owner_id' => $ownerId, 'vendor_id' => $vendorId, 'lat' => $lat, 'lng' => $lng, 'id' => $id,
             ]);
         } else {
             $stmt = $db->prepare('
-                INSERT INTO shops (name, slug, neighborhood, phone, whatsapp, color, logo_letter, logo, fast_delivery, is_open, sort_order, owner_id, vendor_id, rating, review_count)
-                VALUES (:name, :slug, :neighborhood, :phone, :whatsapp, :color, :logo_letter, :logo, :fast_delivery, :is_open, :sort_order, :owner_id, :vendor_id, 5.0, 0)
+                INSERT INTO shops (name, slug, neighborhood, phone, whatsapp, color, logo_letter, logo, fast_delivery, is_open, sort_order, owner_id, vendor_id, lat, lng, rating, review_count)
+                VALUES (:name, :slug, :neighborhood, :phone, :whatsapp, :color, :logo_letter, :logo, :fast_delivery, :is_open, :sort_order, :owner_id, :vendor_id, :lat, :lng, 5.0, 0)
             ');
             $stmt->execute([
                 'name' => $name, 'slug' => $slug, 'neighborhood' => $neighborhood, 'phone' => $phone !== '' ? $phone : null, 'whatsapp' => $whatsapp !== '' ? $whatsapp : null, 'color' => $color,
                 'logo_letter' => $logoLetter, 'logo' => $finalLogo, 'fast_delivery' => $fastDelivery, 'is_open' => $isOpen, 'sort_order' => $sortOrder,
-                'owner_id' => $ownerId, 'vendor_id' => $vendorId,
+                'owner_id' => $ownerId, 'vendor_id' => $vendorId, 'lat' => $lat, 'lng' => $lng,
             ]);
         }
 
@@ -197,7 +207,7 @@ $formAction = (string) ($_GET['action'] ?? '');
 if ($formAction === 'new') {
     $editing = [
         'id' => 0, 'name' => '', 'neighborhood' => '', 'phone' => '', 'whatsapp' => '', 'color' => '#16a34a',
-        'logo_letter' => '', 'fast_delivery' => 0, 'is_open' => 1, 'sort_order' => 0, 'owner_id' => '',
+        'logo_letter' => '', 'fast_delivery' => 0, 'is_open' => 1, 'sort_order' => 0, 'owner_id' => '', 'lat' => '', 'lng' => '',
     ];
 } elseif ($formAction === 'edit' && isset($_GET['id'])) {
     $stmt = $db->prepare('SELECT * FROM shops WHERE id = :id');
@@ -266,6 +276,20 @@ if ($editing):
                     <input type="number" id="sort_order" name="sort_order" value="<?= e((string) ($editing['sort_order'] ?? 0)) ?>">
                 </div>
             </div>
+
+            <div class="form-row">
+                <div class="form-field <?= isset($errors['lat']) ? 'has-error' : '' ?>">
+                    <label for="lat">Latitude (optionnel, position précise sur Google Maps)</label>
+                    <input type="number" id="lat" name="lat" step="any" min="-90" max="90" value="<?= e((string) ($editing['lat'] ?? '')) ?>" placeholder="Ex : 7.4125">
+                    <?php if (isset($errors['lat'])): ?><span class="field-error"><?= e($errors['lat']) ?></span><?php endif; ?>
+                </div>
+                <div class="form-field <?= isset($errors['lng']) ? 'has-error' : '' ?>">
+                    <label for="lng">Longitude (optionnel)</label>
+                    <input type="number" id="lng" name="lng" step="any" min="-180" max="180" value="<?= e((string) ($editing['lng'] ?? '')) ?>" placeholder="Ex : -7.5536">
+                    <?php if (isset($errors['lng'])): ?><span class="field-error"><?= e($errors['lng']) ?></span><?php endif; ?>
+                </div>
+            </div>
+            <p class="char-count">Sans coordonnées, le bouton "Localiser sur Google Maps" fera une recherche par nom et quartier.</p>
 
             <div class="form-field">
                 <label for="owner_id">Propriétaire (compte vendeur)</label>

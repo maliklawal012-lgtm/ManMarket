@@ -1081,3 +1081,23 @@ function shop_logo_html(array $shop): string
 
     return e((string) $shop['logo_letter']);
 }
+
+/**
+ * Lien Google Maps fonctionnel pour localiser une boutique. Precis
+ * (coordonnees GPS) si l'admin/le vendeur les a renseignees, sinon repli
+ * automatique sur une recherche par nom + quartier (toujours disponible,
+ * puisque le quartier est un champ obligatoire) — jamais de lien mort.
+ */
+function shop_google_maps_url(array $shop): string
+{
+    $lat = $shop['lat'] ?? null;
+    $lng = $shop['lng'] ?? null;
+
+    if ($lat !== null && $lng !== null && $lat !== '' && $lng !== '') {
+        return 'https://www.google.com/maps?q=' . rawurlencode((string) $lat . ',' . (string) $lng);
+    }
+
+    $query = trim($shop['name'] . ', ' . $shop['neighborhood'] . ', Man, Côte d\'Ivoire');
+
+    return 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($query);
+}

@@ -30,6 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $neighborhood = trim((string) ($_POST['neighborhood'] ?? ''));
     $phone = trim((string) ($_POST['phone'] ?? ''));
     $whatsapp = trim((string) ($_POST['whatsapp'] ?? ''));
+    $latRaw = trim((string) ($_POST['lat'] ?? ''));
+    $lngRaw = trim((string) ($_POST['lng'] ?? ''));
+    $lat = $latRaw !== '' ? (float) $latRaw : null;
+    $lng = $lngRaw !== '' ? (float) $lngRaw : null;
     $color = trim((string) ($_POST['color'] ?? '')) ?: '#16a34a';
     $logoLetter = mb_strtoupper(trim((string) ($_POST['logo_letter'] ?? '')));
     $fastDelivery = isset($_POST['fast_delivery']) ? 1 : 0;
@@ -44,6 +48,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
         $errors['color'] = 'Couleur invalide.';
+    }
+    if ($lat !== null && ($lat < -90 || $lat > 90)) {
+        $errors['lat'] = 'Latitude invalide (doit être entre -90 et 90).';
+    }
+    if ($lng !== null && ($lng < -180 || $lng > 180)) {
+        $errors['lng'] = 'Longitude invalide (doit être entre -180 et 180).';
     }
     if ($logoLetter === '') {
         $logoLetter = mb_substr($name, 0, 2);
@@ -89,12 +99,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare('
             UPDATE shops
             SET name = :name, slug = :slug, neighborhood = :neighborhood, phone = :phone, whatsapp = :whatsapp, color = :color,
-                logo_letter = :logo_letter, logo = :logo, fast_delivery = :fast_delivery, is_open = :is_open
+                logo_letter = :logo_letter, logo = :logo, fast_delivery = :fast_delivery, is_open = :is_open, lat = :lat, lng = :lng
             WHERE id = :id
         ');
         $stmt->execute([
             'name' => $name, 'slug' => $slug, 'neighborhood' => $neighborhood, 'phone' => $phone !== '' ? $phone : null, 'whatsapp' => $whatsapp !== '' ? $whatsapp : null, 'color' => $color,
-            'logo_letter' => $logoLetter, 'logo' => $finalLogo, 'fast_delivery' => $fastDelivery, 'is_open' => $isOpen, 'id' => $shopId,
+            'logo_letter' => $logoLetter, 'logo' => $finalLogo, 'fast_delivery' => $fastDelivery, 'is_open' => $isOpen, 'lat' => $lat, 'lng' => $lng, 'id' => $shopId,
         ]);
 
         header('Location: /market/vendeur/parametres.php?saved=1');
@@ -103,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $vendorShop = array_merge($vendorShop, [
         'name' => $name, 'neighborhood' => $neighborhood, 'phone' => $phone, 'whatsapp' => $whatsapp, 'color' => $color,
-        'logo_letter' => $logoLetter, 'fast_delivery' => $fastDelivery, 'is_open' => $isOpen,
+        'logo_letter' => $logoLetter, 'fast_delivery' => $fastDelivery, 'is_open' => $isOpen, 'lat' => $latRaw, 'lng' => $lngRaw,
     ]);
 }
 
@@ -175,6 +185,20 @@ require_once __DIR__ . '/../includes/vendor_header.php';
             <input type="color" id="color" name="color" value="<?= e((string) $vendorShop['color']) ?>" style="height:44px; padding:4px;">
             <?php if (isset($errors['color'])): ?><span class="field-error"><?= e($errors['color']) ?></span><?php endif; ?>
         </div>
+
+        <div class="form-row">
+            <div class="form-field <?= isset($errors['lat']) ? 'has-error' : '' ?>">
+                <label for="lat">Latitude (optionnel, position précise sur Google Maps)</label>
+                <input type="number" id="lat" name="lat" step="any" min="-90" max="90" value="<?= e((string) ($vendorShop['lat'] ?? '')) ?>" placeholder="Ex : 7.4125">
+                <?php if (isset($errors['lat'])): ?><span class="field-error"><?= e($errors['lat']) ?></span><?php endif; ?>
+            </div>
+            <div class="form-field <?= isset($errors['lng']) ? 'has-error' : '' ?>">
+                <label for="lng">Longitude (optionnel)</label>
+                <input type="number" id="lng" name="lng" step="any" min="-180" max="180" value="<?= e((string) ($vendorShop['lng'] ?? '')) ?>" placeholder="Ex : -7.5536">
+                <?php if (isset($errors['lng'])): ?><span class="field-error"><?= e($errors['lng']) ?></span><?php endif; ?>
+            </div>
+        </div>
+        <p class="char-count">Sans coordonnées, le bouton "Localiser sur Google Maps" de votre boutique fera une recherche par nom et quartier — pour un repérage précis, ouvrez Google Maps, faites un clic droit sur l'emplacement exact de votre boutique, puis cliquez sur les coordonnées affichées pour les copier ici.</p>
 
         <div class="form-field">
             <label class="filter-toggle">

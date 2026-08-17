@@ -73,6 +73,7 @@ $products = $stmt->fetchAll();
                     <?php if ($shop['whatsapp']): ?>
                         <a href="https://wa.me/<?= e(preg_replace('/\D/', '', (string) $shop['whatsapp'])) ?>?text=<?= urlencode('Bonjour ' . $shop['name'] . ', ') ?>" class="btn btn-outline btn-sm" target="_blank" rel="noopener"><?= icon('send', 15) ?> WhatsApp</a>
                     <?php endif; ?>
+                    <a href="<?= e(shop_google_maps_url($shop)) ?>" class="btn btn-outline btn-sm" target="_blank" rel="noopener"><?= icon('map-pin', 15) ?> Localiser sur Google Maps</a>
                 </div>
             </div>
         </div>
