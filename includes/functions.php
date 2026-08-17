@@ -1055,6 +1055,24 @@ function get_recent_activity(int $perTypeLimit = 10): array
     return $activity;
 }
 
+/**
+ * Vrai si l'utilisateur a une commande dont un article de ce produit a ete
+ * livre (meme critere que le badge "Achat verifie" affiche sur les avis).
+ * Utilise pour exiger un achat livre avant de pouvoir laisser un avis.
+ */
+function user_has_delivered_purchase(int $userId, int $productId): bool
+{
+    $stmt = get_db()->prepare("
+        SELECT 1 FROM order_items oi
+        JOIN orders o ON o.id = oi.order_id
+        WHERE oi.product_id = :product_id AND o.customer_user_id = :user_id AND oi.fulfillment_status = 'delivered'
+        LIMIT 1
+    ");
+    $stmt->execute(['product_id' => $productId, 'user_id' => $userId]);
+
+    return (bool) $stmt->fetchColumn();
+}
+
 function recompute_product_rating(int $productId): void
 {
     $db = get_db();

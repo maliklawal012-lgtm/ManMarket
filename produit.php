@@ -49,6 +49,10 @@ if ($product && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? ''
         $reviewErrors['rating'] = 'Veuillez choisir une note de 1 à 5.';
     }
 
+    if (!$reviewErrors && !user_has_delivered_purchase((int) $loggedInUser['id'], (int) $product['id'])) {
+        $reviewErrors['purchase'] = 'Vous devez avoir reçu une commande contenant ce produit pour pouvoir laisser un avis.';
+    }
+
     if (!$reviewErrors) {
         $stmt = get_db()->prepare('
             INSERT INTO reviews (product_id, user_id, name, rating, comment)
@@ -90,9 +94,9 @@ $galleryImages = product_gallery_images($product);
 
 $reviews = get_db()->prepare("
     SELECT r.*, EXISTS(
-        SELECT 1 FROM legacy_order_items oi
-        JOIN contact_messages o ON o.id = oi.order_id
-        WHERE oi.product_id = r.product_id AND o.user_id = r.user_id AND o.status = 'delivered'
+        SELECT 1 FROM order_items oi
+        JOIN orders o ON o.id = oi.order_id
+        WHERE oi.product_id = r.product_id AND o.customer_user_id = r.user_id AND oi.fulfillment_status = 'delivered'
     ) AS is_verified_purchase
     FROM reviews r
     WHERE r.product_id = :id
@@ -258,6 +262,13 @@ $relatedProducts = $relatedStmt->fetchAll();
             <form method="post" action="/market/produit.php?slug=<?= e($slug) ?>#avis" class="review-form" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="review">
+
+                <?php if (isset($reviewErrors['purchase'])): ?>
+                    <div class="alert alert-error">
+                        <?= icon('x', 18) ?>
+                        <span><?= e($reviewErrors['purchase']) ?></span>
+                    </div>
+                <?php endif; ?>
 
                 <div class="form-field <?= isset($reviewErrors['rating']) ? 'has-error' : '' ?>">
                     <label for="rating"><?= $myReview ? 'Modifier ma note' : 'Ma note' ?> *</label>

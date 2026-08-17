@@ -34,9 +34,9 @@ require_once __DIR__ . '/../includes/admin_header.php';
 $reviews = $db->query("
     SELECT r.*, p.name AS product_name, p.slug AS product_slug,
         EXISTS(
-            SELECT 1 FROM legacy_order_items oi
-            JOIN contact_messages o ON o.id = oi.order_id
-            WHERE oi.product_id = r.product_id AND o.user_id = r.user_id AND o.status = 'delivered'
+            SELECT 1 FROM order_items oi
+            JOIN orders o ON o.id = oi.order_id
+            WHERE oi.product_id = r.product_id AND o.customer_user_id = r.user_id AND oi.fulfillment_status = 'delivered'
         ) AS is_verified_purchase
     FROM reviews r
     JOIN products p ON p.id = r.product_id
