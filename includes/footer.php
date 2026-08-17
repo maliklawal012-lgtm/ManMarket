@@ -4,7 +4,12 @@
     <div class="container footer-grid">
         <div class="footer-col footer-brand">
             <a href="/market/index.php" class="logo">
-                <span class="logo-mark">M</span>
+                <?php $siteLogo = get_setting('site_logo'); ?>
+                <?php if ($siteLogo): ?>
+                    <img src="/market/<?= e($siteLogo) ?>" alt="<?= e(get_setting('site_name') ?: 'ManMarket') ?>" class="logo-mark logo-mark-img">
+                <?php else: ?>
+                    <span class="logo-mark">M</span>
+                <?php endif; ?>
                 <span class="logo-text light"><?= e(get_setting('site_name')) ?></span>
             </a>
             <p><?= e(get_setting('site_footer_tagline', 'Le plus grand marché en ligne de la ville de Man. Achetez local, soutenez nos commerçants, faites-vous livrer partout à Man.')) ?></p>
