@@ -1050,6 +1050,29 @@ function product_thumb_html(array $product, int $iconSize = 34): string
     return icon((string) $product['icon'], $iconSize);
 }
 
+/**
+ * Photo principale (products.image, inchangee) suivie des photos
+ * supplementaires facultatives (product_images, triees par sort_order) —
+ * utilisee par la galerie cliquable de la fiche produit publique. Un
+ * produit sans aucune photo renvoie un tableau vide (repli sur l'icone,
+ * comme avant l'ajout de cette fonctionnalite).
+ */
+function product_gallery_images(array $product): array
+{
+    $images = [];
+    if (!empty($product['image'])) {
+        $images[] = (string) $product['image'];
+    }
+
+    $stmt = get_db()->prepare('SELECT image FROM product_images WHERE product_id = :id ORDER BY sort_order, id');
+    $stmt->execute(['id' => (int) $product['id']]);
+    foreach ($stmt->fetchAll() as $row) {
+        $images[] = (string) $row['image'];
+    }
+
+    return $images;
+}
+
 function shop_logo_html(array $shop): string
 {
     if (!empty($shop['logo'])) {

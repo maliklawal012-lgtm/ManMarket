@@ -755,4 +755,16 @@
             item.classList.toggle('open');
         });
     });
+
+    /* ---------- Galerie photos produit (fiche produit) ---------- */
+    const galleryMainImg = document.getElementById('product-gallery-main-img');
+    if (galleryMainImg) {
+        document.querySelectorAll('.product-gallery-thumb-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                galleryMainImg.src = btn.dataset.img;
+                document.querySelectorAll('.product-gallery-thumb-btn').forEach((b) => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+            });
+        });
+    }
 })();

@@ -86,6 +86,7 @@ if (!$product):
 endif;
 
 $pp = get_product_price($product);
+$galleryImages = product_gallery_images($product);
 
 $reviews = get_db()->prepare("
     SELECT r.*, EXISTS(
@@ -133,7 +134,24 @@ $relatedProducts = $relatedStmt->fetchAll();
 
 <section class="container product-detail">
     <div class="card product-detail-card">
-        <div class="product-detail-thumb"><?= product_thumb_html($product, 64) ?></div>
+        <div class="product-detail-gallery">
+            <div class="product-detail-thumb" id="product-gallery-main">
+                <?php if ($galleryImages): ?>
+                    <img src="/market/<?= e($galleryImages[0]) ?>" alt="<?= e($product['name']) ?>" id="product-gallery-main-img">
+                <?php else: ?>
+                    <?= icon((string) $product['icon'], 64) ?>
+                <?php endif; ?>
+            </div>
+            <?php if (count($galleryImages) > 1): ?>
+                <div class="product-gallery-thumbs">
+                    <?php foreach ($galleryImages as $i => $galleryImg): ?>
+                        <button type="button" class="product-gallery-thumb-btn <?= $i === 0 ? 'is-active' : '' ?>" data-img="/market/<?= e($galleryImg) ?>">
+                            <img src="/market/<?= e($galleryImg) ?>" alt="<?= e($product['name']) ?> - photo <?= $i + 1 ?>">
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <div class="product-detail-info">
             <?php if ($pp['discount_percent']): ?><span class="badge-discount product-detail-badge">-<?= $pp['discount_percent'] ?>%</span><?php endif; ?>

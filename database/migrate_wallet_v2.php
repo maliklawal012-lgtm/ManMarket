@@ -409,4 +409,28 @@ migrate_step(
     }
 );
 
+// ----------------------------------------------------------------------
+// Etape 15 : photos supplementaires (facultatives) par produit, en plus
+// de products.image (photo principale, inchangee). Affichees en galerie
+// cliquable sur la fiche produit publique, uniquement quand il y en a.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Creer la table product_images',
+    fn (PDO $db) => migrate_table_exists($db, 'product_images'),
+    function (PDO $db) {
+        $db->exec("
+            CREATE TABLE product_images (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                product_id INT NOT NULL,
+                image VARCHAR(255) NOT NULL,
+                sort_order INT NOT NULL DEFAULT 0,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_product_images_product (product_id),
+                CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB
+        ");
+    }
+);
+
 echo "\nMigration terminee.\n";

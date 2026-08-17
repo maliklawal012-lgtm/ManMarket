@@ -22,11 +22,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     $stmt->execute(['id' => (int) $_POST['id']]);
     $row = $stmt->fetch();
 
+    $stmt = $db->prepare('SELECT image FROM product_images WHERE product_id = :id');
+    $stmt->execute(['id' => (int) $_POST['id']]);
+    $galleryToDelete = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
     $stmt = $db->prepare('DELETE FROM products WHERE id = :id');
     $stmt->execute(['id' => (int) $_POST['id']]);
 
     if ($row) {
         delete_uploaded_image($row['image']);
+    }
+    foreach ($galleryToDelete as $galleryImage) {
+        delete_uploaded_image($galleryImage);
     }
 
     header('Location: /market/admin/produits.php');
@@ -98,6 +105,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
         }
     }
 
+    // Photos supplementaires (facultatives) : chaque fichier fourni est
+    // valide de la meme facon que la photo principale, avant tout
+    // enregistrement (comme le reste du formulaire, echec = rien n'est
+    // sauvegarde plutot qu'un enregistrement partiel).
+    $newGalleryFiles = [];
+    if (!empty($_FILES['new_images']) && is_array($_FILES['new_images']['tmp_name'])) {
+        foreach ($_FILES['new_images']['tmp_name'] as $i => $tmpName) {
+            if ($_FILES['new_images']['error'][$i] === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+            $singleFile = [
+                'name' => $_FILES['new_images']['name'][$i],
+                'type' => $_FILES['new_images']['type'][$i],
+                'tmp_name' => $tmpName,
+                'error' => $_FILES['new_images']['error'][$i],
+                'size' => $_FILES['new_images']['size'][$i],
+            ];
+            $validation = validate_uploaded_image($singleFile);
+            if ($validation['error']) {
+                $errors['new_images'] = $validation['error'];
+                break;
+            }
+            $newGalleryFiles[] = ['file' => $singleFile, 'ext' => $validation['ext']];
+        }
+    }
+
     if (!$errors) {
         $baseSlug = slugify($name) ?: 'produit';
         $slug = $baseSlug;
@@ -161,6 +194,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             }
         }
 
+        if (!empty($_POST['delete_gallery_images']) && is_array($_POST['delete_gallery_images'])) {
+            foreach ($_POST['delete_gallery_images'] as $galleryImageId) {
+                $stmt = $db->prepare('SELECT image FROM product_images WHERE id = :id AND product_id = :pid');
+                $stmt->execute(['id' => (int) $galleryImageId, 'pid' => $productId]);
+                $imagePath = $stmt->fetchColumn();
+                if ($imagePath) {
+                    delete_uploaded_image($imagePath);
+                    $db->prepare('DELETE FROM product_images WHERE id = :id')->execute(['id' => (int) $galleryImageId]);
+                }
+            }
+        }
+
+        if ($newGalleryFiles) {
+            $maxSortStmt = $db->prepare('SELECT MAX(sort_order) FROM product_images WHERE product_id = :pid');
+            $maxSortStmt->execute(['pid' => $productId]);
+            $maxSort = (int) ($maxSortStmt->fetchColumn() ?: 0);
+            $insertGallery = $db->prepare('INSERT INTO product_images (product_id, image, sort_order) VALUES (:pid, :img, :sort)');
+            foreach ($newGalleryFiles as $galleryFile) {
+                $path = store_uploaded_image($galleryFile['file'], $galleryFile['ext'], PRODUCT_UPLOAD_DIR, PRODUCT_UPLOAD_WEB_PATH);
+                $maxSort++;
+                $insertGallery->execute(['pid' => $productId, 'img' => $path, 'sort' => $maxSort]);
+            }
+        }
+
         header('Location: /market/admin/produits.php');
         exit;
     }
@@ -171,6 +228,7 @@ $shops = $db->query('SELECT id, name FROM shops ORDER BY sort_order')->fetchAll(
 
 $editing = null;
 $editingSizeStocks = [];
+$editingGalleryImages = [];
 $formAction = (string) ($_GET['action'] ?? '');
 
 if ($formAction === 'new') {
@@ -189,6 +247,10 @@ if ($formAction === 'new') {
         foreach ($stmt->fetchAll() as $row) {
             $editingSizeStocks[$row['size']] = (int) $row['stock'];
         }
+
+        $stmt = $db->prepare('SELECT id, image FROM product_images WHERE product_id = :id ORDER BY sort_order, id');
+        $stmt->execute(['id' => (int) $editing['id']]);
+        $editingGalleryImages = $stmt->fetchAll();
     }
 }
 
@@ -196,6 +258,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errors) {
     $editing = $_POST;
     $editing['image'] = $currentImage ?? null;
     $editingSizeStocks = $_POST['size_stock'] ?? [];
+    if (($editing['id'] ?? 0)) {
+        $stmt = $db->prepare('SELECT id, image FROM product_images WHERE product_id = :id ORDER BY sort_order, id');
+        $stmt->execute(['id' => (int) $editing['id']]);
+        $editingGalleryImages = $stmt->fetchAll();
+    }
 }
 
 $pageTitle = $editing ? (($editing['id'] ?? 0) ? 'Modifier le produit' : 'Nouveau produit') : 'Produits';
@@ -343,6 +410,26 @@ if ($editing):
                 <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
                 <span class="char-count">JPG, PNG, WEBP ou GIF — 3 Mo max. Sans image, l'icône ci-dessous est utilisée à la place.</span>
                 <?php if (isset($errors['image'])): ?><span class="field-error"><?= e($errors['image']) ?></span><?php endif; ?>
+            </div>
+
+            <div class="form-field <?= isset($errors['new_images']) ? 'has-error' : '' ?>">
+                <label for="new_images">Photos supplémentaires (optionnel, visibles en galerie sur la fiche produit)</label>
+                <?php if ($editingGalleryImages): ?>
+                    <div class="admin-gallery-preview">
+                        <?php foreach ($editingGalleryImages as $galleryImage): ?>
+                            <div class="admin-gallery-preview-item">
+                                <img src="/market/<?= e((string) $galleryImage['image']) ?>" alt="">
+                                <label class="filter-toggle">
+                                    <input type="checkbox" name="delete_gallery_images[]" value="<?= (int) $galleryImage['id'] ?>">
+                                    <span>Supprimer</span>
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                <input type="file" id="new_images" name="new_images[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                <span class="char-count">JPG, PNG, WEBP ou GIF — 3 Mo max chacune. Plusieurs fichiers a la fois possible.</span>
+                <?php if (isset($errors['new_images'])): ?><span class="field-error"><?= e($errors['new_images']) ?></span><?php endif; ?>
             </div>
 
             <div class="form-row">
