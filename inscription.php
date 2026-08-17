@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($old['email'] === '' || !filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Veuillez indiquer une adresse email valide.';
     }
-    if (mb_strlen($password) < 6) {
-        $errors['password'] = 'Le mot de passe doit contenir au moins 6 caractères.';
+    if (mb_strlen($password) < 8) {
+        $errors['password'] = 'Le mot de passe doit contenir au moins 8 caractères.';
     } elseif ($password !== $passwordConfirm) {
         $errors['password_confirm'] = 'Les mots de passe ne correspondent pas.';
     }

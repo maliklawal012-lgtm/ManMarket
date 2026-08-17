@@ -33,8 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
     $newPassword = (string) ($_POST['new_password'] ?? '');
     $newPasswordConfirm = (string) ($_POST['new_password_confirm'] ?? '');
 
-    if (mb_strlen($newPassword) < 6) {
-        $errors['new_password'] = 'Le nouveau mot de passe doit contenir au moins 6 caractères.';
+    if (mb_strlen($newPassword) < 8) {
+        $errors['new_password'] = 'Le nouveau mot de passe doit contenir au moins 8 caractères.';
     } elseif ($newPassword !== $newPasswordConfirm) {
         $errors['new_password_confirm'] = 'Les mots de passe ne correspondent pas.';
     }

@@ -76,8 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'passwor
     if (!$row || !password_verify($currentPassword, $row['password_hash'])) {
         $passwordErrors['current_password'] = 'Mot de passe actuel incorrect.';
     }
-    if (mb_strlen($newPassword) < 6) {
-        $passwordErrors['new_password'] = 'Le nouveau mot de passe doit contenir au moins 6 caractères.';
+    if (mb_strlen($newPassword) < 8) {
+        $passwordErrors['new_password'] = 'Le nouveau mot de passe doit contenir au moins 8 caractères.';
     } elseif ($newPassword !== $newPasswordConfirm) {
         $passwordErrors['new_password_confirm'] = 'Les mots de passe ne correspondent pas.';
     }
