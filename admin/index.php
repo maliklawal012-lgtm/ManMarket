@@ -10,7 +10,7 @@ $db = get_db();
 
 $geniuspayAccount = geniuspay_request('GET', '/account');
 
-$pendingOrders = (int) $db->query("SELECT COUNT(*) FROM contact_messages WHERE subject = 'Commande' AND status = 'pending'")->fetchColumn();
+$pendingOrders = (int) $db->query("SELECT COUNT(*) FROM orders WHERE fulfillment_status = 'pending'")->fetchColumn();
 $pendingMessages = (int) $db->query("SELECT COUNT(*) FROM contact_messages WHERE subject != 'Commande' AND status = 'pending'")->fetchColumn();
 $productCount = (int) $db->query('SELECT COUNT(*) FROM products')->fetchColumn();
 $userCount = (int) $db->query('SELECT COUNT(*) FROM users')->fetchColumn();
@@ -31,23 +31,17 @@ $subscriptionsToWatch = (int) $db->query("
 /* ---------- Chiffre d'affaires livre (donnees reelles, order_items) ---------- */
 $deliveredRevenue = (int) $db->query("
     SELECT COALESCE(SUM(oi.unit_price * oi.quantity), 0)
-    FROM legacy_order_items oi
-    JOIN contact_messages o ON o.id = oi.order_id
-    WHERE o.status = 'delivered'
+    FROM order_items oi
+    WHERE oi.fulfillment_status = 'delivered'
 ")->fetchColumn();
 
-$recentOrders = $db->query("
-    SELECT * FROM contact_messages
-    WHERE subject = 'Commande'
-    ORDER BY created_at DESC
-    LIMIT 5
-")->fetchAll();
+/* ---------- Activite recente (donnees reelles, sources multiples) ---------- */
+$activity = array_slice(get_recent_activity(4), 0, 7);
 
-/* ---------- Commandes des 7 derniers jours (donnees reelles) ---------- */
+/* ---------- Commandes des 7 derniers jours + dernieres commandes ---------- */
 $stmt = $db->prepare("
     SELECT DATE(created_at) AS day, COUNT(*) AS total
-    FROM contact_messages
-    WHERE subject = 'Commande' AND created_at >= :since
+    FROM orders WHERE created_at >= :since
     GROUP BY DATE(created_at)
 ");
 $stmt->execute(['since' => date('Y-m-d 00:00:00', strtotime('-6 days'))]);
@@ -60,26 +54,7 @@ for ($i = 6; $i >= 0; $i--) {
 }
 $maxCount = max(array_merge([1], array_column($last7Days, 'count')));
 
-/* ---------- Activite recente (donnees reelles, sources multiples) ---------- */
-$activity = array_slice(get_recent_activity(4), 0, 7);
-
-/* ---------- Nouveau systeme (wallet) : commandes des 7 derniers jours + dernieres ---------- */
-$stmt = $db->prepare("
-    SELECT DATE(created_at) AS day, COUNT(*) AS total
-    FROM orders WHERE created_at >= :since
-    GROUP BY DATE(created_at)
-");
-$stmt->execute(['since' => date('Y-m-d 00:00:00', strtotime('-6 days'))]);
-$newOrdersByDay = array_column($stmt->fetchAll(), 'total', 'day');
-
-$newLast7Days = [];
-for ($i = 6; $i >= 0; $i--) {
-    $day = date('Y-m-d', strtotime("-{$i} days"));
-    $newLast7Days[] = ['day' => $day, 'label' => date('d/m', strtotime($day)), 'count' => (int) ($newOrdersByDay[$day] ?? 0)];
-}
-$maxNewCount = max(array_merge([1], array_column($newLast7Days, 'count')));
-
-$recentNewOrders = $db->query("
+$recentOrders = $db->query("
     SELECT o.*, COALESCE((SELECT p.status FROM payments p WHERE p.order_id = o.id ORDER BY p.id DESC LIMIT 1), NULL) AS payment_status_live
     FROM orders o
     ORDER BY o.created_at DESC
@@ -184,7 +159,7 @@ $recentNewOrders = $db->query("
         <div class="card">
             <div class="admin-toolbar">
                 <h2>Dernières commandes</h2>
-                <a href="/market/admin/commandes.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
+                <a href="/market/admin/commandes-actives.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
             </div>
 
             <?php if (!$recentOrders): ?>
@@ -196,17 +171,25 @@ $recentNewOrders = $db->query("
                             <tr>
                                 <th>Date</th>
                                 <th>Client</th>
-                                <th>Message</th>
+                                <th>Total</th>
                                 <th>Statut</th>
+                                <th>Paiement</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($recentOrders as $order): ?>
                                 <tr>
                                     <td><?= e(date('d/m/Y H:i', strtotime((string) $order['created_at']))) ?></td>
-                                    <td><?= e($order['name']) ?></td>
-                                    <td class="wrap"><?= e(mb_strimwidth($order['message'], 0, 80, '…')) ?></td>
-                                    <td><span class="tag <?= order_status_tag_class($order['status']) ?>"><?= e(order_status_label($order['status'])) ?></span></td>
+                                    <td><?= e($order['customer_name']) ?></td>
+                                    <td><?= format_price((int) round((float) $order['total_amount'])) ?></td>
+                                    <td><span class="tag <?= order_status_tag_class($order['fulfillment_status']) ?>"><?= e(order_status_label($order['fulfillment_status'])) ?></span></td>
+                                    <td>
+                                        <?php if ($order['payment_status_live']): ?>
+                                            <span class="tag <?= payment_status_tag_class($order['payment_status_live']) ?>"><?= e(payment_status_label($order['payment_status_live'])) ?></span>
+                                        <?php else: ?>
+                                            <span class="char-count">À la livraison</span>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -235,73 +218,6 @@ $recentNewOrders = $db->query("
                         </div>
                     </div>
                 <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<div class="admin-toolbar" style="margin: var(--gap) 0 12px;">
-    <h2>Commandes (nouveau système — paiement en ligne &amp; wallets)</h2>
-    <a href="/market/admin/commandes-actives.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
-</div>
-
-<div class="admin-dashboard-grid">
-    <div class="card">
-        <div class="admin-toolbar">
-            <h2>Commandes par jour (7 derniers jours)</h2>
-        </div>
-        <?php if (array_sum(array_column($newLast7Days, 'count')) === 0): ?>
-            <p class="empty-state">Aucune commande sur le nouveau système pour le moment.</p>
-        <?php else: ?>
-            <div class="admin-bars">
-                <?php foreach ($newLast7Days as $day): ?>
-                    <div class="admin-bar-col">
-                        <div class="admin-bar" style="height: <?= max(6, (int) round($day['count'] / $maxNewCount * 100)) ?>%; background:#4f46e5;">
-                            <span class="admin-bar-value"><?= $day['count'] ?></span>
-                        </div>
-                        <span class="admin-bar-label"><?= e($day['label']) ?></span>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <div class="card">
-        <div class="admin-toolbar">
-            <h2>Dernières commandes</h2>
-        </div>
-        <?php if (!$recentNewOrders): ?>
-            <p class="empty-state">Aucune commande pour le moment.</p>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Client</th>
-                            <th>Total</th>
-                            <th>Statut</th>
-                            <th>Paiement</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($recentNewOrders as $order): ?>
-                            <tr>
-                                <td><?= e(date('d/m/Y H:i', strtotime((string) $order['created_at']))) ?></td>
-                                <td><?= e($order['customer_name']) ?></td>
-                                <td><?= format_price((int) round((float) $order['total_amount'])) ?></td>
-                                <td><span class="tag <?= order_status_tag_class($order['fulfillment_status']) ?>"><?= e(order_status_label($order['fulfillment_status'])) ?></span></td>
-                                <td>
-                                    <?php if ($order['payment_status_live']): ?>
-                                        <span class="tag <?= payment_status_tag_class($order['payment_status_live']) ?>"><?= e(payment_status_label($order['payment_status_live'])) ?></span>
-                                    <?php else: ?>
-                                        <span class="char-count">À la livraison</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
             </div>
         <?php endif; ?>
     </div>

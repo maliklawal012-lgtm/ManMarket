@@ -23,17 +23,16 @@ if ($selectedShop) {
 
     $stmt = $db->prepare("
         SELECT COALESCE(SUM(oi.unit_price * oi.quantity), 0) AS revenue, COALESCE(SUM(oi.quantity), 0) AS items_sold
-        FROM legacy_order_items oi
-        JOIN contact_messages o ON o.id = oi.order_id
-        WHERE oi.shop_id = :shop_id AND o.status = 'delivered'
+        FROM order_items oi
+        WHERE oi.shop_id = :shop_id AND oi.fulfillment_status = 'delivered'
     ");
     $stmt->execute(['shop_id' => $shopId]);
     $shopDelivered = $stmt->fetch();
 
     $stmt = $db->prepare('
-        SELECT COUNT(DISTINCT o.id) AS order_count, COUNT(DISTINCT o.email) AS customer_count
-        FROM contact_messages o
-        JOIN legacy_order_items oi ON oi.order_id = o.id
+        SELECT COUNT(DISTINCT o.id) AS order_count, COUNT(DISTINCT o.customer_email) AS customer_count
+        FROM orders o
+        JOIN order_items oi ON oi.order_id = o.id
         WHERE oi.shop_id = :shop_id
     ');
     $stmt->execute(['shop_id' => $shopId]);
@@ -41,8 +40,8 @@ if ($selectedShop) {
 
     $stmt = $db->prepare("
         SELECT YEARWEEK(o.created_at, 3) AS yw, COUNT(DISTINCT o.id) AS total
-        FROM contact_messages o
-        JOIN legacy_order_items oi ON oi.order_id = o.id
+        FROM orders o
+        JOIN order_items oi ON oi.order_id = o.id
         WHERE oi.shop_id = :shop_id AND o.created_at >= :since
         GROUP BY yw
     ");
@@ -59,7 +58,7 @@ if ($selectedShop) {
 
     $stmt = $db->prepare('
         SELECT product_name, SUM(quantity) AS total_qty
-        FROM legacy_order_items
+        FROM order_items
         WHERE shop_id = :shop_id
         GROUP BY product_name
         ORDER BY total_qty DESC
@@ -131,10 +130,9 @@ $maxByShop = max(array_merge([1], array_column($productsByShop, 'total')));
 /* ---------- Chiffre d'affaires par boutique (commandes livrees) ---------- */
 $revenueByShop = $db->query("
     SELECT s.name, s.color,
-        COALESCE(SUM(CASE WHEN o.status = 'delivered' THEN oi.unit_price * oi.quantity ELSE 0 END), 0) AS revenue
+        COALESCE(SUM(CASE WHEN oi.fulfillment_status = 'delivered' THEN oi.unit_price * oi.quantity ELSE 0 END), 0) AS revenue
     FROM shops s
-    LEFT JOIN legacy_order_items oi ON oi.shop_id = s.id
-    LEFT JOIN contact_messages o ON o.id = oi.order_id
+    LEFT JOIN order_items oi ON oi.shop_id = s.id
     GROUP BY s.id
     ORDER BY revenue DESC
 ")->fetchAll();

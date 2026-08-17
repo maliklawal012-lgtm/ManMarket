@@ -33,7 +33,7 @@ if (!$vendorShop) {
 
 $currentVendorPage = basename($_SERVER['SCRIPT_NAME']);
 
-$stmt = get_db()->prepare("SELECT COUNT(DISTINCT order_id) FROM legacy_order_items WHERE shop_id = :shop_id AND vendor_status = 'pending'");
+$stmt = get_db()->prepare("SELECT COUNT(DISTINCT order_id) FROM order_items WHERE shop_id = :shop_id AND fulfillment_status = 'pending'");
 $stmt->execute(['shop_id' => (int) $vendorShop['id']]);
 $pendingVendorOrders = (int) $stmt->fetchColumn();
 
