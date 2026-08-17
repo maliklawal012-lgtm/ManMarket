@@ -502,37 +502,6 @@ function commission_status_tag_class(string $status): string
     ][$status] ?? '';
 }
 
-function get_shop_withdrawable_revenue(int $shopId): int
-{
-    $stmt = get_db()->prepare("
-        SELECT COALESCE(SUM(oi.unit_price * oi.quantity), 0)
-        FROM legacy_order_items oi
-        JOIN contact_messages o ON o.id = oi.order_id
-        JOIN legacy_payments p ON p.order_id = o.id
-        WHERE oi.shop_id = :shop_id AND o.status = 'delivered' AND p.status = 'completed'
-    ");
-    $stmt->execute(['shop_id' => $shopId]);
-
-    return (int) $stmt->fetchColumn();
-}
-
-function get_shop_reserved_withdrawals(int $shopId): int
-{
-    $stmt = get_db()->prepare("
-        SELECT COALESCE(SUM(amount), 0)
-        FROM withdrawal_requests
-        WHERE shop_id = :shop_id AND status IN ('pending', 'approved', 'paid')
-    ");
-    $stmt->execute(['shop_id' => $shopId]);
-
-    return (int) $stmt->fetchColumn();
-}
-
-function get_shop_available_balance(int $shopId): int
-{
-    return max(0, get_shop_withdrawable_revenue($shopId) - get_shop_reserved_withdrawals($shopId));
-}
-
 function withdrawal_status_label(string $status): string
 {
     return [
