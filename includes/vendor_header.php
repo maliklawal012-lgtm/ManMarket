@@ -63,7 +63,7 @@ $vendorNavItems = [
 <title><?= isset($pageTitle) ? e($pageTitle) . ' | Espace vendeur ManMarket' : 'Espace vendeur ManMarket' ?></title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%2316a34a%22/><text x=%2212%22 y=%2217%22 font-size=%2214%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>M</text></svg>">
-<link rel="stylesheet" href="/market/assets/css/style.css">
+<link rel="stylesheet" href="<?= e(asset_url('assets/css/style.css')) ?>">
 </head>
 <body class="admin-body">
 

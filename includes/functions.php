@@ -843,6 +843,20 @@ function e(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Ajoute un parametre ?v=<date de modification> a un asset statique
+ * (CSS/JS) pour forcer le navigateur a recharger la derniere version des
+ * qu'elle change, sans avoir a demander aux visiteurs de vider leur cache
+ * a chaque mise a jour du site.
+ */
+function asset_url(string $webPath): string
+{
+    $absolutePath = __DIR__ . '/../' . ltrim($webPath, '/');
+    $version = is_file($absolutePath) ? (string) filemtime($absolutePath) : '1';
+
+    return '/market/' . ltrim($webPath, '/') . '?v=' . $version;
+}
+
 function slugify(string $value): string
 {
     $value = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value) ?: $value;

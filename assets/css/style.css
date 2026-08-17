@@ -107,7 +107,7 @@ button { font-family: inherit; cursor: pointer; }
 
 .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .logo-mark {
-    width: 38px; height: 38px; border-radius: 10px;
+    width: 48px; height: 48px; border-radius: 10px;
     background: var(--primary); color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-weight: 800; font-size: 1.1rem;
@@ -369,7 +369,7 @@ button { font-family: inherit; cursor: pointer; }
     background: var(--primary-light); color: var(--primary);
     display: flex; align-items: center; justify-content: center;
 }
-.product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.product-thumb img { width: 100%; height: 100%; object-fit: contain; }
 
 .product-card h3 {
     font-size: .82rem; font-weight: 700;
@@ -669,7 +669,8 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- Fiche produit ---------- */
 .product-detail-card { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: var(--gap); }
-.product-detail-thumb { width: 200px; height: 200px; flex-shrink: 0; position: relative; }
+.product-detail-thumb { width: 200px; height: 200px; flex-shrink: 0; position: relative; overflow: hidden; border-radius: var(--radius-sm); background: var(--primary-light); display: flex; align-items: center; justify-content: center; }
+.product-detail-thumb img { width: 100%; height: 100%; object-fit: contain; }
 .product-detail-info { flex: 1; min-width: 240px; position: relative; }
 .product-detail-badge { position: static; display: inline-block; margin-bottom: 10px; }
 .product-detail-info h1 { font-size: 1.3rem; font-weight: 800; margin: 8px 0 6px; }

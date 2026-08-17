@@ -2,6 +2,6 @@
     </div>
 </div>
 
-<script src="/market/assets/js/main.js"></script>
+<script src="<?= e(asset_url('assets/js/main.js')) ?>"></script>
 </body>
 </html>
