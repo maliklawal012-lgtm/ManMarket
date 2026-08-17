@@ -45,6 +45,9 @@ if (!$order) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vendor_status'])) {
     if (in_array($_POST['vendor_status'], $vendorStatuses, true)) {
+        if ($_POST['vendor_status'] === 'rejected') {
+            restore_rejected_order_items_stock($orderId, $shopId);
+        }
         $stmt = $db->prepare('UPDATE order_items SET fulfillment_status = :status WHERE order_id = :order_id AND shop_id = :shop_id');
         $stmt->execute(['status' => $_POST['vendor_status'], 'order_id' => $orderId, 'shop_id' => $shopId]);
     }

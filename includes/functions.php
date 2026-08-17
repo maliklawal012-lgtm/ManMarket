@@ -403,6 +403,35 @@ function restore_order_stock(int $orderId): void
 }
 
 /**
+ * Recredite le stock des articles d'UNE boutique dans une commande qui ne
+ * sont pas deja marques 'rejected' (evite un recredit en double si le
+ * vendeur re-soumet 'rejected' plusieurs fois). Symetrique de
+ * restore_order_stock() mais limitee aux articles de cette boutique,
+ * utilisee quand un vendeur rejette sa part d'une commande multi-boutiques
+ * sans que la commande entiere ne soit annulee.
+ */
+function restore_rejected_order_items_stock(int $orderId, int $shopId): void
+{
+    $db = get_db();
+    $stmt = $db->prepare("
+        SELECT product_id, size, quantity, refunded_quantity
+        FROM order_items
+        WHERE order_id = :order_id AND shop_id = :shop_id AND fulfillment_status != 'rejected'
+    ");
+    $stmt->execute(['order_id' => $orderId, 'shop_id' => $shopId]);
+
+    foreach ($stmt->fetchAll() as $item) {
+        if ($item['product_id'] === null) {
+            continue;
+        }
+        $qty = (int) $item['quantity'] - (int) $item['refunded_quantity'];
+        if ($qty > 0) {
+            restore_product_stock((int) $item['product_id'], $item['size'], $qty);
+        }
+    }
+}
+
+/**
  * Comptabilise un paiement en ligne reussi pour un client actuellement
  * restreint (payment_restricted=1). Apres 2 paiements en ligne reussis
  * consecutifs, le client retrouve le choix du paiement a la livraison.

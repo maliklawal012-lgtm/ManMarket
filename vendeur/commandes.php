@@ -24,8 +24,12 @@ $vendorStatuses = ['pending', 'confirmed', 'rejected'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['vendor_status'])) {
     if (in_array($_POST['vendor_status'], $vendorStatuses, true)) {
+        $postedOrderId = (int) $_POST['order_id'];
+        if ($_POST['vendor_status'] === 'rejected') {
+            restore_rejected_order_items_stock($postedOrderId, $shopId);
+        }
         $stmt = $db->prepare('UPDATE order_items SET fulfillment_status = :status WHERE order_id = :order_id AND shop_id = :shop_id');
-        $stmt->execute(['status' => $_POST['vendor_status'], 'order_id' => (int) $_POST['order_id'], 'shop_id' => $shopId]);
+        $stmt->execute(['status' => $_POST['vendor_status'], 'order_id' => $postedOrderId, 'shop_id' => $shopId]);
     }
     header('Location: /market/vendeur/commandes.php');
     exit;
