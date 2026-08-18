@@ -20,16 +20,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
     $isAdmin = isset($_POST['is_admin']) ? 1 : 0;
     $isBlocked = isset($_POST['is_blocked']) ? 1 : 0;
     $blockedReason = trim((string) ($_POST['blocked_reason'] ?? ''));
+    $confirmPassword = (string) ($_POST['confirm_password'] ?? '');
+
+    $previousStmt = $db->prepare('SELECT is_blocked, is_admin FROM users WHERE id = :id');
+    $previousStmt->execute(['id' => $id]);
+    $previous = $previousStmt->fetch();
+    $wasBlocked = (int) ($previous['is_blocked'] ?? 0) === 1;
+    $wasAdmin = (int) ($previous['is_admin'] ?? 0) === 1;
+    $adminRoleChanging = $isAdmin !== ($wasAdmin ? 1 : 0);
 
     if ($id === (int) $currentAdmin['id'] && (!$isAdmin || $isBlocked)) {
         $saveError = "Vous ne pouvez pas retirer vos propres droits administrateur ni vous bloquer vous-même.";
-    } else {
-        $previousStmt = $db->prepare('SELECT is_blocked, is_admin FROM users WHERE id = :id');
-        $previousStmt->execute(['id' => $id]);
-        $previous = $previousStmt->fetch();
-        $wasBlocked = (int) ($previous['is_blocked'] ?? 0) === 1;
-        $wasAdmin = (int) ($previous['is_admin'] ?? 0) === 1;
+    } elseif ($adminRoleChanging && !$currentAdmin['is_super_admin']) {
+        $saveError = "Seul un super-administrateur peut accorder ou retirer le statut administrateur.";
+    } elseif ($adminRoleChanging) {
+        // Action la plus sensible du panneau admin : reconfirmation par mot
+        // de passe, en plus du role super-admin deja verifie ci-dessus.
+        $currentHashStmt = $db->prepare('SELECT password_hash FROM users WHERE id = :id');
+        $currentHashStmt->execute(['id' => $currentAdmin['id']]);
+        $currentHash = (string) $currentHashStmt->fetchColumn();
+        if (!password_verify($confirmPassword, $currentHash)) {
+            $saveError = 'Mot de passe incorrect — le changement de statut administrateur n\'a pas été appliqué.';
+        }
+    }
 
+    if (!$saveError) {
         $stmt = $db->prepare('
             UPDATE users
             SET is_vendor = :is_vendor, is_admin = :is_admin, is_blocked = :is_blocked, blocked_reason = :reason
@@ -188,10 +203,19 @@ if (!$editing) {
                 </label>
             </div>
             <div class="form-field">
-                <label class="filter-toggle">
-                    <input type="checkbox" name="is_admin" value="1" <?= $editing['is_admin'] ? 'checked' : '' ?>>
-                    <span>Administrateur (accès complet à ce panneau)</span>
-                </label>
+                <?php if ($currentAdmin['is_super_admin']): ?>
+                    <label class="filter-toggle">
+                        <input type="checkbox" name="is_admin" value="1" <?= $editing['is_admin'] ? 'checked' : '' ?>>
+                        <span>Administrateur (accès complet à ce panneau)</span>
+                    </label>
+                    <span class="char-count">Changer ce statut demande de reconfirmer votre mot de passe ci-dessous.</span>
+                <?php else: ?>
+                    <label class="filter-toggle">
+                        <span>Administrateur : <strong><?= $editing['is_admin'] ? 'Oui' : 'Non' ?></strong></span>
+                    </label>
+                    <?php if ($editing['is_admin']): ?><input type="hidden" name="is_admin" value="1"><?php endif; ?>
+                    <span class="char-count">Seul un super-administrateur peut modifier ce statut.</span>
+                <?php endif; ?>
             </div>
             <div class="form-field">
                 <label class="filter-toggle">
@@ -203,6 +227,13 @@ if (!$editing) {
                 <label for="blocked_reason">Motif du blocage (optionnel, affiché à l'utilisateur)</label>
                 <input type="text" id="blocked_reason" name="blocked_reason" value="<?= e((string) ($editing['blocked_reason'] ?? '')) ?>" placeholder="Ex : Non-respect des conditions d'utilisation">
             </div>
+
+            <?php if ($currentAdmin['is_super_admin']): ?>
+                <div class="form-field">
+                    <label for="confirm_password">Votre mot de passe (uniquement requis pour changer le statut administrateur)</label>
+                    <input type="password" id="confirm_password" name="confirm_password" autocomplete="current-password">
+                </div>
+            <?php endif; ?>
 
             <button type="submit" class="btn btn-primary">Enregistrer</button>
         </form>

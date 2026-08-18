@@ -45,7 +45,7 @@ function current_user(): ?array
 
     if ($user === null) {
         $stmt = get_db()->prepare('
-            SELECT id, name, email, phone, avatar, is_vendor, is_admin, is_blocked, blocked_reason,
+            SELECT id, name, email, phone, avatar, is_vendor, is_admin, is_super_admin, is_blocked, blocked_reason,
                 payment_restricted, email_verified_at, last_login_at, last_activity_at, created_at
             FROM users WHERE id = :id
         ');
@@ -93,6 +93,25 @@ function require_admin(): array
     }
 
     if (!$user['is_admin']) {
+        http_response_code(403);
+        require __DIR__ . '/../admin/403.php';
+        exit;
+    }
+
+    return $user;
+}
+
+/**
+ * Reserve aux actions les plus sensibles (promouvoir/revoquer un autre
+ * admin) : un admin classique ne peut plus le faire seul. Distinct de
+ * is_admin (voir migration Etape 17) — aucun compte n'est super-admin par
+ * defaut, le premier s'obtient en base directement (voir DEPLOYMENT.md).
+ */
+function require_super_admin(): array
+{
+    $user = require_admin();
+
+    if (!$user['is_super_admin']) {
         http_response_code(403);
         require __DIR__ . '/../admin/403.php';
         exit;

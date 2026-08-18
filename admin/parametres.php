@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/csrf.php';
 
-require_admin();
+$currentAdmin = require_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
@@ -110,9 +110,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'social'
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'payment_fee') {
     $rateRaw = trim((string) ($_POST['online_payment_fee_rate'] ?? ''));
     $rate = is_numeric($rateRaw) ? (float) $rateRaw : -1;
+    $confirmPassword = (string) ($_POST['confirm_password'] ?? '');
 
     if ($rate < 0 || $rate > 100) {
         $errors['online_payment_fee_rate'] = 'Veuillez indiquer un pourcentage entre 0 et 100.';
+    } else {
+        // Reglage financier sensible : reconfirmation par mot de passe avant
+        // application, en plus de la protection require_admin() deja en place.
+        $currentHashStmt = $db->prepare('SELECT password_hash FROM users WHERE id = :id');
+        $currentHashStmt->execute(['id' => $currentAdmin['id']]);
+        $currentHash = (string) $currentHashStmt->fetchColumn();
+        if (!password_verify($confirmPassword, $currentHash)) {
+            $errors['confirm_password'] = 'Mot de passe incorrect — le taux n\'a pas été modifié.';
+        }
     }
 
     if (!$errors) {
@@ -187,6 +197,11 @@ require_once __DIR__ . '/../includes/admin_header.php';
             <label for="online_payment_fee_rate">Taux des frais de paiement en ligne (%)</label>
             <input type="number" id="online_payment_fee_rate" name="online_payment_fee_rate" step="0.01" min="0" max="100" value="<?= e($paymentFeePosted ? (string) ($_POST['online_payment_fee_rate'] ?? '') : get_setting('online_payment_fee_rate', '0.00')) ?>">
             <?php if (isset($errors['online_payment_fee_rate'])): ?><span class="field-error"><?= e($errors['online_payment_fee_rate']) ?></span><?php endif; ?>
+        </div>
+        <div class="form-field <?= isset($errors['confirm_password']) ? 'has-error' : '' ?>">
+            <label for="confirm_password_fee">Votre mot de passe (confirmation requise pour ce réglage financier)</label>
+            <input type="password" id="confirm_password_fee" name="confirm_password" autocomplete="current-password">
+            <?php if (isset($errors['confirm_password'])): ?><span class="field-error"><?= e($errors['confirm_password']) ?></span><?php endif; ?>
         </div>
         <button type="submit" class="btn btn-primary">Enregistrer</button>
     </form>

@@ -456,4 +456,20 @@ migrate_step(
     fn (PDO $db) => $db->exec('ALTER TABLE orders ADD COLUMN online_payment_fee_amount INT NOT NULL DEFAULT 0 AFTER delivery_fee_amount')
 );
 
+// ----------------------------------------------------------------------
+// Etape 17 : role super-administrateur, distinct d'un admin classique.
+// Seul un super-admin peut promouvoir/revoquer le role admin d'un autre
+// compte (admin/utilisateurs.php) — jusqu'ici n'importe quel admin le
+// pouvait, sans confirmation ni palier. Comme pour le tout premier admin
+// (voir DEPLOYMENT.md §4c), aucun compte n'est super-admin par defaut a
+// l'installation : le premier s'obtient en passant is_super_admin = 1 en
+// base directement sur un compte deja admin.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter users.is_super_admin',
+    fn (PDO $db) => migrate_column_exists($db, 'users', 'is_super_admin'),
+    fn (PDO $db) => $db->exec('ALTER TABLE users ADD COLUMN is_super_admin TINYINT(1) NOT NULL DEFAULT 0 AFTER is_admin')
+);
+
 echo "\nMigration terminee.\n";

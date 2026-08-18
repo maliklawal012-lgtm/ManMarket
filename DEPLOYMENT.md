@@ -190,13 +190,16 @@ Trois rôles, portés par `users.is_admin` / `users.is_vendor` (booléens) :
 
 - **Client** : aucun flag. Accès aux pages publiques + son propre compte (`require_login()`).
 - **Vendeur** : `is_vendor = 1`. Accès à `/vendeur/*` (`require_vendor()`). Un vendeur dont l'entité `vendors.status = 'suspended'` (distincte du flag `is_vendor`, gérée par un admin via `/admin/finances.php` → "Suspendre") perd l'accès à **tout** l'espace vendeur (`vendeur/suspendu.php`), pas seulement aux retraits.
-- **Admin** : `is_admin = 1`. Accès à `/admin/*` (`require_admin()`). Pas de sous-rôles — un admin a accès à l'intégralité du panneau (adapté à la taille de l'équipe actuelle ; à revisiter si l'équipe grandit).
+- **Admin** : `is_admin = 1`. Accès à `/admin/*` (`require_admin()`) et à l'intégralité du panneau.
+- **Super-admin** : `is_admin = 1 ET is_super_admin = 1`. Seul un super-admin peut accorder ou retirer le statut administrateur d'un autre compte (`admin/utilisateurs.php`, `require_super_admin()`) — action reconfirmée par mot de passe en plus du rôle. Un admin classique voit le statut administrateur d'un compte en lecture seule.
 
 Toutes les pages `/admin/*` et `/vendeur/*` sont protégées (vérifié par audit systématique — soit un appel direct à `require_admin()`/`require_vendor()`, soit via l'inclusion de `admin_header.php`/`vendor_header.php` qui l'appelle en interne). Toute action sensible (suspension, ajustement manuel de wallet) est tracée dans `audit_logs` avec l'admin responsable et la justification.
 
 **Connexion admin séparée + 2FA email** — un compte `is_admin = 1` ne peut plus s'authentifier via le formulaire public `/connexion.php` (rejeté avec un message générique, comme un email/mot de passe incorrect — aucune fuite d'information). Seul `/admin/connexion.php` accepte les comptes admin, et uniquement eux (symétrique : un compte client/vendeur y est rejeté de la même façon). Après mot de passe valide, un code à 6 chiffres est envoyé par email (usage unique, expire en 10 min, verrouillage après 5 essais incorrects — voir `login_2fa_codes`) avant l'ouverture de session (`verification-2fa.php`). `require_admin()` redirige tout visiteur non connecté directement vers `/admin/connexion.php`. Aucun compte admin n'est créé par défaut à l'installation (voir §4c) — le tout premier admin s'obtient en passant `is_admin = 1` en base directement sur un compte déjà inscrit.
 
 Récupération de mot de passe (`/mot-de-passe-oublie.php`, commune aux trois rôles) : token à usage unique haché en base (SHA-256), expire en 1h, aucune énumération d'email. Redirige vers `/admin/connexion.php` ou `/connexion.php` selon le rôle du compte concerné.
+
+**Super-administrateur** — comme pour le tout premier admin, aucun compte n'est super-admin par défaut à l'installation : `UPDATE users SET is_super_admin = 1 WHERE id = <votre_id>` sur un compte déjà admin. Sans cela, personne ne peut promouvoir de nouveaux admins. La reconfirmation par mot de passe (`admin/utilisateurs.php` pour un changement de statut admin, `admin/parametres.php` pour le taux de frais de paiement en ligne) s'ajoute à la protection par rôle, pas à la place.
 
 Protection CSRF sur tous les formulaires (`includes/csrf.php`), rate limiting sur connexion/inscription/webhook/retraits/2FA/reset (`includes/rate_limit.php`) — voir le code pour le détail des seuils.
 
