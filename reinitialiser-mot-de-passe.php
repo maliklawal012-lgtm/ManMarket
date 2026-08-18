@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 $pageTitle = 'Nouveau mot de passe';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/wallet_bootstrap.php';
 require_once __DIR__ . '/includes/csrf.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -46,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
             'id' => $reset['user_id'],
         ]);
         $db->prepare('DELETE FROM password_resets WHERE user_id = :id')->execute(['id' => $reset['user_id']]);
+        security_log('Mot de passe change (reinitialisation par token)', ['user_id' => $reset['user_id'], 'ip' => $_SERVER['REMOTE_ADDR'] ?? null]);
 
         $stmt = $db->prepare('SELECT is_admin FROM users WHERE id = :id');
         $stmt->execute(['id' => $reset['user_id']]);

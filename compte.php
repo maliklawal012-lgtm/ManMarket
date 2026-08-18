@@ -88,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'passwor
             'hash' => password_hash($newPassword, PASSWORD_DEFAULT),
             'id' => $user['id'],
         ]);
+        security_log('Mot de passe change (auto-service)', ['user_id' => $user['id'], 'ip' => $_SERVER['REMOTE_ADDR'] ?? null]);
         header('Location: /market/compte.php?password=ok');
         exit;
     }

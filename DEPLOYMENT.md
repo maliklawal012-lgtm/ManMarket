@@ -144,7 +144,20 @@ C:\wamp64\bin\php\php8.4.15\php.exe C:\wamp64\www\market\cron\notify_expiring_su
 
 Ce job envoie un email au propriétaire de chaque boutique dont l'abonnement expire dans exactement 3 jours. Une exécution quotidienne suffit (le seuil « = 3 jours » garantit un envoi unique par cycle d'abonnement, jamais de doublon).
 
-## 11. Vérifications post-déploiement (smoke tests)
+## 11. Durcissement sécurité avant mise en production
+
+Points identifiés lors de l'audit de sécurité (18 août 2026) qui dépendent de l'environnement cible et ne peuvent pas être corrigés dans le code — à traiter avant l'ouverture au public :
+
+- **HTTPS / HSTS / TLS** — servir le site exclusivement en HTTPS, rediriger tout HTTP vers HTTPS, activer l'en-tête `Strict-Transport-Security`. `includes/auth.php` détecte déjà HTTPS automatiquement (cookies `Secure` conditionnels) : aucun changement de code nécessaire, seulement la configuration serveur/certificat.
+- **Utilisateur MySQL dédié** — créer un compte applicatif avec uniquement `SELECT, INSERT, UPDATE, DELETE` sur la base `manmarket` (pas de `DROP`, `GRANT`, `FILE`), au lieu de `root` utilisé en développement local. Mettre à jour `DB_USER`/`DB_PASSWORD` dans `.env`.
+- **Sauvegardes** — aucune sauvegarde automatique n'existe aujourd'hui. Prévoir un `mysqldump` planifié (quotidien) vers un stockage séparé du serveur applicatif, avec un test de restauration régulier. Exemple de tâche planifiée :
+  ```
+  0 3 * * * mysqldump -u <user> -p<password> manmarket | gzip > /chemin/hors/serveur/manmarket-$(date +\%F).sql.gz
+  ```
+- **Durcissement `php.ini`** — en production : `display_errors = Off`, `log_errors = On`, désactiver toute variable de debug, fixer explicitement `post_max_size`/`upload_max_filesize` à des valeurs raisonnables (aucune limite explicite n'est fixée dans le code, uniquement les valeurs par défaut du serveur).
+- **Rotation des secrets** — définir une politique de rotation périodique (ex. annuelle) des clés Genius Pay (`GENIUSPAY_SECRET_KEY`, `GENIUSPAY_WEBHOOK_SECRET`) et du secret de session, en coordination avec Genius Pay pour éviter toute interruption de service au moment du changement.
+
+## 12. Vérifications post-déploiement (smoke tests)
 
 1. `php -l` sur l'ensemble du projet (aucune erreur de syntaxe) :
    ```
@@ -165,7 +178,7 @@ Ce job envoie un email au propriétaire de chaque boutique dont l'abonnement exp
 5. Vérifier que `GET /market/.env` et `GET /market/database/schema.sql` renvoient bien une erreur 403/404 (pas le contenu du fichier).
 6. Remplacer `VOTRE-DOMAINE` par le vrai nom de domaine dans `robots.txt` (ligne `Sitemap:`), puis vérifier que `/market/sitemap.php` renvoie bien du XML valide.
 
-## 12. Modèle de sécurité (RBAC)
+## 13. Modèle de sécurité (RBAC)
 
 Trois rôles, portés par `users.is_admin` / `users.is_vendor` (booléens) :
 
@@ -181,7 +194,7 @@ Récupération de mot de passe (`/mot-de-passe-oublie.php`, commune aux trois r�
 
 Protection CSRF sur tous les formulaires (`includes/csrf.php`), rate limiting sur connexion/inscription/webhook/retraits/2FA/reset (`includes/rate_limit.php`) — voir le code pour le détail des seuils.
 
-## 13. En cas de problème
+## 14. En cas de problème
 
 - Logs applicatifs : `logs/{geniuspay,payment,webhook,settlement,wallet,wallet_release,withdrawal,vendor_admin,refund,notifications}.log` (format JSON par ligne, voir `src/Support/Logger.php`). `notifications.log` trace chaque email (envoyé, échoué, ou ignoré si SMTP non configuré) — premier réflexe en cas de 2FA ou de reset de mot de passe non reçu.
 - Échec de rapprochement paiement (somme des parts vendeurs + commission ≠ montant payé) : jamais de crédit silencieux, la commande reste non réglée et un incident est enregistré dans `settlement_failures` — visible en haut de `/admin/finances.php` tant que non résolu.

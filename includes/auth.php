@@ -19,6 +19,22 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Expiration de session par inactivite : seuil plus strict pour un compte
+// admin (acces aux donnees financieres/sensibles) que pour un client/vendeur.
+const SESSION_INACTIVITY_MINUTES = 60;
+const ADMIN_SESSION_INACTIVITY_MINUTES = 20;
+
+function session_is_inactive(array $user): bool
+{
+    if ($user['last_activity_at'] === null) {
+        return false;
+    }
+    $thresholdMinutes = (int) $user['is_admin'] === 1 ? ADMIN_SESSION_INACTIVITY_MINUTES : SESSION_INACTIVITY_MINUTES;
+    $lastActivity = strtotime((string) $user['last_activity_at']);
+
+    return $lastActivity !== false && (time() - $lastActivity) > $thresholdMinutes * 60;
+}
+
 function current_user(): ?array
 {
     static $user = null;
@@ -37,6 +53,9 @@ function current_user(): ?array
         $user = $stmt->fetch() ?: false;
 
         if ($user && (int) $user['is_blocked'] === 1) {
+            logout_user();
+            $user = false;
+        } elseif ($user && session_is_inactive($user)) {
             logout_user();
             $user = false;
         } elseif ($user) {

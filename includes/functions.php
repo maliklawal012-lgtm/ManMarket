@@ -871,6 +871,16 @@ function slugify(string $value): string
     return trim($value, '-');
 }
 
+/**
+ * Point d'entree unique pour journaliser un evenement de securite (canal
+ * "security" du Logger applicatif) depuis un script de page — jamais le
+ * mot de passe/token lui-meme, seulement des metadonnees (user_id, ip...).
+ */
+function security_log(string $message, array $context = []): void
+{
+    \App\Support\Logger::info('security', $message, $context);
+}
+
 function get_setting(string $key, string $default = ''): string
 {
     static $settings = null;
@@ -940,6 +950,8 @@ function audit_action_label(string $action): string
         'order_pending' => 'a remis la commande en attente',
         'user_blocked' => "a bloqué l'utilisateur",
         'user_unblocked' => "a débloqué l'utilisateur",
+        'user_admin_granted' => "a promu administrateur l'utilisateur",
+        'user_admin_revoked' => "a retiré les droits administrateur de l'utilisateur",
     ][$action] ?? ('a effectué "' . $action . '" sur');
 }
 

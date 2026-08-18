@@ -205,6 +205,47 @@ final class NotificationService
         }, 'withdrawalRequested', $withdrawalId);
     }
 
+    /**
+     * Alerte de securite : le numero de reception (Wave/Mobile Money) d'une
+     * nouvelle demande de retrait differe de celui utilise lors de la
+     * precedente demande du meme vendeur. Envoyee au vendeur (pour qu'il
+     * reagisse si ce n'est pas lui) ET a l'equipe admin, en plus de la
+     * notification normale de nouvelle demande.
+     */
+    public function withdrawalAccountNumberChanged(int $withdrawalId, string $previousAccountNumber): void
+    {
+        $this->guard(function () use ($withdrawalId, $previousAccountNumber): void {
+            $stmt = $this->db->prepare('SELECT * FROM withdrawals WHERE id = :id');
+            $stmt->execute(['id' => $withdrawalId]);
+            $withdrawal = $stmt->fetch();
+            if (!$withdrawal) {
+                return;
+            }
+
+            $vendor = $this->findVendorContact((int) $withdrawal['vendor_id']);
+            if (!$vendor) {
+                return;
+            }
+
+            $subject = 'Nouveau numéro de réception sur votre demande de retrait';
+            $body = "Bonjour {$vendor['name']},\n\n"
+                . "Votre demande de retrait #{$withdrawalId} utilise un numero de reception ({$withdrawal['payment_method']} : {$withdrawal['account_number']}) different de votre precedente demande ({$previousAccountNumber}).\n\n"
+                . "Si c'est bien vous, aucune action n'est necessaire. Si vous n'etes pas a l'origine de cette demande, contactez immediatement le support ManMarket et changez votre mot de passe.\n\nL'equipe ManMarket";
+
+            $this->send($vendor['email'], $vendor['name'], $subject, $body, 'withdrawal_account_changed', $withdrawalId);
+
+            $admins = $this->db->query('SELECT name, email FROM users WHERE is_admin = 1')->fetchAll();
+            $adminBody = "Alerte securite ManMarket.\n\n"
+                . "La demande de retrait #{$withdrawalId} (vendeur : {$vendor['name']}) utilise un numero de reception different de la precedente demande de ce vendeur.\n\n"
+                . "Ancien numero : {$previousAccountNumber}\n"
+                . "Nouveau numero : {$withdrawal['account_number']} ({$withdrawal['payment_method']})\n\n"
+                . "A verifier avant tout traitement.\n\nL'equipe ManMarket";
+            foreach ($admins as $admin) {
+                $this->send($admin['email'], $admin['name'], '[Sécurité] Changement de numéro de retrait — ' . $vendor['name'], $adminBody, 'withdrawal_account_changed_admin', $withdrawalId);
+            }
+        }, 'withdrawalAccountNumberChanged', $withdrawalId);
+    }
+
     public function refundProcessed(int $refundId): void
     {
         $this->guard(function () use ($refundId): void {

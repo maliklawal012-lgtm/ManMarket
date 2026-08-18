@@ -1,12 +1,24 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/includes/rate_limit.php';
+
 $pageTitle = 'Recherche';
 require_once __DIR__ . '/includes/header.php';
 
 $q = trim((string) ($_GET['q'] ?? ''));
+$q = mb_substr($q, 0, 100);
+$qDisplay = $q;
 $products = [];
 $shops = [];
+$rateLimited = false;
+
+if ($q !== '') {
+    if (!rate_limit_check('search:' . rate_limit_client_ip(), 30, 60)) {
+        $rateLimited = true;
+        $q = '';
+    }
+}
 
 if ($q !== '') {
     $like = '%' . $q . '%';
@@ -37,7 +49,7 @@ $totalResults = count($products) + count($shops);
 <section class="page-banner">
     <div class="container page-banner-inner">
         <h1>Recherche</h1>
-        <p><?= $q !== '' ? 'Résultats pour « ' . e($q) . ' »' : 'Recherchez un produit ou une boutique.' ?></p>
+        <p><?= $qDisplay !== '' ? 'Résultats pour « ' . e($qDisplay) . ' »' : 'Recherchez un produit ou une boutique.' ?></p>
     </div>
 </section>
 
@@ -46,12 +58,16 @@ $totalResults = count($products) + count($shops);
     <form class="filters-bar card" method="get" action="/market/recherche.php">
         <div class="filters-search">
             <?= icon('search', 16) ?>
-            <input type="search" name="q" value="<?= e($q) ?>" placeholder="Rechercher un produit, une boutique...">
+            <input type="search" name="q" value="<?= e($qDisplay) ?>" placeholder="Rechercher un produit, une boutique...">
         </div>
         <button type="submit" class="btn btn-primary btn-sm">Rechercher</button>
     </form>
 
-    <?php if ($q === ''): ?>
+    <?php if ($rateLimited): ?>
+
+        <p class="empty-state">Trop de recherches en peu de temps. Merci de patienter une minute avant de réessayer.</p>
+
+    <?php elseif ($q === ''): ?>
 
         <p class="empty-state">Saisissez un mot-clé pour lancer votre recherche.</p>
 

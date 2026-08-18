@@ -68,6 +68,10 @@ final class WithdrawalService
             }
         }
 
+        $previousWithdrawals = $this->withdrawals->findByVendorId($vendorId);
+        $previousAccountNumber = $previousWithdrawals[0]['account_number'] ?? null;
+        $accountNumberChanged = $previousAccountNumber !== null && trim($previousAccountNumber) !== trim($accountNumber);
+
         $this->db->beginTransaction();
         try {
             $wallet = $this->wallets->findOrCreateForUpdate($vendorId);
@@ -98,6 +102,10 @@ final class WithdrawalService
 
             Logger::info('withdrawal', 'Demande de retrait creee', ['withdrawal_id' => $withdrawalId, 'vendor_id' => $vendorId, 'amount' => $amount]);
             $this->notifications?->withdrawalRequested($withdrawalId);
+            if ($accountNumberChanged) {
+                Logger::warning('withdrawal', 'Numero de reception different de la precedente demande', ['withdrawal_id' => $withdrawalId, 'vendor_id' => $vendorId]);
+                $this->notifications?->withdrawalAccountNumberChanged($withdrawalId, (string) $previousAccountNumber);
+            }
 
             return WithdrawalResult::success($withdrawalId, $reference);
         } catch (\Throwable $e) {

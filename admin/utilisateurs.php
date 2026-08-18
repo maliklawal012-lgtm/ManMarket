@@ -24,9 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
     if ($id === (int) $currentAdmin['id'] && (!$isAdmin || $isBlocked)) {
         $saveError = "Vous ne pouvez pas retirer vos propres droits administrateur ni vous bloquer vous-même.";
     } else {
-        $previouslyBlockedStmt = $db->prepare('SELECT is_blocked FROM users WHERE id = :id');
-        $previouslyBlockedStmt->execute(['id' => $id]);
-        $wasBlocked = (int) $previouslyBlockedStmt->fetchColumn() === 1;
+        $previousStmt = $db->prepare('SELECT is_blocked, is_admin FROM users WHERE id = :id');
+        $previousStmt->execute(['id' => $id]);
+        $previous = $previousStmt->fetch();
+        $wasBlocked = (int) ($previous['is_blocked'] ?? 0) === 1;
+        $wasAdmin = (int) ($previous['is_admin'] ?? 0) === 1;
 
         $stmt = $db->prepare('
             UPDATE users
@@ -45,6 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
             wallet_audit_log_repo()->record((int) $currentAdmin['id'], 'user_blocked', 'user', $id, $blockedReason !== '' ? $blockedReason : null, $_SERVER['REMOTE_ADDR'] ?? null);
         } elseif ($wasBlocked && $isBlocked === 0) {
             wallet_audit_log_repo()->record((int) $currentAdmin['id'], 'user_unblocked', 'user', $id, null, $_SERVER['REMOTE_ADDR'] ?? null);
+        }
+
+        if (!$wasAdmin && $isAdmin === 1) {
+            wallet_audit_log_repo()->record((int) $currentAdmin['id'], 'user_admin_granted', 'user', $id, null, $_SERVER['REMOTE_ADDR'] ?? null);
+        } elseif ($wasAdmin && $isAdmin === 0) {
+            wallet_audit_log_repo()->record((int) $currentAdmin['id'], 'user_admin_revoked', 'user', $id, null, $_SERVER['REMOTE_ADDR'] ?? null);
         }
 
         header('Location: /market/admin/utilisateurs.php');
