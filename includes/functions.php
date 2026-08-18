@@ -11,6 +11,26 @@ require_once __DIR__ . '/rate_limit.php';
  */
 const CLOTHING_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'];
 
+/**
+ * Version de la politique de confidentialite actuellement en vigueur
+ * (politique-confidentialite.php). Enregistree avec le consentement de
+ * chaque utilisateur a l'inscription (users.consent_privacy_policy_version)
+ * pour pouvoir un jour redemander le consentement si le texte change.
+ */
+const PRIVACY_POLICY_VERSION = '2026-08-18';
+
+/**
+ * Valide un numero de telephone ivoirien : 10 chiffres commençant par 0
+ * (format national en vigueur depuis 2021), avec indicatif +225/00225
+ * optionnel. Espaces, points et tirets sont toleres puis ignores.
+ */
+function validate_phone_number(string $phone): bool
+{
+    $normalized = preg_replace('/[\s.\-]/', '', $phone) ?? '';
+
+    return (bool) preg_match('/^(\+225|00225)?0\d{9}$/', $normalized);
+}
+
 function shoe_sizes(): array
 {
     return array_map('strval', range(20, 50));

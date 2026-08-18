@@ -68,6 +68,16 @@ function migrate_fk_exists(PDO $db, string $constraintName): bool
     return (bool) $stmt->fetch();
 }
 
+function migrate_index_exists(PDO $db, string $table, string $indexName): bool
+{
+    if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $table)) {
+        throw new InvalidArgumentException("Nom de table invalide : {$table}");
+    }
+    $stmt = $db->query('SHOW INDEX FROM ' . $table . ' WHERE Key_name = ' . $db->quote($indexName));
+
+    return (bool) $stmt->fetch();
+}
+
 function migrate_setting_exists(PDO $db, string $key): bool
 {
     $stmt = $db->prepare('SELECT 1 FROM settings WHERE `key` = ?');
@@ -470,6 +480,53 @@ migrate_step(
     'Ajouter users.is_super_admin',
     fn (PDO $db) => migrate_column_exists($db, 'users', 'is_super_admin'),
     fn (PDO $db) => $db->exec('ALTER TABLE users ADD COLUMN is_super_admin TINYINT(1) NOT NULL DEFAULT 0 AFTER is_admin')
+);
+
+// ----------------------------------------------------------------------
+// Etape 18 : index composite (shop_id, order_id) sur order_items. Seul un
+// index mono-colonne sur shop_id existait (cree automatiquement par la
+// contrainte de cle etrangere) : les pages "commandes du vendeur"
+// (vendeur/commandes.php, filtre WHERE shop_id = ... AND order_id IN (...))
+// beneficient d'un index couvrant les deux colonnes.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter l\'index composite order_items(shop_id, order_id)',
+    fn (PDO $db) => migrate_index_exists($db, 'order_items', 'idx_order_items_shop_order'),
+    fn (PDO $db) => $db->exec('ALTER TABLE order_items ADD INDEX idx_order_items_shop_order (shop_id, order_id)')
+);
+
+// ----------------------------------------------------------------------
+// Etape 19 : consentement RGPD a la collecte des donnees personnelles,
+// trace au niveau du compte au moment de l'inscription (jamais coche par
+// defaut, verifie cote serveur dans inscription.php). La version de la
+// politique de confidentialite acceptee est stockee separement de la date
+// pour pouvoir un jour redemander le consentement si le texte change.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter users.consent_data_processing_at',
+    fn (PDO $db) => migrate_column_exists($db, 'users', 'consent_data_processing_at'),
+    fn (PDO $db) => $db->exec('ALTER TABLE users ADD COLUMN consent_data_processing_at DATETIME NULL AFTER is_super_admin')
+);
+
+migrate_step(
+    'Ajouter users.consent_privacy_policy_version',
+    fn (PDO $db) => migrate_column_exists($db, 'users', 'consent_privacy_policy_version'),
+    fn (PDO $db) => $db->exec('ALTER TABLE users ADD COLUMN consent_privacy_policy_version VARCHAR(20) NULL AFTER consent_data_processing_at')
+);
+
+// ----------------------------------------------------------------------
+// Etape 20 : interrupteur admin pour desactiver entierement le paiement en
+// ligne (Genius Pay) au niveau du site, en gardant le paiement a la
+// livraison. Actif par defaut ('1') pour ne rien changer au comportement
+// existant des sites deja en production.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    "Ajouter le reglage online_payment_enabled ('1' par defaut)",
+    fn (PDO $db) => migrate_setting_exists($db, 'online_payment_enabled'),
+    fn (PDO $db) => $db->prepare("INSERT INTO settings (`key`, value) VALUES ('online_payment_enabled', '1')")->execute()
 );
 
 echo "\nMigration terminee.\n";

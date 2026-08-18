@@ -70,13 +70,36 @@ $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $orders = $stmt->fetchAll();
 
-$itemsStmt = $db->prepare('
-    SELECT oi.*, s.name AS shop_name
-    FROM order_items oi
-    JOIN shops s ON s.id = oi.shop_id
-    WHERE oi.order_id = :order_id
-');
-$paymentStmt = $db->prepare('SELECT * FROM payments WHERE order_id = :order_id ORDER BY id DESC LIMIT 1');
+// Articles et paiements de toutes les commandes affichees, recuperes en 2
+// requetes groupees (IN (...)) plutot qu'une requete par commande dans la
+// boucle d'affichage ci-dessous — evite un N+1 sur la page la plus visitee
+// de l'admin une fois un vrai volume de commandes en place.
+$itemsByOrder = [];
+$paymentsByOrder = [];
+$orderIds = array_column($orders, 'id');
+if ($orderIds) {
+    $placeholders = implode(',', array_fill(0, count($orderIds), '?'));
+
+    $itemsStmt = $db->prepare("
+        SELECT oi.*, s.name AS shop_name
+        FROM order_items oi
+        JOIN shops s ON s.id = oi.shop_id
+        WHERE oi.order_id IN ($placeholders)
+    ");
+    $itemsStmt->execute($orderIds);
+    foreach ($itemsStmt->fetchAll() as $item) {
+        $itemsByOrder[(int) $item['order_id']][] = $item;
+    }
+
+    // Le paiement le plus recent par commande : tries par id DESC, on ne
+    // garde que la premiere occurrence par order_id (equivalent a l'ancien
+    // "ORDER BY id DESC LIMIT 1" execute une fois par commande).
+    $paymentsStmt = $db->prepare("SELECT * FROM payments WHERE order_id IN ($placeholders) ORDER BY id DESC");
+    $paymentsStmt->execute($orderIds);
+    foreach ($paymentsStmt->fetchAll() as $payment) {
+        $paymentsByOrder[(int) $payment['order_id']] ??= $payment;
+    }
+}
 
 $holdDays = wallet_release_service()->currentHoldDays();
 ?>
@@ -137,11 +160,9 @@ $holdDays = wallet_release_service()->currentHoldDays();
                 <tbody>
                     <?php foreach ($orders as $order): ?>
                         <?php
-                        $itemsStmt->execute(['order_id' => $order['id']]);
-                        $items = $itemsStmt->fetchAll();
+                        $items = $itemsByOrder[(int) $order['id']] ?? [];
                         $shopNames = array_unique(array_column($items, 'shop_name'));
-                        $paymentStmt->execute(['order_id' => $order['id']]);
-                        $payment = $paymentStmt->fetch();
+                        $payment = $paymentsByOrder[(int) $order['id']] ?? null;
                         ?>
                         <tr>
                             <td><?= e(date('d/m/Y H:i', strtotime((string) $order['created_at']))) ?></td>

@@ -51,7 +51,30 @@ $stmt = $db->prepare('
 $stmt->execute(['shop_id' => $shopId]);
 $orders = $stmt->fetchAll();
 
-$itemsStmt = $db->prepare('SELECT * FROM order_items WHERE order_id = :order_id AND shop_id = :shop_id');
+// Articles et paiements de toutes les commandes affichees, recuperes en 2
+// requetes groupees (IN (...)) plutot qu'une requete par commande dans la
+// boucle d'affichage ci-dessous (page la plus consultee de l'espace vendeur).
+$itemsByOrder = [];
+$paymentsByOrder = [];
+$orderIds = array_column($orders, 'id');
+if ($orderIds) {
+    $placeholders = implode(',', array_fill(0, count($orderIds), '?'));
+
+    $itemsStmt = $db->prepare("SELECT * FROM order_items WHERE order_id IN ($placeholders) AND shop_id = ?");
+    $itemsStmt->execute([...$orderIds, $shopId]);
+    foreach ($itemsStmt->fetchAll() as $item) {
+        $itemsByOrder[(int) $item['order_id']][] = $item;
+    }
+
+    // Le paiement le plus recent par commande : tries par id DESC, on ne
+    // garde que la premiere occurrence par order_id (equivalent a l'ancien
+    // findByOrderId() execute une fois par commande).
+    $paymentsStmt = $db->prepare("SELECT * FROM payments WHERE order_id IN ($placeholders) ORDER BY id DESC");
+    $paymentsStmt->execute($orderIds);
+    foreach ($paymentsStmt->fetchAll() as $payment) {
+        $paymentsByOrder[(int) $payment['order_id']] ??= $payment;
+    }
+}
 
 // Fait correspondre le texte libre "Ville" / "Ville - Quartier" a l'ID de la localite, pour lier vers sa fiche.
 $locationIdsByLabel = [];
@@ -90,14 +113,13 @@ foreach ($stmt->fetchAll() as $n) {
                 <tbody>
                     <?php foreach ($orders as $order): ?>
                         <?php
-                        $itemsStmt->execute(['order_id' => $order['id'], 'shop_id' => $shopId]);
-                        $items = $itemsStmt->fetchAll();
+                        $items = $itemsByOrder[(int) $order['id']] ?? [];
                         $subtotal = 0;
                         foreach ($items as $item) {
                             $subtotal += (int) $item['unit_price'] * (int) $item['quantity'];
                         }
                         $vendorStatus = $items ? $items[0]['fulfillment_status'] : 'pending';
-                        $payment = wallet_payment_repo()->findByOrderId((int) $order['id']);
+                        $payment = $paymentsByOrder[(int) $order['id']] ?? null;
                         ?>
                         <tr>
                             <td><?= e(date('d/m/Y H:i', strtotime((string) $order['created_at']))) ?></td>

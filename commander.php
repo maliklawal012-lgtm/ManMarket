@@ -14,7 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $loggedInUser = current_user();
 $errors = [];
 $paymentInitError = null;
-$paymentRestricted = $loggedInUser && (int) ($loggedInUser['payment_restricted'] ?? 0) === 1;
+$onlinePaymentEnabled = get_setting('online_payment_enabled', '1') === '1';
+// Si le paiement en ligne est desactive par l'admin (ex : incident Genius
+// Pay), un client normalement restreint au paiement en ligne (2 non-retraits)
+// ne doit pas se retrouver bloque sans aucune option valide.
+$paymentRestricted = $onlinePaymentEnabled && $loggedInUser && (int) ($loggedInUser['payment_restricted'] ?? 0) === 1;
 
 $onlinePaymentMethods = [
     'wave' => ['label' => 'Wave', 'logo' => 'assets/images/payment-logos/wave.svg'],
@@ -114,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $old['items'] = trim((string) ($_POST['items'] ?? ''));
     $old['delivery_city'] = (int) ($_POST['delivery_city'] ?? 0);
     $old['delivery_neighborhood'] = (int) ($_POST['delivery_neighborhood'] ?? 0);
-    $old['payment_choice'] = ($_POST['payment_choice'] ?? 'cod') === 'online' ? 'online' : 'cod';
+    $old['payment_choice'] = $onlinePaymentEnabled && ($_POST['payment_choice'] ?? 'cod') === 'online' ? 'online' : 'cod';
     $old['payment_method'] = trim((string) ($_POST['payment_method'] ?? ''));
 
     if ($paymentRestricted) {
@@ -137,6 +141,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($old['email'] === '' || !filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Veuillez indiquer une adresse email valide.';
+    }
+    if ($old['phone'] === '' || !validate_phone_number($old['phone'])) {
+        $errors['phone'] = 'Veuillez indiquer un numéro de téléphone ivoirien valide (10 chiffres, ex : 07 00 00 00 00).';
     }
 
     $deliveryLocationText = null;
@@ -309,9 +316,10 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
                 </div>
 
-                <div class="form-field">
-                    <label for="phone">Téléphone (optionnel)</label>
-                    <input type="tel" id="phone" name="phone" value="<?= e($old['phone']) ?>">
+                <div class="form-field <?= isset($errors['phone']) ? 'has-error' : '' ?>">
+                    <label for="phone">Téléphone *</label>
+                    <input type="tel" id="phone" name="phone" value="<?= e($old['phone']) ?>" placeholder="07 00 00 00 00" required>
+                    <?php if (isset($errors['phone'])): ?><span class="field-error"><?= e($errors['phone']) ?></span><?php endif; ?>
                 </div>
 
                 <div class="form-row" id="delivery-location-fields" data-neighborhoods="<?= e(json_encode($deliveryChildrenByParent, JSON_UNESCAPED_UNICODE)) ?>" data-subtotal="<?= (int) $orderTotal ?>" data-online-fee-rate="<?= e((string) $onlinePaymentFeeRate) ?>">
@@ -352,11 +360,16 @@ require_once __DIR__ . '/includes/header.php';
                                 <span><?= icon('truck', 16) ?> Paiement à la livraison</span>
                             </label>
                         <?php endif; ?>
-                        <label class="payment-choice-option">
-                            <input type="radio" name="payment_choice" value="online" <?= $old['payment_choice'] === 'online' ? 'checked' : '' ?>>
-                            <span><?= icon('cart', 16) ?> Payer en ligne maintenant (Wave, Orange Money, MTN, carte...)</span>
-                        </label>
+                        <?php if ($onlinePaymentEnabled): ?>
+                            <label class="payment-choice-option">
+                                <input type="radio" name="payment_choice" value="online" <?= $old['payment_choice'] === 'online' ? 'checked' : '' ?>>
+                                <span><?= icon('cart', 16) ?> Payer en ligne maintenant (Wave, Orange Money, MTN, carte...)</span>
+                            </label>
+                        <?php endif; ?>
                     </div>
+                    <?php if (!$onlinePaymentEnabled): ?>
+                        <span class="char-count">Le paiement en ligne est momentanément indisponible. Seul le paiement à la livraison est proposé.</span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="form-field <?= isset($errors['payment_method']) ? 'has-error' : '' ?> <?= $old['payment_choice'] === 'online' ? '' : 'is-hidden' ?>" id="payment-method-field">

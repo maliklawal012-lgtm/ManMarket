@@ -94,6 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
     if ($neighborhood === '') {
         $errors['neighborhood'] = 'Veuillez indiquer un quartier.';
     }
+    if ($phone === '' || !validate_phone_number($phone)) {
+        $errors['phone'] = 'Veuillez indiquer un numéro de téléphone ivoirien valide (10 chiffres, ex : 07 00 00 00 00).';
+    }
     if (!preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
         $errors['color'] = 'Couleur invalide.';
     }
@@ -255,9 +258,10 @@ if ($editing):
             </div>
 
             <div class="form-row">
-                <div class="form-field">
-                    <label for="phone">Téléphone de la boutique (optionnel)</label>
-                    <input type="text" id="phone" name="phone" value="<?= e((string) ($editing['phone'] ?? '')) ?>" placeholder="+225 07 00 00 00 00">
+                <div class="form-field <?= isset($errors['phone']) ? 'has-error' : '' ?>">
+                    <label for="phone">Téléphone de la boutique *</label>
+                    <input type="text" id="phone" name="phone" value="<?= e((string) ($editing['phone'] ?? '')) ?>" placeholder="+225 07 00 00 00 00" required>
+                    <?php if (isset($errors['phone'])): ?><span class="field-error"><?= e($errors['phone']) ?></span><?php endif; ?>
                 </div>
                 <div class="form-field">
                     <label for="whatsapp">WhatsApp (optionnel, format international sans le +)</label>

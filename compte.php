@@ -28,6 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'profile
     if ($name === '') {
         $profileErrors['name'] = 'Veuillez indiquer votre nom.';
     }
+    if ($phone === '' || !validate_phone_number($phone)) {
+        $profileErrors['phone'] = 'Veuillez indiquer un numéro de téléphone ivoirien valide (10 chiffres, ex : 07 00 00 00 00).';
+    }
 
     $hasUpload = isset($_FILES['avatar']) && $_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE;
     $newAvatarExt = null;
@@ -55,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'profile
         $stmt = get_db()->prepare('UPDATE users SET name = :name, phone = :phone, avatar = :avatar WHERE id = :id');
         $stmt->execute([
             'name' => $name,
-            'phone' => $phone !== '' ? $phone : null,
+            'phone' => $phone,
             'avatar' => $finalAvatar,
             'id' => $user['id'],
         ]);
@@ -203,9 +206,10 @@ require_once __DIR__ . '/includes/header.php';
                     <?php if (isset($profileErrors['name'])): ?><span class="field-error"><?= e($profileErrors['name']) ?></span><?php endif; ?>
                 </div>
 
-                <div class="form-field">
-                    <label for="phone">Téléphone</label>
-                    <input type="tel" id="phone" name="phone" value="<?= e($_POST['phone'] ?? ($user['phone'] ?? '')) ?>">
+                <div class="form-field <?= isset($profileErrors['phone']) ? 'has-error' : '' ?>">
+                    <label for="phone">Téléphone *</label>
+                    <input type="tel" id="phone" name="phone" value="<?= e($_POST['phone'] ?? ($user['phone'] ?? '')) ?>" placeholder="07 00 00 00 00" required>
+                    <?php if (isset($profileErrors['phone'])): ?><span class="field-error"><?= e($profileErrors['phone']) ?></span><?php endif; ?>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-block">Enregistrer</button>

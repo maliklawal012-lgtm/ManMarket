@@ -56,7 +56,7 @@
 
     <div class="footer-bottom">
         <div class="container footer-bottom-inner">
-            <p>&copy; <?= date('Y') ?> <?= e(get_setting('site_name')) ?>. Tous droits réservés.</p>
+            <p>&copy; <?= date('Y') ?> <?= e(get_setting('site_name')) ?>. Tous droits réservés. <a href="/market/politique-confidentialite.php" class="link-muted-light">Politique de confidentialité</a></p>
             <p>Fait avec soin pour la ville de Man.</p>
         </div>
     </div>

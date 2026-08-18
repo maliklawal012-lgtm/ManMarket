@@ -111,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'payment
     $rateRaw = trim((string) ($_POST['online_payment_fee_rate'] ?? ''));
     $rate = is_numeric($rateRaw) ? (float) $rateRaw : -1;
     $confirmPassword = (string) ($_POST['confirm_password'] ?? '');
+    $paymentEnabled = isset($_POST['online_payment_enabled']) ? '1' : '0';
 
     if ($rate < 0 || $rate > 100) {
         $errors['online_payment_fee_rate'] = 'Veuillez indiquer un pourcentage entre 0 et 100.';
@@ -121,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'payment
         $currentHashStmt->execute(['id' => $currentAdmin['id']]);
         $currentHash = (string) $currentHashStmt->fetchColumn();
         if (!password_verify($confirmPassword, $currentHash)) {
-            $errors['confirm_password'] = 'Mot de passe incorrect — le taux n\'a pas été modifié.';
+            $errors['confirm_password'] = 'Mot de passe incorrect — les réglages n\'ont pas été modifiés.';
         }
     }
 
@@ -129,6 +130,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'payment
         $value = number_format($rate, 2, '.', '');
         $db->prepare('INSERT INTO settings (`key`, value) VALUES (:key, :value) ON DUPLICATE KEY UPDATE value = :value2')
             ->execute(['key' => 'online_payment_fee_rate', 'value' => $value, 'value2' => $value]);
+        $db->prepare('INSERT INTO settings (`key`, value) VALUES (:key, :value) ON DUPLICATE KEY UPDATE value = :value2')
+            ->execute(['key' => 'online_payment_enabled', 'value' => $paymentEnabled, 'value2' => $paymentEnabled]);
 
         header('Location: /market/admin/parametres.php?saved=1');
         exit;
@@ -193,6 +196,13 @@ require_once __DIR__ . '/../includes/admin_header.php';
     <form method="post" action="/market/admin/parametres.php" novalidate>
         <?= csrf_field() ?>
         <input type="hidden" name="form" value="payment_fee">
+        <div class="form-field">
+            <label class="filter-toggle">
+                <input type="checkbox" name="online_payment_enabled" value="1" <?= ($paymentFeePosted ? isset($_POST['online_payment_enabled']) : get_setting('online_payment_enabled', '1') === '1') ? 'checked' : '' ?>>
+                <span>Autoriser le paiement en ligne</span>
+            </label>
+            <span class="char-count">Si désactivé, seul le paiement à la livraison est proposé aux clients sur <code>commander.php</code>.</span>
+        </div>
         <div class="form-field <?= isset($errors['online_payment_fee_rate']) ? 'has-error' : '' ?>">
             <label for="online_payment_fee_rate">Taux des frais de paiement en ligne (%)</label>
             <input type="number" id="online_payment_fee_rate" name="online_payment_fee_rate" step="0.01" min="0" max="100" value="<?= e($paymentFeePosted ? (string) ($_POST['online_payment_fee_rate'] ?? '') : get_setting('online_payment_fee_rate', '0.00')) ?>">

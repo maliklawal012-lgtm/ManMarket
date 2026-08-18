@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $old['phone'] = trim((string) ($_POST['phone'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
     $passwordConfirm = (string) ($_POST['password_confirm'] ?? '');
+    $consent = isset($_POST['consent_data_processing']);
 
     if (!rate_limit_check('register:' . rate_limit_client_ip(), 5, 3600)) {
         $errors['name'] = 'Trop de tentatives d\'inscription depuis cette connexion. Veuillez réessayer plus tard.';
@@ -36,10 +37,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($old['email'] === '' || !filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Veuillez indiquer une adresse email valide.';
     }
+    if ($old['phone'] === '' || !validate_phone_number($old['phone'])) {
+        $errors['phone'] = 'Veuillez indiquer un numéro de téléphone ivoirien valide (10 chiffres, ex : 07 00 00 00 00).';
+    }
     if (mb_strlen($password) < 8) {
         $errors['password'] = 'Le mot de passe doit contenir au moins 8 caractères.';
     } elseif ($password !== $passwordConfirm) {
         $errors['password_confirm'] = 'Les mots de passe ne correspondent pas.';
+    }
+    if (!$consent) {
+        $errors['consent'] = 'Vous devez accepter le traitement de vos données personnelles pour créer votre compte.';
     }
 
     if (!$errors) {
@@ -52,13 +59,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         try {
-            $stmt = get_db()->prepare('INSERT INTO users (name, email, phone, password_hash, is_vendor) VALUES (:name, :email, :phone, :password_hash, :is_vendor)');
+            $stmt = get_db()->prepare('
+                INSERT INTO users (name, email, phone, password_hash, is_vendor, consent_data_processing_at, consent_privacy_policy_version)
+                VALUES (:name, :email, :phone, :password_hash, :is_vendor, NOW(), :policy_version)
+            ');
             $stmt->execute([
                 'name' => $old['name'],
                 'email' => $old['email'],
-                'phone' => $old['phone'] !== '' ? $old['phone'] : null,
+                'phone' => $old['phone'],
                 'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                 'is_vendor' => $isVendor ? 1 : 0,
+                'policy_version' => PRIVACY_POLICY_VERSION,
             ]);
 
             $newUserId = (int) get_db()->lastInsertId();
@@ -120,9 +131,10 @@ require_once __DIR__ . '/includes/header.php';
                 <?php if (isset($errors['email'])): ?><span class="field-error"><?= e($errors['email']) ?></span><?php endif; ?>
             </div>
 
-            <div class="form-field">
-                <label for="phone">Téléphone (optionnel)</label>
-                <input type="tel" id="phone" name="phone" value="<?= e($old['phone']) ?>">
+            <div class="form-field <?= isset($errors['phone']) ? 'has-error' : '' ?>">
+                <label for="phone">Téléphone *</label>
+                <input type="tel" id="phone" name="phone" value="<?= e($old['phone']) ?>" placeholder="07 00 00 00 00" required>
+                <?php if (isset($errors['phone'])): ?><span class="field-error"><?= e($errors['phone']) ?></span><?php endif; ?>
             </div>
 
             <div class="form-row">
@@ -138,8 +150,31 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block"><?= $isVendor ? 'Créer mon compte vendeur' : 'Créer mon compte' ?></button>
+            <div class="form-field <?= isset($errors['consent']) ? 'has-error' : '' ?>">
+                <label class="filter-toggle consent-toggle">
+                    <input type="checkbox" id="consent_data_processing" name="consent_data_processing" value="1" required>
+                    <span>J'accepte que mes données personnelles soient collectées et utilisées par <?= e(get_setting('site_name') ?: 'ManMarket') ?> pour créer mon compte, gérer mes commandes, assurer la livraison et fournir les services proposés. Je reconnais avoir pris connaissance de la <a href="/market/politique-confidentialite.php" target="_blank" rel="noopener">Politique de confidentialité</a>.</span>
+                </label>
+                <?php if (isset($errors['consent'])): ?><span class="field-error"><?= e($errors['consent']) ?></span><?php endif; ?>
+            </div>
+
+            <button type="submit" id="register-submit" class="btn btn-primary btn-block"><?= $isVendor ? 'Créer mon compte vendeur' : 'Créer mon compte' ?></button>
         </form>
+
+        <script>
+        (function () {
+            var form = document.querySelector('form[action*="inscription.php"]');
+            var consent = document.getElementById('consent_data_processing');
+            if (!form || !consent) return;
+            form.addEventListener('submit', function (event) {
+                if (!consent.checked) {
+                    event.preventDefault();
+                    consent.closest('.form-field').classList.add('has-error');
+                    consent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        })();
+        </script>
 
         <p class="auth-switch">Déjà inscrit ? <a href="/market/connexion.php">Se connecter</a></p>
     </div>

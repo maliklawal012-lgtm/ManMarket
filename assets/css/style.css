@@ -606,6 +606,12 @@ button { font-family: inherit; cursor: pointer; }
 .filter-toggle { display: flex; align-items: center; gap: 8px; font-size: .85rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
 .filter-toggle input { accent-color: var(--primary); width: 16px; height: 16px; }
 
+/* Variante pour les libelles longs sur plusieurs lignes (ex: case de
+   consentement RGPD) : le texte doit pouvoir revenir a la ligne sur tous
+   les ecrans au lieu de deborder, avec la case alignee sur la 1ere ligne. */
+.filter-toggle.consent-toggle { align-items: flex-start; white-space: normal; font-weight: 400; }
+.filter-toggle.consent-toggle input { flex-shrink: 0; margin-top: 3px; }
+
 .filter-sort { display: flex; align-items: center; gap: 8px; font-size: .85rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
 .filter-sort select {
     border: 1px solid var(--border); border-radius: var(--radius-sm);
