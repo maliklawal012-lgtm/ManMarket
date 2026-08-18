@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = get_db()->prepare('SELECT id FROM users WHERE email = :email');
         $stmt->execute(['email' => $old['email']]);
         if ($stmt->fetch()) {
-            $errors['email'] = 'Cette adresse email est déjà utilisée.';
+            $errors['email'] = 'Impossible de créer un compte avec ces informations. Si vous avez déjà un compte, connectez-vous.';
         }
     }
 
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($e->getCode() !== '23000') {
                 throw $e;
             }
-            $errors['email'] = 'Cette adresse email est déjà utilisée.';
+            $errors['email'] = 'Impossible de créer un compte avec ces informations. Si vous avez déjà un compte, connectez-vous.';
         }
     }
 }

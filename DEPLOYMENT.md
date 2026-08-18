@@ -150,10 +150,16 @@ Points identifiés lors de l'audit de sécurité (18 août 2026) qui dépendent 
 
 - **HTTPS / HSTS / TLS** — servir le site exclusivement en HTTPS, rediriger tout HTTP vers HTTPS, activer l'en-tête `Strict-Transport-Security`. `includes/auth.php` détecte déjà HTTPS automatiquement (cookies `Secure` conditionnels) : aucun changement de code nécessaire, seulement la configuration serveur/certificat.
 - **Utilisateur MySQL dédié** — créer un compte applicatif avec uniquement `SELECT, INSERT, UPDATE, DELETE` sur la base `manmarket` (pas de `DROP`, `GRANT`, `FILE`), au lieu de `root` utilisé en développement local. Mettre à jour `DB_USER`/`DB_PASSWORD` dans `.env`.
-- **Sauvegardes** — aucune sauvegarde automatique n'existe aujourd'hui. Prévoir un `mysqldump` planifié (quotidien) vers un stockage séparé du serveur applicatif, avec un test de restauration régulier. Exemple de tâche planifiée :
+- **Sauvegardes** — `cron/backup_database.php` sauvegarde la base (mysqldump compressé, rotation automatique à 14 jours, identifiants jamais en ligne de commande) dans `backups/` (déjà bloqué en HTTP par `.htaccess`, déjà dans `.gitignore`). À planifier quotidiennement :
   ```
-  0 3 * * * mysqldump -u <user> -p<password> manmarket | gzip > /chemin/hors/serveur/manmarket-$(date +\%F).sql.gz
+  # crontab -e
+  0 3 * * * /usr/bin/php /chemin/vers/market/cron/backup_database.php >> /chemin/vers/market/logs/backup_cron.log 2>&1
   ```
+  Sous Windows (Planificateur de tâches) :
+  ```
+  C:\wamp64\bin\php\php8.4.15\php.exe C:\wamp64\www\market\cron\backup_database.php
+  ```
+  **Ce script seul ne suffit pas** : `backups/` doit être synchronisé après chaque exécution vers un stockage séparé du serveur applicatif (rsync, upload S3/Backblaze...), et une restauration doit être testée régulièrement. Si `mysqldump` n'est pas dans le `PATH` (fréquent sous WAMP), définir `MYSQLDUMP_BIN` dans `.env` avec le chemin complet.
 - **Durcissement `php.ini`** — en production : `display_errors = Off`, `log_errors = On`, désactiver toute variable de debug, fixer explicitement `post_max_size`/`upload_max_filesize` à des valeurs raisonnables (aucune limite explicite n'est fixée dans le code, uniquement les valeurs par défaut du serveur).
 - **Rotation des secrets** — définir une politique de rotation périodique (ex. annuelle) des clés Genius Pay (`GENIUSPAY_SECRET_KEY`, `GENIUSPAY_WEBHOOK_SECRET`) et du secret de session, en coordination avec Genius Pay pour éviter toute interruption de service au moment du changement.
 

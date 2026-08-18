@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/rate_limit.php';
+
 /**
  * Listes canoniques de tailles pour les produits size_type='clothing'/'shoe'.
  * Reutilisees partout ou une taille est proposee/validee (formulaire
@@ -269,6 +271,10 @@ function validate_uploaded_image(array $file): array
 {
     $maxBytes = 3 * 1024 * 1024;
     $mimeExt = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/gif' => 'gif'];
+
+    if (!rate_limit_check('image_upload:' . rate_limit_client_ip(), 40, 300)) {
+        return ['ext' => null, 'error' => 'Trop d\'images envoyées en peu de temps. Merci de patienter quelques minutes avant de réessayer.'];
+    }
 
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['ext' => null, 'error' => "Une erreur s'est produite pendant l'envoi de l'image."];
