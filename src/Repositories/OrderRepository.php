@@ -40,8 +40,8 @@ final class OrderRepository
     public function create(array $data): int
     {
         $stmt = $this->db->prepare('
-            INSERT INTO orders (customer_user_id, customer_name, customer_email, customer_phone, delivery_location, subtotal_amount, delivery_fee_amount, total_amount, currency, payment_choice)
-            VALUES (:customer_user_id, :customer_name, :customer_email, :customer_phone, :delivery_location, :subtotal_amount, :delivery_fee_amount, :total_amount, :currency, :payment_choice)
+            INSERT INTO orders (customer_user_id, customer_name, customer_email, customer_phone, delivery_location, subtotal_amount, delivery_fee_amount, online_payment_fee_amount, total_amount, currency, payment_choice)
+            VALUES (:customer_user_id, :customer_name, :customer_email, :customer_phone, :delivery_location, :subtotal_amount, :delivery_fee_amount, :online_payment_fee_amount, :total_amount, :currency, :payment_choice)
         ');
         $stmt->execute([
             'customer_user_id' => $data['customer_user_id'] ?? null,
@@ -51,6 +51,7 @@ final class OrderRepository
             'delivery_location' => $data['delivery_location'] ?? null,
             'subtotal_amount' => $data['subtotal_amount'],
             'delivery_fee_amount' => $data['delivery_fee_amount'] ?? 0,
+            'online_payment_fee_amount' => $data['online_payment_fee_amount'] ?? 0,
             'total_amount' => $data['total_amount'],
             'currency' => $data['currency'] ?? 'XOF',
             'payment_choice' => $data['payment_choice'],

@@ -35,6 +35,8 @@ $old = [
     'payment_method' => '',
 ];
 $deliveryFee = 0;
+$onlinePaymentFeeRate = (float) get_setting('online_payment_fee_rate', '0.00');
+$onlinePaymentFee = 0;
 
 $deliveryCities = get_db()->query('SELECT * FROM locations WHERE parent_id IS NULL AND is_active = 1 ORDER BY sort_order, name')->fetchAll();
 $deliveryChildrenByParent = [];
@@ -168,10 +170,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    $onlinePaymentFee = $old['payment_choice'] === 'online'
+        ? (int) round(($orderTotal + $deliveryFee) * $onlinePaymentFeeRate / 100)
+        : 0;
+
     if ($old['payment_choice'] === 'online') {
         if (!isset($onlinePaymentMethods[$old['payment_method']])) {
             $errors['payment_method'] = 'Veuillez choisir un moyen de paiement.';
-        } elseif ($orderTotal + $deliveryFee < 200) {
+        } elseif ($orderTotal + $deliveryFee + $onlinePaymentFee < 200) {
             $errors['payment_method'] = 'Le paiement en ligne nécessite un montant minimum de 200 FCFA. Choisissez "Paiement à la livraison" ou ajoutez un article.';
         }
     }
@@ -230,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$grandTotal = $orderTotal + $deliveryFee;
+$grandTotal = $orderTotal + $deliveryFee + $onlinePaymentFee;
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -276,6 +282,10 @@ require_once __DIR__ . '/includes/header.php';
                     <span>Frais de livraison</span>
                     <span id="delivery-fee-value"><?= $deliveryFee > 0 ? format_price($deliveryFee) : 'Gratuit' ?></span>
                 </div>
+                <div class="order-items-row <?= $old['payment_choice'] === 'online' ? '' : 'is-hidden' ?>" id="online-fee-row">
+                    <span>Frais de paiement en ligne</span>
+                    <span id="online-fee-value"><?= $onlinePaymentFee > 0 ? format_price($onlinePaymentFee) : 'Gratuit' ?></span>
+                </div>
                 <div class="order-items-total">
                     <span>Total</span>
                     <span id="order-grand-total-value"><?= format_price($grandTotal) ?></span>
@@ -304,7 +314,7 @@ require_once __DIR__ . '/includes/header.php';
                     <input type="tel" id="phone" name="phone" value="<?= e($old['phone']) ?>">
                 </div>
 
-                <div class="form-row" id="delivery-location-fields" data-neighborhoods="<?= e(json_encode($deliveryChildrenByParent, JSON_UNESCAPED_UNICODE)) ?>" data-subtotal="<?= (int) $orderTotal ?>">
+                <div class="form-row" id="delivery-location-fields" data-neighborhoods="<?= e(json_encode($deliveryChildrenByParent, JSON_UNESCAPED_UNICODE)) ?>" data-subtotal="<?= (int) $orderTotal ?>" data-online-fee-rate="<?= e((string) $onlinePaymentFeeRate) ?>">
                     <div class="form-field <?= isset($errors['delivery_city']) ? 'has-error' : '' ?>">
                         <label for="delivery_city">Ville de livraison *</label>
                         <select id="delivery_city" name="delivery_city">

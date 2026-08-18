@@ -402,7 +402,10 @@
         });
 
         const orderSubtotal = parseInt(deliveryFields.getAttribute('data-subtotal') || '0', 10);
+        const onlineFeeRate = parseFloat(deliveryFields.getAttribute('data-online-fee-rate') || '0');
         const deliveryFeeValueEl = document.getElementById('delivery-fee-value');
+        const onlineFeeRowEl = document.getElementById('online-fee-row');
+        const onlineFeeValueEl = document.getElementById('online-fee-value');
         const orderGrandTotalValueEl = document.getElementById('order-grand-total-value');
         const formatFcfa = (amount) => `${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`;
 
@@ -420,11 +423,22 @@
             return cityFee;
         };
 
-        const updateDeliveryFeeDisplay = () => {
+        const isOnlinePaymentSelected = () => {
+            const selected = document.querySelector('input[name="payment_choice"]:checked');
+            return !!(selected && selected.value === 'online');
+        };
+
+        const updateOrderTotals = () => {
             if (!deliveryFeeValueEl || !orderGrandTotalValueEl) return;
-            const fee = currentDeliveryFee();
-            deliveryFeeValueEl.textContent = fee > 0 ? formatFcfa(fee) : 'Gratuit';
-            orderGrandTotalValueEl.textContent = formatFcfa(orderSubtotal + fee);
+            const deliveryFee = currentDeliveryFee();
+            deliveryFeeValueEl.textContent = deliveryFee > 0 ? formatFcfa(deliveryFee) : 'Gratuit';
+
+            const onlineSelected = isOnlinePaymentSelected();
+            const onlineFee = onlineSelected ? Math.round((orderSubtotal + deliveryFee) * onlineFeeRate / 100) : 0;
+            if (onlineFeeRowEl) onlineFeeRowEl.classList.toggle('is-hidden', !onlineSelected);
+            if (onlineFeeValueEl) onlineFeeValueEl.textContent = onlineFee > 0 ? formatFcfa(onlineFee) : 'Gratuit';
+
+            orderGrandTotalValueEl.textContent = formatFcfa(orderSubtotal + deliveryFee + onlineFee);
         };
 
         const rebuildNeighborhoods = (selectedId) => {
@@ -438,7 +452,7 @@
                 neighborhoodSelect.appendChild(opt);
             });
             neighborhoodWrap.classList.toggle('is-hidden', !list.length);
-            updateDeliveryFeeDisplay();
+            updateOrderTotals();
         };
 
         if (subjectSelect) {
@@ -448,8 +462,11 @@
             citySelect.addEventListener('change', () => rebuildNeighborhoods(null));
         }
         if (neighborhoodSelect) {
-            neighborhoodSelect.addEventListener('change', updateDeliveryFeeDisplay);
+            neighborhoodSelect.addEventListener('change', updateOrderTotals);
         }
+        paymentChoiceRadios.forEach((radio) => {
+            radio.addEventListener('change', updateOrderTotals);
+        });
     }
 
     /* ---------- Page favoris ---------- */

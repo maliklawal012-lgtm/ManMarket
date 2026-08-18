@@ -433,4 +433,27 @@ migrate_step(
     }
 );
 
+// ----------------------------------------------------------------------
+// Etape 16 : frais de paiement en ligne (commission Genius Pay) a la
+// charge du client. Reglage online_payment_fee_rate (0.00 par defaut,
+// reglable depuis admin/parametres.php) applique en supplement du
+// sous-total + livraison, jamais mele au prix du produit. Colonne
+// orders.online_payment_fee_amount pour tracer le montant reellement
+// facture, et pour que OrderSettlementService::reconcile() (corrige en
+// meme temps pour delivery_fee_amount, jamais pris en compte jusqu'ici)
+// retombe juste.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    "Ajouter le reglage online_payment_fee_rate ('0.00' par defaut)",
+    fn (PDO $db) => migrate_setting_exists($db, 'online_payment_fee_rate'),
+    fn (PDO $db) => $db->prepare("INSERT INTO settings (`key`, value) VALUES ('online_payment_fee_rate', '0.00')")->execute()
+);
+
+migrate_step(
+    'Ajouter orders.online_payment_fee_amount',
+    fn (PDO $db) => migrate_column_exists($db, 'orders', 'online_payment_fee_amount'),
+    fn (PDO $db) => $db->exec('ALTER TABLE orders ADD COLUMN online_payment_fee_amount INT NOT NULL DEFAULT 0 AFTER delivery_fee_amount')
+);
+
 echo "\nMigration terminee.\n";

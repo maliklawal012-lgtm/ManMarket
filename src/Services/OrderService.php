@@ -44,7 +44,10 @@ final class OrderService
             }
 
             $subtotal = array_sum(array_column($resolvedItems, 'subtotal'));
-            $totalAmount = $subtotal + $deliveryFee;
+            $onlinePaymentFee = $paymentChoice === 'online'
+                ? (int) round(($subtotal + $deliveryFee) * $this->onlinePaymentFeeRate() / 100)
+                : 0;
+            $totalAmount = $subtotal + $deliveryFee + $onlinePaymentFee;
 
             $orderId = $this->orders->create([
                 'customer_user_id' => $customer['user_id'] ?? null,
@@ -54,6 +57,7 @@ final class OrderService
                 'delivery_location' => $deliveryLocation,
                 'subtotal_amount' => $subtotal,
                 'delivery_fee_amount' => $deliveryFee,
+                'online_payment_fee_amount' => $onlinePaymentFee,
                 'total_amount' => $totalAmount,
                 'payment_choice' => $paymentChoice,
             ]);
@@ -86,6 +90,21 @@ final class OrderService
             $this->db->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Frais de paiement en ligne (commission Genius Pay) a la charge du
+     * client, en pourcentage, applique au sous-total + livraison. Reglable
+     * depuis admin/parametres.php (0.00 par defaut). Jamais melee au prix
+     * du produit : toujours une ligne separee, ajoutee au total.
+     */
+    private function onlinePaymentFeeRate(): float
+    {
+        $stmt = $this->db->prepare("SELECT value FROM settings WHERE `key` = 'online_payment_fee_rate'");
+        $stmt->execute();
+        $value = $stmt->fetchColumn();
+
+        return $value !== false ? (float) $value : 0.0;
     }
 
     /**

@@ -107,6 +107,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'social'
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'payment_fee') {
+    $rateRaw = trim((string) ($_POST['online_payment_fee_rate'] ?? ''));
+    $rate = is_numeric($rateRaw) ? (float) $rateRaw : -1;
+
+    if ($rate < 0 || $rate > 100) {
+        $errors['online_payment_fee_rate'] = 'Veuillez indiquer un pourcentage entre 0 et 100.';
+    }
+
+    if (!$errors) {
+        $value = number_format($rate, 2, '.', '');
+        $db->prepare('INSERT INTO settings (`key`, value) VALUES (:key, :value) ON DUPLICATE KEY UPDATE value = :value2')
+            ->execute(['key' => 'online_payment_fee_rate', 'value' => $value, 'value2' => $value]);
+
+        header('Location: /market/admin/parametres.php?saved=1');
+        exit;
+    }
+}
+
 $success = ($_GET['saved'] ?? '') === '1';
 
 $pageTitle = 'Paramètres';
@@ -151,6 +169,25 @@ require_once __DIR__ . '/../includes/admin_header.php';
             </div>
         <?php endforeach; ?>
 
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </form>
+</div>
+
+<div class="card" style="max-width:640px;">
+    <div class="admin-toolbar">
+        <h2>Paiement en ligne</h2>
+    </div>
+    <p class="char-count">Ce pourcentage est ajouté au total du client (en plus du sous-total et de la livraison — jamais mélangé au prix du produit) uniquement s'il choisit de payer en ligne, pour couvrir les frais prélevés par Genius Pay.</p>
+
+    <?php $paymentFeePosted = $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'payment_fee'; ?>
+    <form method="post" action="/market/admin/parametres.php" novalidate>
+        <?= csrf_field() ?>
+        <input type="hidden" name="form" value="payment_fee">
+        <div class="form-field <?= isset($errors['online_payment_fee_rate']) ? 'has-error' : '' ?>">
+            <label for="online_payment_fee_rate">Taux des frais de paiement en ligne (%)</label>
+            <input type="number" id="online_payment_fee_rate" name="online_payment_fee_rate" step="0.01" min="0" max="100" value="<?= e($paymentFeePosted ? (string) ($_POST['online_payment_fee_rate'] ?? '') : get_setting('online_payment_fee_rate', '0.00')) ?>">
+            <?php if (isset($errors['online_payment_fee_rate'])): ?><span class="field-error"><?= e($errors['online_payment_fee_rate']) ?></span><?php endif; ?>
+        </div>
         <button type="submit" class="btn btn-primary">Enregistrer</button>
     </form>
 </div>

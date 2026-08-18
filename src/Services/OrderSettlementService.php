@@ -170,14 +170,20 @@ final class OrderSettlementService
     }
 
     /**
-     * Verifie : montant confirme par Genius Pay == somme(vendor_net_amount) + somme(commission_amount).
-     * Aucune perte, aucune creation d'argent ne doit etre possible.
+     * Verifie : montant confirme par Genius Pay == somme(vendor_net_amount) +
+     * somme(commission_amount) + frais de livraison + frais de paiement en
+     * ligne. Ces deux derniers ne sont credites a aucun wallet vendeur (ils
+     * ne font pas partie d'une vente), mais font bien partie du montant
+     * reellement facture au client : les omettre ici faisait
+     * systematiquement echouer le rapprochement des qu'une commande en
+     * ligne avait des frais de livraison. Aucune perte, aucune creation
+     * d'argent ne doit etre possible.
      */
     private function reconcile(array $order, array $items, array $payment): ReconciliationResult
     {
         $expected = (int) round((float) $payment['amount']);
 
-        $computed = 0;
+        $computed = (int) round((float) $order['delivery_fee_amount']) + (int) round((float) $order['online_payment_fee_amount']);
         foreach ($items as $item) {
             $computed += (int) round((float) $item['vendor_net_amount']) + (int) round((float) $item['commission_amount']);
         }
@@ -186,7 +192,7 @@ final class OrderSettlementService
             return ReconciliationResult::failure(
                 $expected,
                 $computed,
-                "Total paye ({$expected}) != somme des parts vendeurs + commission ({$computed})"
+                "Total paye ({$expected}) != somme des parts vendeurs + commission + livraison + frais de paiement ({$computed})"
             );
         }
 

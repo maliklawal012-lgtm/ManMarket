@@ -157,6 +157,12 @@ require_once __DIR__ . '/includes/header.php';
                                 <span>Frais de livraison</span>
                                 <span><?= (float) $order['delivery_fee_amount'] > 0 ? format_price((int) round((float) $order['delivery_fee_amount'])) : 'Gratuit' ?></span>
                             </div>
+                            <?php if ((float) $order['online_payment_fee_amount'] > 0): ?>
+                                <div class="order-items-row">
+                                    <span>Frais de paiement en ligne</span>
+                                    <span><?= format_price((int) round((float) $order['online_payment_fee_amount'])) ?></span>
+                                </div>
+                            <?php endif; ?>
                             <div class="order-items-total">
                                 <span>Total</span>
                                 <span><?= format_price((int) round((float) $order['total_amount'])) ?></span>
