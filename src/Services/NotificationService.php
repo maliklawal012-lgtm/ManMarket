@@ -334,6 +334,27 @@ final class NotificationService
         }, 'shopApprovalDecision', $shopId);
     }
 
+    public function subscriptionExpiringSoon(int $shopId, string $endsAt): void
+    {
+        $this->guard(function () use ($shopId, $endsAt): void {
+            $stmt = $this->db->prepare('SELECT s.name, u.email, u.name AS owner_name FROM shops s JOIN users u ON u.id = s.owner_id WHERE s.id = :id');
+            $stmt->execute(['id' => $shopId]);
+            $shop = $stmt->fetch();
+            if (!$shop) {
+                return;
+            }
+
+            $dateLabel = (new \DateTimeImmutable($endsAt))->format('d/m/Y');
+
+            $subject = "L'abonnement de votre boutique expire bientot";
+            $body = "Bonjour {$shop['owner_name']},\n\n"
+                . "L'abonnement de votre boutique \"{$shop['name']}\" expire le {$dateLabel}.\n\n"
+                . "Pensez a le renouveler depuis votre espace vendeur pour que votre boutique reste visible sur le site ManMarket.\n\nL'equipe ManMarket";
+
+            $this->send($shop['email'], $shop['owner_name'], $subject, $body, 'subscription_expiring_soon', $shopId);
+        }, 'subscriptionExpiringSoon', $shopId);
+    }
+
     /**
      * @param array<int, array{product_name:string, quantity:int}> $items
      */

@@ -130,7 +130,21 @@ C:\wamp64\bin\php\php8.4.15\php.exe C:\wamp64\www\market\cron\release_wallet_hol
 
 Ce job bascule `pending_balance` → `available_balance` pour toute commande livrée dont le délai `settings.wallet_hold_days` est écoulé. Idempotent (rejouable sans risque). Le déclenchement horaire est largement suffisant puisque le délai se compte en jours entiers.
 
-## 10. Vérifications post-déploiement (smoke tests)
+## 10. Tâche planifiée (cron) — rappel d'expiration d'abonnement
+
+```
+# crontab -e
+0 8 * * * /usr/bin/php /chemin/vers/market/cron/notify_expiring_subscriptions.php >> /chemin/vers/market/logs/subscription_reminder_cron.log 2>&1
+```
+
+Sous Windows (Planificateur de tâches), déclencheur quotidien exécutant :
+```
+C:\wamp64\bin\php\php8.4.15\php.exe C:\wamp64\www\market\cron\notify_expiring_subscriptions.php
+```
+
+Ce job envoie un email au propriétaire de chaque boutique dont l'abonnement expire dans exactement 3 jours. Une exécution quotidienne suffit (le seuil « = 3 jours » garantit un envoi unique par cycle d'abonnement, jamais de doublon).
+
+## 11. Vérifications post-déploiement (smoke tests)
 
 1. `php -l` sur l'ensemble du projet (aucune erreur de syntaxe) :
    ```
@@ -151,7 +165,7 @@ Ce job bascule `pending_balance` → `available_balance` pour toute commande liv
 5. Vérifier que `GET /market/.env` et `GET /market/database/schema.sql` renvoient bien une erreur 403/404 (pas le contenu du fichier).
 6. Remplacer `VOTRE-DOMAINE` par le vrai nom de domaine dans `robots.txt` (ligne `Sitemap:`), puis vérifier que `/market/sitemap.php` renvoie bien du XML valide.
 
-## 11. Modèle de sécurité (RBAC)
+## 12. Modèle de sécurité (RBAC)
 
 Trois rôles, portés par `users.is_admin` / `users.is_vendor` (booléens) :
 
@@ -167,7 +181,7 @@ Récupération de mot de passe (`/mot-de-passe-oublie.php`, commune aux trois r�
 
 Protection CSRF sur tous les formulaires (`includes/csrf.php`), rate limiting sur connexion/inscription/webhook/retraits/2FA/reset (`includes/rate_limit.php`) — voir le code pour le détail des seuils.
 
-## 12. En cas de problème
+## 13. En cas de problème
 
 - Logs applicatifs : `logs/{geniuspay,payment,webhook,settlement,wallet,wallet_release,withdrawal,vendor_admin,refund,notifications}.log` (format JSON par ligne, voir `src/Support/Logger.php`). `notifications.log` trace chaque email (envoyé, échoué, ou ignoré si SMTP non configuré) — premier réflexe en cas de 2FA ou de reset de mot de passe non reçu.
 - Échec de rapprochement paiement (somme des parts vendeurs + commission ≠ montant payé) : jamais de crédit silencieux, la commande reste non réglée et un incident est enregistré dans `settlement_failures` — visible en haut de `/admin/finances.php` tant que non résolu.
