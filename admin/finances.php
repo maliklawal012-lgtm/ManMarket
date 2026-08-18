@@ -65,6 +65,7 @@ $pageTitle = 'Finances';
 require_once __DIR__ . '/../includes/admin_header.php';
 
 $totalRevenue = (int) round((float) $db->query("SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE payment_status = 'paid'")->fetchColumn());
+$totalOnlinePaymentFees = (int) round((float) $db->query("SELECT COALESCE(SUM(online_payment_fee_amount), 0) FROM orders WHERE payment_status = 'paid'")->fetchColumn());
 $totalCommission = (int) round((float) $db->query("SELECT COALESCE(SUM(commission_amount - reversed_amount), 0) FROM commissions WHERE status != 'reversed'")->fetchColumn());
 $totalWalletHeld = (int) round((float) $db->query("SELECT COALESCE(SUM(available_balance + pending_balance), 0) FROM wallets")->fetchColumn());
 $totalWithdrawn = (int) round((float) $db->query("SELECT COALESCE(SUM(total_withdrawn), 0) FROM wallets")->fetchColumn());
@@ -201,6 +202,11 @@ $recentPayments = $db->query("
         <span class="admin-stat-icon" style="background:#eef2ff; color:#4f46e5;"><?= icon('bar-chart', 18) ?></span>
         <span class="admin-stat-value"><?= format_price($totalCommission) ?></span>
         <span class="admin-stat-label">Commission ManMarket perçue</span>
+    </div>
+    <div class="card admin-stat-card">
+        <span class="admin-stat-icon" style="background:#e0e7ff; color:#4338ca;"><?= icon('cart', 18) ?></span>
+        <span class="admin-stat-value"><?= format_price($totalOnlinePaymentFees) ?></span>
+        <span class="admin-stat-label">Frais de paiement en ligne collectés</span>
     </div>
     <div class="card admin-stat-card">
         <span class="admin-stat-icon" style="background:#fff7ed; color:#d97706;"><?= icon('shield', 18) ?></span>
