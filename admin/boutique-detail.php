@@ -36,6 +36,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_open'])) {
     exit;
 }
 
+$errors = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'record_manual_subscription') {
+    $planId = (int) ($_POST['plan_id'] ?? 0);
+    $priceRaw = trim((string) ($_POST['price_paid'] ?? ''));
+    $price = is_numeric($priceRaw) ? (int) round((float) $priceRaw) : -1;
+
+    $planStmt = $db->prepare('SELECT * FROM subscription_plans WHERE id = :id AND is_active = 1');
+    $planStmt->execute(['id' => $planId]);
+    $plan = $planStmt->fetch();
+
+    if (!$plan) {
+        $errors['plan_id'] = 'Veuillez choisir un plan valide.';
+    }
+    if ($price < 0) {
+        $errors['price_paid'] = 'Veuillez indiquer un montant valide.';
+    }
+
+    if (!$errors) {
+        // Meme mecanisme que le paiement en ligne self-service
+        // (vendeur/abonnements.php), mais declenche par l'admin pour un
+        // paiement recu hors-ligne (especes, depot direct...) : aucun appel
+        // Genius Pay, la periode d'abonnement demarre immediatement.
+        $startsAt = date('Y-m-d');
+        $endsAt = date('Y-m-d', strtotime($startsAt . ' +' . (int) $plan['duration_months'] . ' months'));
+
+        $insert = $db->prepare('
+            INSERT INTO shop_subscriptions (shop_id, plan_id, plan_name, price_paid, starts_at, ends_at)
+            VALUES (:shop_id, :plan_id, :plan_name, :price_paid, :starts_at, :ends_at)
+        ');
+        $insert->execute([
+            'shop_id' => $shopId, 'plan_id' => (int) $plan['id'], 'plan_name' => $plan['name'],
+            'price_paid' => $price, 'starts_at' => $startsAt, 'ends_at' => $endsAt,
+        ]);
+
+        wallet_audit_log_repo()->record(
+            (int) $adminUser['id'],
+            'subscription_recorded_manually',
+            'shop',
+            $shopId,
+            "Plan {$plan['name']}, {$price} FCFA (paiement hors-ligne)",
+            $_SERVER['REMOTE_ADDR'] ?? null
+        );
+        wallet_notification_service()->subscriptionRecordedManually($shopId, $plan['name'], $endsAt);
+
+        header('Location: /market/admin/boutique-detail.php?id=' . $shopId . '&subscription_saved=1');
+        exit;
+    }
+}
+
 $pageTitle = $shop['name'];
 require_once __DIR__ . '/../includes/admin_header.php';
 
@@ -43,6 +93,8 @@ $activeSubscription = get_shop_active_subscription($shopId);
 $subscriptionHistory = $db->prepare('SELECT * FROM shop_subscriptions WHERE shop_id = :id ORDER BY ends_at DESC LIMIT 10');
 $subscriptionHistory->execute(['id' => $shopId]);
 $subscriptionHistory = $subscriptionHistory->fetchAll();
+$subscriptionPlans = $db->query('SELECT * FROM subscription_plans WHERE is_active = 1 ORDER BY sort_order, duration_months')->fetchAll();
+$subscriptionSaved = ($_GET['subscription_saved'] ?? '') === '1';
 
 $stmt = $db->prepare('SELECT COUNT(*) FROM products WHERE shop_id = :id');
 $stmt->execute(['id' => $shopId]);
@@ -171,7 +223,7 @@ $recentReviews = $recentReviews->fetchAll();
             <?php endif; ?>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-bottom: var(--gap);">
             <div class="admin-toolbar">
                 <h2>Historique d'abonnement</h2>
                 <a href="/market/admin/abonnements.php" class="link-more">Gérer <?= icon('chevron-right', 14) ?></a>
@@ -195,6 +247,54 @@ $recentReviews = $recentReviews->fetchAll();
                         </tbody>
                     </table>
                 </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="card">
+            <div class="admin-toolbar">
+                <h2>Enregistrer un paiement hors-ligne</h2>
+            </div>
+            <?php if ($subscriptionSaved): ?>
+                <div class="alert alert-success"><?= icon('check-circle', 18) ?><span>Abonnement enregistré. La boutique est visible sur le site public.</span></div>
+            <?php endif; ?>
+            <p class="char-count">Pour un vendeur qui a payé en espèces, par dépôt direct ou tout autre moyen hors Genius Pay : enregistrez ici le plan et le montant réellement reçu pour activer l'abonnement immédiatement.</p>
+            <?php if (!$subscriptionPlans): ?>
+                <p class="empty-state">Aucun plan actif disponible.</p>
+            <?php else: ?>
+                <form method="post" action="/market/admin/boutique-detail.php?id=<?= $shopId ?>" novalidate>
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="action" value="record_manual_subscription">
+                    <div class="form-field <?= isset($errors['plan_id']) ? 'has-error' : '' ?>">
+                        <label for="plan_id">Formule</label>
+                        <select id="plan_id" name="plan_id" data-plan-prices="<?= e(json_encode(array_column($subscriptionPlans, 'price', 'id'))) ?>">
+                            <option value="">Choisir...</option>
+                            <?php foreach ($subscriptionPlans as $plan): ?>
+                                <option value="<?= (int) $plan['id'] ?>" <?= (string) ($_POST['plan_id'] ?? '') === (string) $plan['id'] ? 'selected' : '' ?>><?= e($plan['name']) ?> (<?= (int) $plan['duration_months'] ?> mois) — prix catalogue <?= format_price((int) $plan['price']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if (isset($errors['plan_id'])): ?><span class="field-error"><?= e($errors['plan_id']) ?></span><?php endif; ?>
+                    </div>
+                    <div class="form-field <?= isset($errors['price_paid']) ? 'has-error' : '' ?>">
+                        <label for="price_paid">Montant réellement reçu (FCFA)</label>
+                        <input type="number" id="price_paid" name="price_paid" min="0" step="1" value="<?= e((string) ($_POST['price_paid'] ?? '')) ?>">
+                        <span class="char-count">Modifiable si le montant négocié diffère du prix catalogue.</span>
+                        <?php if (isset($errors['price_paid'])): ?><span class="field-error"><?= e($errors['price_paid']) ?></span><?php endif; ?>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enregistrer le paiement</button>
+                </form>
+                <script>
+                (function () {
+                    var select = document.getElementById('plan_id');
+                    var priceInput = document.getElementById('price_paid');
+                    if (!select || !priceInput) return;
+                    var prices = JSON.parse(select.dataset.planPrices || '{}');
+                    select.addEventListener('change', function () {
+                        if (priceInput.value === '' && prices[select.value] !== undefined) {
+                            priceInput.value = prices[select.value];
+                        }
+                    });
+                })();
+                </script>
             <?php endif; ?>
         </div>
     </div>

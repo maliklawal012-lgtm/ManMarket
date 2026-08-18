@@ -375,6 +375,32 @@ final class NotificationService
         }, 'shopApprovalDecision', $shopId);
     }
 
+    /**
+     * Abonnement enregistre manuellement par un admin (paiement hors-ligne :
+     * especes, depot direct...) plutot que via le paiement en ligne Genius
+     * Pay self-service habituel (vendeur/abonnements.php).
+     */
+    public function subscriptionRecordedManually(int $shopId, string $planName, string $endsAt): void
+    {
+        $this->guard(function () use ($shopId, $planName, $endsAt): void {
+            $stmt = $this->db->prepare('SELECT s.name, u.email, u.name AS owner_name FROM shops s JOIN users u ON u.id = s.owner_id WHERE s.id = :id');
+            $stmt->execute(['id' => $shopId]);
+            $shop = $stmt->fetch();
+            if (!$shop) {
+                return;
+            }
+
+            $dateLabel = (new \DateTimeImmutable($endsAt))->format('d/m/Y');
+
+            $subject = "Abonnement enregistre pour votre boutique \"{$shop['name']}\"";
+            $body = "Bonjour {$shop['owner_name']},\n\n"
+                . "L'equipe ManMarket a enregistre votre paiement d'abonnement \"{$planName}\" pour votre boutique \"{$shop['name']}\".\n\n"
+                . "Votre boutique est visible sur le site jusqu'au {$dateLabel}.\n\nL'equipe ManMarket";
+
+            $this->send($shop['email'], $shop['owner_name'], $subject, $body, 'subscription_recorded_manually', $shopId);
+        }, 'subscriptionRecordedManually', $shopId);
+    }
+
     public function subscriptionExpiringSoon(int $shopId, string $endsAt): void
     {
         $this->guard(function () use ($shopId, $endsAt): void {
