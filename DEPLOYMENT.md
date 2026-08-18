@@ -149,7 +149,13 @@ Ce job envoie un email au propriétaire de chaque boutique dont l'abonnement exp
 Points identifiés lors de l'audit de sécurité (18 août 2026) qui dépendent de l'environnement cible et ne peuvent pas être corrigés dans le code — à traiter avant l'ouverture au public :
 
 - **HTTPS / HSTS / TLS** — servir le site exclusivement en HTTPS, rediriger tout HTTP vers HTTPS, activer l'en-tête `Strict-Transport-Security`. `includes/auth.php` détecte déjà HTTPS automatiquement (cookies `Secure` conditionnels) : aucun changement de code nécessaire, seulement la configuration serveur/certificat.
-- **Utilisateur MySQL dédié** — créer un compte applicatif avec uniquement `SELECT, INSERT, UPDATE, DELETE` sur la base `manmarket` (pas de `DROP`, `GRANT`, `FILE`), au lieu de `root` utilisé en développement local. Mettre à jour `DB_USER`/`DB_PASSWORD` dans `.env`.
+- **Utilisateur MySQL dédié** — ✅ déjà en place. Le site (`DB_USER` dans `.env`) utilise un compte `manmarket_app` limité à `SELECT, INSERT, UPDATE, DELETE` sur `manmarket.*` (aucun `CREATE`/`DROP`/`ALTER`/`GRANT`/`FILE` — vérifié : ces commandes sont bien refusées). À reproduire sur tout nouvel environnement (staging, production) :
+  ```sql
+  CREATE USER 'manmarket_app'@'localhost' IDENTIFIED BY '<mot_de_passe_fort>';
+  GRANT SELECT, INSERT, UPDATE, DELETE ON manmarket.* TO 'manmarket_app'@'localhost';
+  FLUSH PRIVILEGES;
+  ```
+  **Important** — `database/migrate_wallet_v2.php` fait du `CREATE TABLE`/`ALTER TABLE` : à exécuter avec un compte plus privilégié (`root` ou équivalent), jamais avec `manmarket_app`. Seul le site en fonctionnement (runtime) utilise le compte limité.
 - **Sauvegardes** — `cron/backup_database.php` sauvegarde la base (mysqldump compressé, rotation automatique à 14 jours, identifiants jamais en ligne de commande) dans `backups/` (déjà bloqué en HTTP par `.htaccess`, déjà dans `.gitignore`). À planifier quotidiennement :
   ```
   # crontab -e
