@@ -221,7 +221,26 @@ Récupération de mot de passe (`/mot-de-passe-oublie.php`, commune aux trois r�
 
 Protection CSRF sur tous les formulaires (`includes/csrf.php`), rate limiting sur connexion/inscription/webhook/retraits/2FA/reset (`includes/rate_limit.php`) — voir le code pour le détail des seuils.
 
-## 14. En cas de problème
+## 14. Déploiement sur Orange Cloud CI (cPanel)
+
+Guide pratique pour migrer de cet environnement WAMP local vers un hébergement mutualisé Orange Cloud CI (offre **Web Prime** ou supérieure — cPanel, PHP 8.4, MySQL, SSH inclus). Suit l'ordre logique : préparer avant d'ouvrir au public.
+
+**Vérifié avant migration (19 août 2026)** : aucun chemin Windows codé en dur dans le code PHP, aucune incohérence de casse de fichier (501 `require`/`include` contrôlés — un problème fréquent en passant de Windows, insensible à la casse, à Linux, qui y est strictement sensible), `site_base_url()` s'adapte déjà automatiquement au nom de domaine réel via `$_SERVER['HTTP_HOST']`. Le code lui-même n'a besoin d'aucune modification pour ce changement d'hébergeur.
+
+1. **Transférer le code** — via SSH (`git clone`/`git pull`, recommandé pour les mises à jour futures) ou le Gestionnaire de fichiers cPanel. Placer `market/` à la racine du domaine (`public_html/` ou un sous-dossier selon la config du domaine).
+2. **Choisir PHP 8.4** dans le "Sélecteur de version PHP" / "MultiPHP Manager" de cPanel (vérifier qu'elle est listée — sinon prendre la version 8.x la plus proche disponible et vérifier la compatibilité). Activer les extensions requises (§1) si desactivées par défaut.
+3. **Créer la base de données** via l'assistant cPanel "Bases de données MySQL" (crée `<compte>_manmarket` et un utilisateur applicatif en un seul flux — attribuer uniquement `SELECT, INSERT, UPDATE, DELETE`, pas "ALL PRIVILEGES", pour respecter le principe du moindre privilège déjà en place ici). Importer `database/schema.sql` via phpMyAdmin, puis exécuter `php database/migrate_wallet_v2.php` **en SSH avec un utilisateur MySQL plus privilégié** (le compte cPanel principal a généralement les droits DDL par défaut) — jamais avec le compte applicatif limité (§11, même logique que sur WAMP).
+4. **Configurer `.env`** (copier `.env.example`, adapter `DB_*` avec les identifiants cPanel, `MYSQLDUMP_BIN` laissé vide/par défaut — `mysqldump` est dans le `PATH` sur la quasi-totalité des hébergements Linux, contrairement à WAMP).
+5. **Tâches planifiées** — cPanel → "Tâches Cron" reprend exactement les 3 lignes crontab déjà documentées en §9/§10/§11 (aucune limite "session ouverte uniquement" ici, contrairement à Windows — un vrai serveur cron tourne en permanence).
+6. **Protection `/admin/*`** — cPanel → "Confidentialité du répertoire" (Directory Privacy) sur le dossier `admin/` fait exactement ce que `admin/.htaccess` fait ici manuellement, via une interface graphique. Alternative : garder `admin/.htaccess` tel quel et régénérer `.htpasswd` en SSH avec `htpasswd -cB <chemin hors de public_html> <utilisateur>`, en adaptant le chemin `AuthUserFile`.
+7. **SSL** — activer AutoSSL (Let's Encrypt) dans cPanel, généralement automatique dès que le domaine pointe vers le serveur. Rediriger tout HTTP vers HTTPS (option cPanel "Forcer HTTPS" ou règle `.htaccess`).
+8. **Durcissement `php.ini`** — cPanel → "Éditeur MultiPHP INI" : `display_errors = Off`, `display_startup_errors = Off`, `expose_php = Off` (mêmes réglages qu'appliqués ici sur `php.ini` Apache — voir §11).
+9. **Webhook Genius Pay** — **à refaire obligatoirement**, celui actuel pointe vers `localhost` (injoignable depuis internet). Relancer la procédure §8 avec `https://votre-domaine/market/api/webhooks/geniuspay.php`, copier le nouveau `whsec_...` dans `.env`.
+10. **`robots.txt`** — décommenter la ligne `Sitemap:` (§12, point 6) avec le vrai domaine.
+11. **Permissions fichiers** (§7) — généralement déjà correctes par défaut sous cPanel pour l'utilisateur du compte d'hébergement, à vérifier si des uploads échouent.
+12. **Smoke tests** (§12) — rejouer l'intégralité de la checklist sur le nouveau domaine avant d'annoncer publiquement le lancement.
+
+## 15. En cas de problème
 
 - Logs applicatifs : `logs/{geniuspay,payment,webhook,settlement,wallet,wallet_release,withdrawal,vendor_admin,refund,notifications}.log` (format JSON par ligne, voir `src/Support/Logger.php`). `notifications.log` trace chaque email (envoyé, échoué, ou ignoré si SMTP non configuré) — premier réflexe en cas de 2FA ou de reset de mot de passe non reçu.
 - Échec de rapprochement paiement (somme des parts vendeurs + commission ≠ montant payé) : jamais de crédit silencieux, la commande reste non réglée et un incident est enregistré dans `settlement_failures` — visible en haut de `/admin/finances.php` tant que non résolu.
