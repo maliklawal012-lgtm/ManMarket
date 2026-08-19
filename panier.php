@@ -66,7 +66,7 @@ if ($productsMap) {
                 <span>Sous-total</span>
                 <strong id="cart-subtotal">0 FCFA</strong>
             </div>
-            <p class="cart-summary-note">La livraison sera confirmée par le commerçant lors de la validation de votre commande.</p>
+            <p class="cart-summary-note">Les frais de livraison seront calculés à l'étape suivante, selon votre ville et votre quartier.</p>
             <a href="#" id="cart-checkout-btn" class="btn btn-primary btn-block">Passer la commande <?= icon('chevron-right', 14) ?></a>
         </div>
     </div>

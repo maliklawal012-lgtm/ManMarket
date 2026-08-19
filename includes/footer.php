@@ -12,7 +12,7 @@
                 <?php endif; ?>
                 <span class="logo-text light"><?= e(get_setting('site_name')) ?></span>
             </a>
-            <p><?= e(get_setting('site_footer_tagline', 'Le plus grand marché en ligne de la ville de Man. Achetez local, soutenez nos commerçants, faites-vous livrer partout à Man.')) ?></p>
+            <p><?= e(get_setting('site_footer_tagline', 'Le plus grand marché en ligne de la ville de Man. Achetez local, soutenez nos vendeurs, faites-vous livrer partout à Man.')) ?></p>
             <div class="footer-social">
                 <?php foreach (social_networks() as $netKey => $net): ?>
                     <a href="<?= e($net['url']) ?>" target="_blank" rel="noopener" aria-label="<?= e($net['label']) ?>"><?= icon($netKey, 16) ?></a>

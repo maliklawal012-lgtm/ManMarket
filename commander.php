@@ -207,7 +207,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $deliveryFee
             );
         } catch (InvalidArgumentException $e) {
-            $errors['items'] = 'Votre panier est vide ou aucun des produits sélectionnés n\'est actuellement disponible à la vente (boutique sans vendeur assigné). Merci de contacter le support.';
+            $errors['items'] = 'Aucun des articles de votre panier n\'est actuellement disponible à la vente. Cela peut arriver si une boutique est en cours de configuration.';
+            $errors['items_contact'] = true;
         }
 
         if (!$errors) {
@@ -261,7 +262,18 @@ require_once __DIR__ . '/includes/header.php';
         <?php if (isset($errors['items'])): ?>
             <div class="alert alert-error">
                 <?= icon('x', 18) ?>
-                <span><?= e($errors['items']) ?></span>
+                <span>
+                    <?= e($errors['items']) ?>
+                    <?php if (!empty($errors['items_contact'])): ?>
+                        <a href="/market/panier.php">Modifier mon panier</a>
+                        <?php $supportPhone = get_setting('site_phone'); $supportWhatsapp = get_setting('site_whatsapp'); ?>
+                        <?php if ($supportPhone || $supportWhatsapp): ?>
+                            ou contactez le support
+                            <?php if ($supportPhone): ?>au <?= e($supportPhone) ?><?php endif; ?>
+                            <?php if ($supportWhatsapp): ?><?= $supportPhone ? ' (' : '' ?>WhatsApp : <?= e($supportWhatsapp) ?><?= $supportPhone ? ')' : '' ?><?php endif; ?>.
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </span>
             </div>
         <?php endif; ?>
 

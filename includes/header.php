@@ -21,7 +21,7 @@ $currentPage = basename($_SERVER['SCRIPT_NAME']);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= isset($pageTitle) ? e($pageTitle) . ' | ManMarket' : 'ManMarket — Le marché en ligne de la ville de Man' ?></title>
-<meta name="description" content="ManMarket, le plus grand marché en ligne de la ville de Man. Achetez local, soutenez les commerçants, livraison partout à Man.">
+<meta name="description" content="ManMarket, le plus grand marché en ligne de la ville de Man. Achetez local, soutenez les vendeurs, livraison partout à Man.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%2316a34a%22/><text x=%2212%22 y=%2217%22 font-size=%2214%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>M</text></svg>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/css/style.css')) ?>">
 </head>

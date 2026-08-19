@@ -27,8 +27,8 @@ $fields = [
     'site_support_hours' => ['label' => 'Horaires du support', 'type' => 'text'],
     'site_hero_title_main' => ['label' => 'Titre principal (grand bandeau d\'accueil)', 'type' => 'text', 'default' => 'Le plus grand marché en ligne de'],
     'site_hero_title_accent' => ['label' => 'Titre accentué en vert (grand bandeau d\'accueil)', 'type' => 'text', 'default' => 'la ville de Man'],
-    'site_hero_subtitle' => ['label' => 'Sous-titre (grand bandeau d\'accueil)', 'type' => 'text', 'default' => 'Achetez local, soutenez nos commerçants, faites-vous livrer partout à Man.'],
-    'site_footer_tagline' => ['label' => 'Description (pied de page)', 'type' => 'text', 'default' => 'Le plus grand marché en ligne de la ville de Man. Achetez local, soutenez nos commerçants, faites-vous livrer partout à Man.'],
+    'site_hero_subtitle' => ['label' => 'Sous-titre (grand bandeau d\'accueil)', 'type' => 'text', 'default' => 'Achetez local, soutenez nos vendeurs, faites-vous livrer partout à Man.'],
+    'site_footer_tagline' => ['label' => 'Description (pied de page)', 'type' => 'text', 'default' => 'Le plus grand marché en ligne de la ville de Man. Achetez local, soutenez nos vendeurs, faites-vous livrer partout à Man.'],
 ];
 
 $imageFields = [

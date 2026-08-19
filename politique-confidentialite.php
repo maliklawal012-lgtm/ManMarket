@@ -15,7 +15,7 @@ require_once __DIR__ . '/includes/header.php';
 <section class="container auth-page">
     <div class="card auth-card" style="max-width:800px; margin:0 auto;">
         <h2>1. Qui collecte vos données ?</h2>
-        <p><?= e(get_setting('site_name') ?: 'ManMarket') ?> est une place de marché en ligne qui met en relation des commerçants de la ville de Man et leurs clients. Cette politique explique quelles données personnelles nous collectons lorsque vous créez un compte, passez commande ou utilisez le site, et comment elles sont utilisées.</p>
+        <p><?= e(get_setting('site_name') ?: 'ManMarket') ?> est une place de marché en ligne qui met en relation des vendeurs de la ville de Man et leurs clients. Cette politique explique quelles données personnelles nous collectons lorsque vous créez un compte, passez commande ou utilisez le site, et comment elles sont utilisées.</p>
 
         <h2>2. Quelles données sont collectées ?</h2>
         <ul>
@@ -35,7 +35,7 @@ require_once __DIR__ . '/includes/header.php';
         </ul>
 
         <h2>4. Partage des données</h2>
-        <p>Vos données ne sont jamais vendues. Elles sont partagées uniquement avec : le commerçant concerné par votre commande (nom, contact, adresse de livraison), notre prestataire de paiement Genius Pay pour le traitement des paiements en ligne, et notre service de livraison pour l'acheminement de vos commandes.</p>
+        <p>Vos données ne sont jamais vendues. Elles sont partagées uniquement avec : le vendeur concerné par votre commande (nom, contact, adresse de livraison), notre prestataire de paiement Genius Pay pour le traitement des paiements en ligne, et notre service de livraison pour l'acheminement de vos commandes.</p>
 
         <h2>5. Combien de temps vos données sont-elles conservées ?</h2>
         <p>Vos données sont conservées tant que votre compte est actif. En cas de suppression de compte, les données liées aux commandes passées peuvent être conservées le temps requis par nos obligations comptables et légales.</p>

@@ -52,10 +52,18 @@ if ($viewEmail !== '') {
     $stmt->execute(['email' => $viewEmail, 'shop_id' => $shopId]);
     $viewOrders = $stmt->fetchAll();
 
-    $itemsStmt = $db->prepare('SELECT * FROM order_items WHERE order_id = :order_id AND shop_id = :shop_id');
+    $itemsByOrder = [];
+    $viewOrderIds = array_column($viewOrders, 'id');
+    if ($viewOrderIds) {
+        $placeholders = implode(',', array_fill(0, count($viewOrderIds), '?'));
+        $itemsStmt = $db->prepare("SELECT * FROM order_items WHERE order_id IN ($placeholders) AND shop_id = ?");
+        $itemsStmt->execute([...$viewOrderIds, $shopId]);
+        foreach ($itemsStmt->fetchAll() as $item) {
+            $itemsByOrder[(int) $item['order_id']][] = $item;
+        }
+    }
     foreach ($viewOrders as &$order) {
-        $itemsStmt->execute(['order_id' => $order['id'], 'shop_id' => $shopId]);
-        $order['items'] = $itemsStmt->fetchAll();
+        $order['items'] = $itemsByOrder[(int) $order['id']] ?? [];
     }
     unset($order);
 
@@ -75,6 +83,10 @@ $pageTitle = $viewCustomer ? $viewCustomer['name'] : 'Clients';
 require_once __DIR__ . '/../includes/vendor_header.php';
 
 if (!$viewCustomer) {
+    $countStmt = $db->prepare('SELECT COUNT(DISTINCT o.customer_email) FROM orders o JOIN order_items oi ON oi.order_id = o.id WHERE oi.shop_id = :shop_id');
+    $countStmt->execute(['shop_id' => $shopId]);
+    $pagination = paginate((int) $countStmt->fetchColumn(), 20);
+
     $stmt = $db->prepare("
         SELECT
             o.customer_name AS name, o.customer_email AS email, o.customer_phone AS phone,
@@ -86,8 +98,12 @@ if (!$viewCustomer) {
         WHERE oi.shop_id = :shop_id
         GROUP BY o.customer_email, o.customer_name, o.customer_phone
         ORDER BY last_order_at DESC
+        LIMIT :limit OFFSET :offset
     ");
-    $stmt->execute(['shop_id' => $shopId]);
+    $stmt->bindValue('shop_id', $shopId, PDO::PARAM_INT);
+    $stmt->bindValue('limit', $pagination['per_page'], PDO::PARAM_INT);
+    $stmt->bindValue('offset', $pagination['offset'], PDO::PARAM_INT);
+    $stmt->execute();
     $customers = $stmt->fetchAll();
 }
 ?>
@@ -181,7 +197,7 @@ if (!$viewCustomer) {
 
 <div class="card">
     <div class="admin-toolbar">
-        <h2>Clients ayant commandé chez vous (<?= count($customers) ?>)</h2>
+        <h2>Clients ayant commandé chez vous (<?= $pagination['total_items'] ?>)</h2>
     </div>
 
     <?php if (!$customers): ?>
@@ -213,6 +229,7 @@ if (!$viewCustomer) {
                 </tbody>
             </table>
         </div>
+        <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/vendeur/clients.php') ?>
     <?php endif; ?>
 </div>
 

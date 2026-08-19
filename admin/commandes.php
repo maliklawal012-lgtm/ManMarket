@@ -39,13 +39,32 @@ $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $orders = $stmt->fetchAll();
 
-$vendorStmt = $db->prepare('
-    SELECT s.id AS shop_id, s.name AS shop_name, oi.vendor_status
-    FROM legacy_order_items oi
-    JOIN shops s ON s.id = oi.shop_id
-    WHERE oi.order_id = :order_id
-');
 $vendorStatusPriority = ['rejected' => 0, 'pending' => 1, 'confirmed' => 2];
+
+// Requetes groupees (au lieu d'une requete par commande) : voir le meme
+// correctif deja applique a admin/commandes-actives.php et vendeur/commandes.php.
+$vendorRowsByOrder = [];
+$paymentsByOrder = [];
+$orderIds = array_column($orders, 'id');
+if ($orderIds) {
+    $placeholders = implode(',', array_fill(0, count($orderIds), '?'));
+    $vendorStmt = $db->prepare("
+        SELECT oi.order_id, s.id AS shop_id, s.name AS shop_name, oi.vendor_status
+        FROM legacy_order_items oi
+        JOIN shops s ON s.id = oi.shop_id
+        WHERE oi.order_id IN ($placeholders)
+    ");
+    $vendorStmt->execute($orderIds);
+    foreach ($vendorStmt->fetchAll() as $row) {
+        $vendorRowsByOrder[(int) $row['order_id']][] = $row;
+    }
+
+    $paymentsStmt = $db->prepare("SELECT * FROM legacy_payments WHERE order_id IN ($placeholders) ORDER BY id DESC");
+    $paymentsStmt->execute($orderIds);
+    foreach ($paymentsStmt->fetchAll() as $row) {
+        $paymentsByOrder[(int) $row['order_id']] ??= $row;
+    }
+}
 ?>
 
 <div class="card">
@@ -83,8 +102,7 @@ $vendorStatusPriority = ['rejected' => 0, 'pending' => 1, 'confirmed' => 2];
                 <tbody>
                     <?php foreach ($orders as $order): ?>
                         <?php
-                        $vendorStmt->execute(['order_id' => $order['id']]);
-                        $vendorRows = $vendorStmt->fetchAll();
+                        $vendorRows = $vendorRowsByOrder[(int) $order['id']] ?? [];
                         $vendorByShop = [];
                         foreach ($vendorRows as $vr) {
                             $shopId = (int) $vr['shop_id'];
@@ -92,7 +110,7 @@ $vendorStatusPriority = ['rejected' => 0, 'pending' => 1, 'confirmed' => 2];
                                 $vendorByShop[$shopId] = $vr;
                             }
                         }
-                        $payment = get_order_payment((int) $order['id']);
+                        $payment = $paymentsByOrder[(int) $order['id']] ?? null;
                         ?>
                         <tr>
                             <td><?= e(date('d/m/Y H:i', strtotime((string) $order['created_at']))) ?></td>

@@ -529,4 +529,17 @@ migrate_step(
     fn (PDO $db) => $db->prepare("INSERT INTO settings (`key`, value) VALUES ('online_payment_enabled', '1')")->execute()
 );
 
+// ----------------------------------------------------------------------
+// Etape 21 : index sur orders.customer_email, utilise en WHERE et en
+// GROUP BY par vendeur/clients.php (liste des clients d'une boutique) sans
+// aucun index jusqu'ici, forcant un scan complet de la table orders a
+// chaque visite de l'onglet "Clients" cote vendeur.
+// ----------------------------------------------------------------------
+
+migrate_step(
+    'Ajouter l\'index orders(customer_email)',
+    fn (PDO $db) => migrate_index_exists($db, 'orders', 'idx_orders_customer_email'),
+    fn (PDO $db) => $db->exec('ALTER TABLE orders ADD INDEX idx_orders_customer_email (customer_email)')
+);
+
 echo "\nMigration terminee.\n";

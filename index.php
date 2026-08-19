@@ -63,7 +63,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                 <div class="hero-overlay"></div>
                 <div class="hero-content">
                     <h1><?= e(get_setting('site_hero_title_main', 'Le plus grand marché en ligne de')) ?> <span class="text-accent"><?= e(get_setting('site_hero_title_accent', 'la ville de Man')) ?></span></h1>
-                    <p><?= e(get_setting('site_hero_subtitle', 'Achetez local, soutenez nos commerçants, faites-vous livrer partout à Man.')) ?></p>
+                    <p><?= e(get_setting('site_hero_subtitle', 'Achetez local, soutenez nos vendeurs, faites-vous livrer partout à Man.')) ?></p>
                     <div class="hero-actions">
                         <a href="/market/offres.php" class="btn btn-primary">Acheter maintenant</a>
                         <a href="#categories" class="btn btn-outline">Découvrir</a>

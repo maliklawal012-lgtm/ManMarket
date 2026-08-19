@@ -20,7 +20,7 @@ $products = $db->query("
 <section class="page-banner">
     <div class="container page-banner-inner">
         <h1>Toutes les offres du moment</h1>
-        <p>Les meilleures réductions chez les commerçants de Man, mises à jour chaque jour.</p>
+        <p>Les meilleures réductions chez les vendeurs de Man, mises à jour chaque jour.</p>
     </div>
 </section>
 

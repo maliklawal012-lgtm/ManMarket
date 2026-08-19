@@ -140,12 +140,18 @@ if (($_GET['action'] ?? '') === 'edit' && isset($_GET['id'])) {
 require_once __DIR__ . '/../includes/admin_header.php';
 
 if (!$editing) {
-    $sql = 'SELECT u.*, (SELECT s.name FROM shops s WHERE s.owner_id = u.id ORDER BY s.id LIMIT 1) AS shop_name FROM users u';
-    if ($typeFilter === 'vendeur') {
-        $sql .= ' WHERE u.is_vendor = 1';
-    }
-    $sql .= ' ORDER BY u.created_at DESC';
-    $users = $db->query($sql)->fetchAll();
+    $whereClause = $typeFilter === 'vendeur' ? ' WHERE u.is_vendor = 1' : '';
+    $pagination = paginate((int) $db->query('SELECT COUNT(*) FROM users u' . $whereClause)->fetchColumn(), 20);
+    $stmt = $db->prepare('
+        SELECT u.*, (SELECT s.name FROM shops s WHERE s.owner_id = u.id ORDER BY s.id LIMIT 1) AS shop_name
+        FROM users u' . $whereClause . '
+        ORDER BY u.created_at DESC
+        LIMIT :limit OFFSET :offset
+    ');
+    $stmt->bindValue('limit', $pagination['per_page'], PDO::PARAM_INT);
+    $stmt->bindValue('offset', $pagination['offset'], PDO::PARAM_INT);
+    $stmt->execute();
+    $users = $stmt->fetchAll();
 }
 ?>
 
@@ -364,7 +370,7 @@ if (!$editing) {
 
 <div class="card">
     <div class="admin-toolbar">
-        <h2><?= $typeFilter === 'vendeur' ? 'Commerçants' : 'Utilisateurs' ?> (<?= count($users) ?>)</h2>
+        <h2><?= $typeFilter === 'vendeur' ? 'Commerçants' : 'Utilisateurs' ?> (<?= $pagination['total_items'] ?>)</h2>
         <div class="filter-sort">
             <label for="type-filter">Filtre</label>
             <select id="type-filter" onchange="location.href = this.value">
@@ -410,6 +416,7 @@ if (!$editing) {
                 </tbody>
             </table>
         </div>
+        <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/admin/utilisateurs.php', $typeFilter !== '' ? ['type' => $typeFilter] : []) ?>
     <?php endif; ?>
 </div>
 

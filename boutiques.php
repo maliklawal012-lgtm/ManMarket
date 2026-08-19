@@ -12,7 +12,7 @@ $shops = attach_live_shop_ratings($shops);
 <section class="page-banner">
     <div class="container page-banner-inner">
         <h1>Boutiques partenaires à Man</h1>
-        <p>Découvrez les commerçants locaux qui font la richesse du marché de Man.</p>
+        <p>Découvrez les vendeurs locaux qui font la richesse du marché de Man.</p>
     </div>
 </section>
 
