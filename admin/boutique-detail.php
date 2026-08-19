@@ -55,21 +55,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'recor
     }
 
     if (!$errors) {
-        // Meme mecanisme que le paiement en ligne self-service
-        // (vendeur/abonnements.php), mais declenche par l'admin pour un
-        // paiement recu hors-ligne (especes, depot direct...) : aucun appel
-        // Genius Pay, la periode d'abonnement demarre immediatement.
-        $startsAt = date('Y-m-d');
-        $endsAt = date('Y-m-d', strtotime($startsAt . ' +' . (int) $plan['duration_months'] . ' months'));
-
-        $insert = $db->prepare('
-            INSERT INTO shop_subscriptions (shop_id, plan_id, plan_name, price_paid, starts_at, ends_at)
-            VALUES (:shop_id, :plan_id, :plan_name, :price_paid, :starts_at, :ends_at)
-        ');
-        $insert->execute([
-            'shop_id' => $shopId, 'plan_id' => (int) $plan['id'], 'plan_name' => $plan['name'],
-            'price_paid' => $price, 'starts_at' => $startsAt, 'ends_at' => $endsAt,
-        ]);
+        // Reutilise le meme helper que le paiement en ligne self-service
+        // (vendeur/abonnements.php et admin/abonnements.php -> action "pay") :
+        // prolonge l'abonnement existant s'il est encore actif au lieu
+        // d'ecraser sa date de debut. Seul le montant peut differer du prix
+        // catalogue (montant reellement recu en especes, negocie ou non).
+        apply_subscription_payment($shopId, $plan, $price);
+        $endsAt = (string) get_shop_latest_subscription($shopId)['ends_at'];
 
         wallet_audit_log_repo()->record(
             (int) $adminUser['id'],
