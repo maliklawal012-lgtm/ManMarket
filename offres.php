@@ -69,11 +69,11 @@ $products = $db->query("
                     <?= icon('heart', 16) ?>
                 </button>
                 <?php if ($pp['discount_percent']): ?><span class="badge-discount">-<?= $pp['discount_percent'] ?>%</span><?php endif; ?>
-                <a href="/market/produit.php?slug=<?= e($p['slug']) ?>" class="product-card-link">
+                <a href="/market/produit?slug=<?= e($p['slug']) ?>" class="product-card-link">
                     <div class="product-thumb"><?= product_thumb_html($p, 34) ?></div>
                     <h3><?= e($p['name']) ?></h3>
                 </a>
-                <a href="/market/boutique.php?slug=<?= e($p['shop_slug']) ?>" class="product-shop-link">
+                <a href="/market/boutique?slug=<?= e($p['shop_slug']) ?>" class="product-shop-link">
                     <?= icon('store', 12) ?><?= e($p['shop_name']) ?>
                 </a>
                 <div class="price-row">

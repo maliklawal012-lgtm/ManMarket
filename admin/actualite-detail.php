@@ -16,7 +16,7 @@ $newsId = (int) ($_GET['id'] ?? 0);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     $db->prepare('DELETE FROM news WHERE id = :id')->execute(['id' => $newsId]);
-    header('Location: /market/admin/actualites.php');
+    header('Location: /market/admin/actualites');
     exit;
 }
 
@@ -25,7 +25,7 @@ $stmt->execute(['id' => $newsId]);
 $news = $stmt->fetch() ?: null;
 
 if (!$news) {
-    header('Location: /market/admin/actualites.php');
+    header('Location: /market/admin/actualites');
     exit;
 }
 
@@ -34,15 +34,15 @@ require_once __DIR__ . '/../includes/admin_header.php';
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/actualites.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux actualités</a>
+    <a href="/market/admin/actualites" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux actualités</a>
 </div>
 
 <div class="card">
     <div class="admin-toolbar">
         <h2><?= icon($news['icon'], 20) ?> <?= e($news['title']) ?></h2>
         <div class="admin-table-actions">
-            <a href="/market/admin/actualites.php?action=edit&id=<?= $newsId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-            <form method="post" action="/market/admin/actualite-detail.php?id=<?= $newsId ?>" onsubmit="return confirm('Supprimer cette actualité ?');">
+            <a href="/market/admin/actualites?action=edit&id=<?= $newsId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+            <form method="post" action="/market/admin/actualite-detail?id=<?= $newsId ?>" onsubmit="return confirm('Supprimer cette actualité ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Supprimer</button>

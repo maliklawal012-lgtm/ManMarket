@@ -8,7 +8,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -38,7 +38,7 @@ if ($viewEmail !== '') {
 
     // Garde-fou vie privee : n'affiche que les clients ayant reellement commande dans CETTE boutique.
     if (!$viewCustomer) {
-        header('Location: /market/vendeur/clients.php');
+        header('Location: /market/vendeur/clients');
         exit;
     }
 
@@ -111,7 +111,7 @@ if (!$viewCustomer) {
 <?php if ($viewCustomer): ?>
 
     <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-        <a href="/market/vendeur/clients.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+        <a href="/market/vendeur/clients" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
     </div>
 
     <div class="card" style="margin-bottom: var(--gap);">
@@ -183,7 +183,7 @@ if (!$viewCustomer) {
                         <div class="admin-activity-item">
                             <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                             <div>
-                                <div class="admin-activity-text"><a href="/market/produit.php?slug=<?= e($r['product_slug']) ?>" class="link-muted"><?= e($r['product_name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
+                                <div class="admin-activity-text"><a href="/market/produit?slug=<?= e($r['product_slug']) ?>" class="link-muted"><?= e($r['product_name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
                                 <div class="admin-activity-time"><?= $r['comment'] ? e(mb_strimwidth($r['comment'], 0, 80, '…')) . ' · ' : '' ?><?= e(date('d/m/Y', strtotime((string) $r['created_at']))) ?></div>
                             </div>
                         </div>
@@ -223,13 +223,13 @@ if (!$viewCustomer) {
                             <td><?= (int) $c['order_count'] ?></td>
                             <td><?= $c['total_spent'] > 0 ? format_price((int) $c['total_spent']) : '—' ?></td>
                             <td><?= e(date('d/m/Y', strtotime((string) $c['last_order_at']))) ?></td>
-                            <td><a href="/market/vendeur/clients.php?email=<?= urlencode((string) $c['email']) ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/vendeur/clients?email=<?= urlencode((string) $c['email']) ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-        <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/vendeur/clients.php') ?>
+        <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/vendeur/clients') ?>
     <?php endif; ?>
 </div>
 

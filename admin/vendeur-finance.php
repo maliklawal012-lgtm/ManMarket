@@ -18,7 +18,7 @@ $vendorId = (int) ($_GET['id'] ?? 0);
 $vendor = wallet_vendor_repo()->findById($vendorId);
 
 if (!$vendor) {
-    header('Location: /market/admin/finances.php');
+    header('Location: /market/admin/finances');
     exit;
 }
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'adjus
             $reason,
             $_SERVER['REMOTE_ADDR'] ?? null
         );
-        header('Location: /market/admin/vendeur-finance.php?id=' . $vendorId);
+        header('Location: /market/admin/vendeur-finance?id=' . $vendorId);
         exit;
     } catch (\Throwable $e) {
         $actionError = $e->getMessage();
@@ -55,7 +55,7 @@ $auditHistory = wallet_audit_log_repo()->findByEntity('vendor', $vendorId);
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/finances.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux finances</a>
+    <a href="/market/admin/finances" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux finances</a>
 </div>
 
 <?php if ($actionError): ?>
@@ -99,7 +99,7 @@ $auditHistory = wallet_audit_log_repo()->findByEntity('vendor', $vendorId);
             <h2>Ajustement manuel</h2>
         </div>
         <p class="char-count">Correction d'erreur ou geste commercial. Toujours appliqué au solde disponible, immédiatement, et tracé dans le journal d'audit.</p>
-        <form method="post" action="/market/admin/vendeur-finance.php?id=<?= $vendorId ?>" novalidate>
+        <form method="post" action="/market/admin/vendeur-finance?id=<?= $vendorId ?>" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="adjust">
             <div class="form-row">

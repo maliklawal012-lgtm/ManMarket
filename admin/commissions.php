@@ -53,7 +53,7 @@ function commissions_query(array $overrides): string
     $params = array_merge(['status' => $_GET['status'] ?? '', 'page' => $_GET['page'] ?? ''], $overrides);
     $params = array_filter($params, fn ($v) => $v !== '' && $v !== null);
 
-    return '/market/admin/commissions.php' . ($params ? '?' . http_build_query($params) : '');
+    return '/market/admin/commissions' . ($params ? '?' . http_build_query($params) : '');
 }
 ?>
 
@@ -126,7 +126,7 @@ function commissions_query(array $overrides): string
                             <td><?= format_price((int) round((float) $c['commission_amount'])) ?></td>
                             <td><?= (float) $c['reversed_amount'] > 0 ? format_price((int) round((float) $c['reversed_amount'])) : '<span class="char-count">—</span>' ?></td>
                             <td><span class="tag <?= commission_status_tag_class($c['status']) ?>"><?= e(commission_status_label($c['status'])) ?></span></td>
-                            <td><a href="/market/admin/commission-detail.php?id=<?= (int) $c['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/admin/commission-detail?id=<?= (int) $c['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

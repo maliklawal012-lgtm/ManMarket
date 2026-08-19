@@ -18,7 +18,7 @@ $db = get_db();
 if ($vendorShop && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_open'])) {
     $stmt = $db->prepare('UPDATE shops SET is_open = IF(is_open = 1, 0, 1) WHERE id = :id');
     $stmt->execute(['id' => (int) $vendorShop['id']]);
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -93,7 +93,7 @@ $lowStockProducts = $stmt->fetchAll();
             <span class="tag <?= $vendorShop['is_open'] ? 'tag-open' : 'tag-closed' ?>"><?= $vendorShop['is_open'] ? 'Ouverte' : 'Fermée' ?></span>
         </span>
         <span class="admin-stat-label">Statut de la boutique</span>
-        <form method="post" action="/market/vendeur/index.php" style="margin-top:4px;">
+        <form method="post" action="/market/vendeur/index" style="margin-top:4px;">
             <?= csrf_field() ?>
             <input type="hidden" name="toggle_open" value="1">
             <button type="submit" class="btn btn-outline-primary btn-sm"><?= $vendorShop['is_open'] ? 'Fermer la boutique' : 'Ouvrir la boutique' ?></button>
@@ -106,12 +106,12 @@ $lowStockProducts = $stmt->fetchAll();
         <h2>Actions rapides</h2>
     </div>
     <div class="admin-table-actions" style="flex-wrap:wrap; gap:10px;">
-        <a href="/market/vendeur/produits.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Ajouter un produit</a>
-        <a href="/market/vendeur/produits.php" class="btn btn-outline-primary btn-sm"><?= icon('shopping-basket', 14) ?> Gérer mes produits</a>
-        <a href="/market/vendeur/commandes.php" class="btn btn-outline-primary btn-sm"><?= icon('cart', 14) ?> Voir mes commandes</a>
-        <a href="/market/vendeur/statistiques.php" class="btn btn-outline-primary btn-sm"><?= icon('bar-chart', 14) ?> Voir mes statistiques</a>
-        <a href="/market/vendeur/retraits.php" class="btn btn-outline-primary btn-sm"><?= icon('shield', 14) ?> Demander un retrait</a>
-        <a href="/market/boutique.php?slug=<?= urlencode((string) $vendorShop['slug']) ?>" class="btn btn-outline-primary btn-sm"><?= icon('chevron-right', 14) ?> Voir ma boutique</a>
+        <a href="/market/vendeur/produits?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Ajouter un produit</a>
+        <a href="/market/vendeur/produits" class="btn btn-outline-primary btn-sm"><?= icon('shopping-basket', 14) ?> Gérer mes produits</a>
+        <a href="/market/vendeur/commandes" class="btn btn-outline-primary btn-sm"><?= icon('cart', 14) ?> Voir mes commandes</a>
+        <a href="/market/vendeur/statistiques" class="btn btn-outline-primary btn-sm"><?= icon('bar-chart', 14) ?> Voir mes statistiques</a>
+        <a href="/market/vendeur/retraits" class="btn btn-outline-primary btn-sm"><?= icon('shield', 14) ?> Demander un retrait</a>
+        <a href="/market/boutique?slug=<?= urlencode((string) $vendorShop['slug']) ?>" class="btn btn-outline-primary btn-sm"><?= icon('chevron-right', 14) ?> Voir ma boutique</a>
     </div>
 </div>
 
@@ -119,7 +119,7 @@ $lowStockProducts = $stmt->fetchAll();
     <div class="card" style="margin-bottom: var(--gap);">
         <div class="admin-toolbar">
             <h2><?= icon('shopping-basket', 18) ?> Stock faible (<?= count($lowStockProducts) ?>)</h2>
-            <a href="/market/vendeur/produits.php" class="link-more"><?= icon('chevron-right', 14) ?> Gérer mes produits</a>
+            <a href="/market/vendeur/produits" class="link-more"><?= icon('chevron-right', 14) ?> Gérer mes produits</a>
         </div>
         <div class="admin-activity-list">
             <?php foreach ($lowStockProducts as $p): ?>
@@ -139,10 +139,10 @@ $lowStockProducts = $stmt->fetchAll();
     <div class="card">
         <div class="admin-toolbar">
             <h2>Derniers produits ajoutés</h2>
-            <a href="/market/vendeur/produits.php" class="link-more"><?= icon('chevron-right', 14) ?> Tout voir</a>
+            <a href="/market/vendeur/produits" class="link-more"><?= icon('chevron-right', 14) ?> Tout voir</a>
         </div>
         <?php if (!$recentProducts): ?>
-            <p class="empty-state">Vous n'avez encore ajouté aucun produit. <a href="/market/vendeur/produits.php?action=new">Ajouter mon premier produit</a></p>
+            <p class="empty-state">Vous n'avez encore ajouté aucun produit. <a href="/market/vendeur/produits?action=new">Ajouter mon premier produit</a></p>
         <?php else: ?>
             <div class="admin-activity-list">
                 <?php foreach ($recentProducts as $p): ?>
@@ -161,7 +161,7 @@ $lowStockProducts = $stmt->fetchAll();
     <div class="card">
         <div class="admin-toolbar">
             <h2>Avis récents</h2>
-            <a href="/market/vendeur/avis.php" class="link-more"><?= icon('chevron-right', 14) ?> Tout voir</a>
+            <a href="/market/vendeur/avis" class="link-more"><?= icon('chevron-right', 14) ?> Tout voir</a>
         </div>
         <?php if (!$recentReviews): ?>
             <p class="empty-state">Aucun avis pour le moment.</p>

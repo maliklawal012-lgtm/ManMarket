@@ -21,7 +21,7 @@ $stmt->execute(['id' => $orderId]);
 $order = $stmt->fetch() ?: null;
 
 if (!$order) {
-    header('Location: /market/admin/commandes-actives.php');
+    header('Location: /market/admin/commandes-actives');
     exit;
 }
 
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status']) && ($_POST[
         wallet_notification_service()->orderStatusChanged($orderId, $_POST['status']);
         wallet_audit_log_repo()->record((int) $adminUser['id'], 'order_' . $_POST['status'], 'order', $orderId, null, $_SERVER['REMOTE_ADDR'] ?? null);
     }
-    header('Location: /market/admin/commande-detail.php?id=' . $orderId);
+    header('Location: /market/admin/commande-detail?id=' . $orderId);
     exit;
 }
 
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'refun
         $result = wallet_refund_service()->refundOrderItem($orderItemId, $quantity, $reason, (int) $adminUser['id']);
         if ($result->ok) {
             wallet_audit_log_repo()->record((int) $adminUser['id'], 'refund_processed', 'order', $orderId, $reason, $_SERVER['REMOTE_ADDR'] ?? null);
-            header('Location: /market/admin/commande-detail.php?id=' . $orderId);
+            header('Location: /market/admin/commande-detail?id=' . $orderId);
             exit;
         }
         $actionError = $result->error;
@@ -93,7 +93,7 @@ $refunds = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/commandes-actives.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commandes</a>
+    <a href="/market/admin/commandes-actives" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commandes</a>
 </div>
 
 <?php if ($actionError): ?>
@@ -103,7 +103,7 @@ $refunds = $stmt->fetchAll();
 <div class="card" style="margin-bottom: var(--gap);">
     <div class="admin-toolbar">
         <h2>Commande #<?= $orderId ?></h2>
-        <form method="post" action="/market/admin/commande-detail.php?id=<?= $orderId ?>">
+        <form method="post" action="/market/admin/commande-detail?id=<?= $orderId ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="change_status">
             <select name="status" class="admin-inline-select" onchange="this.form.submit()">
@@ -189,7 +189,7 @@ $refunds = $stmt->fetchAll();
                             <?php if ($canRefund): ?>
                                 <details>
                                     <summary class="btn btn-outline-primary btn-sm" style="display:inline-block; cursor:pointer;">Rembourser</summary>
-                                    <form method="post" action="/market/admin/commande-detail.php?id=<?= $orderId ?>" style="margin-top:8px; min-width:220px;" onsubmit="return confirm('Confirmer le remboursement ?');">
+                                    <form method="post" action="/market/admin/commande-detail?id=<?= $orderId ?>" style="margin-top:8px; min-width:220px;" onsubmit="return confirm('Confirmer le remboursement ?');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="refund">
                                         <input type="hidden" name="order_item_id" value="<?= (int) $item['id'] ?>">

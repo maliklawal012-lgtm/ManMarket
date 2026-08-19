@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['s
         wallet_notification_service()->orderStatusChanged($orderId, $_POST['status']);
         wallet_audit_log_repo()->record((int) $adminUser['id'], 'order_' . $_POST['status'], 'order', $orderId, null, $_SERVER['REMOTE_ADDR'] ?? null);
     }
-    header('Location: /market/admin/commandes-actives.php' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
+    header('Location: /market/admin/commandes-actives' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
     exit;
 }
 
@@ -114,7 +114,7 @@ $holdDays = wallet_release_service()->currentHoldDays();
 <div class="card" style="margin-bottom: var(--gap);">
     <div class="admin-toolbar">
         <h2>Libération des soldes vendeurs</h2>
-        <form method="post" action="/market/admin/commandes-actives.php">
+        <form method="post" action="/market/admin/commandes-actives">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="release_now">
             <button type="submit" class="btn btn-outline-primary btn-sm">Exécuter la libération maintenant</button>
@@ -132,16 +132,16 @@ $holdDays = wallet_release_service()->currentHoldDays();
         <div class="filter-sort">
             <label for="status-filter">Statut</label>
             <select id="status-filter" onchange="location.href = this.value">
-                <option value="/market/admin/commandes-actives.php" <?= $statusFilter === '' ? 'selected' : '' ?>>Toutes</option>
+                <option value="/market/admin/commandes-actives" <?= $statusFilter === '' ? 'selected' : '' ?>>Toutes</option>
                 <?php foreach ($orderStatuses as $s): ?>
-                    <option value="/market/admin/commandes-actives.php?status=<?= e($s) ?>" <?= $statusFilter === $s ? 'selected' : '' ?>><?= e(order_status_label($s)) ?></option>
+                    <option value="/market/admin/commandes-actives?status=<?= e($s) ?>" <?= $statusFilter === $s ? 'selected' : '' ?>><?= e(order_status_label($s)) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
     </div>
 
     <?php if (!$orders): ?>
-        <p class="empty-state">Aucune commande ne correspond à ce filtre. Les commandes historiques restent visibles dans <a href="/market/admin/commandes.php">Commandes (archive)</a>.</p>
+        <p class="empty-state">Aucune commande ne correspond à ce filtre. Les commandes historiques restent visibles dans <a href="/market/admin/commandes">Commandes (archive)</a>.</p>
     <?php else: ?>
         <div class="table-responsive">
             <table class="admin-table">
@@ -180,8 +180,8 @@ $holdDays = wallet_release_service()->currentHoldDays();
                             </td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <a href="/market/admin/commande-detail.php?id=<?= (int) $order['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                    <form method="post" action="/market/admin/commandes-actives.php<?= $statusFilter !== '' ? '?status=' . e($statusFilter) : '' ?>">
+                                    <a href="/market/admin/commande-detail?id=<?= (int) $order['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                    <form method="post" action="/market/admin/commandes-actives<?= $statusFilter !== '' ? '?status=' . e($statusFilter) : '' ?>">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
                                         <select name="status" class="admin-inline-select" onchange="this.form.submit()">

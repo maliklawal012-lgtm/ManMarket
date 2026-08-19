@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
             wallet_audit_log_repo()->record((int) $currentAdmin['id'], 'user_admin_revoked', 'user', $id, null, $_SERVER['REMOTE_ADDR'] ?? null);
         }
 
-        header('Location: /market/admin/utilisateurs.php');
+        header('Location: /market/admin/utilisateurs');
         exit;
     }
 }
@@ -160,7 +160,7 @@ if (!$editing) {
     <div class="card" style="margin-bottom: var(--gap);">
         <div class="admin-toolbar">
             <h2><?= e($editing['name']) ?></h2>
-            <a href="/market/admin/utilisateurs.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/admin/utilisateurs" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
         <?php if ($saveError): ?>
@@ -179,7 +179,7 @@ if (!$editing) {
         </ul>
 
         <?php if (!empty($editingShops)): ?>
-            <p class="char-count">Boutique(s) dont cet utilisateur est propriétaire : <?php foreach ($editingShops as $s): ?><strong><?= e($s['name']) ?></strong> <?php endforeach; ?> — à modifier depuis <a href="/market/admin/boutiques.php">Boutiques</a>.</p>
+            <p class="char-count">Boutique(s) dont cet utilisateur est propriétaire : <?php foreach ($editingShops as $s): ?><strong><?= e($s['name']) ?></strong> <?php endforeach; ?> — à modifier depuis <a href="/market/admin/boutiques">Boutiques</a>.</p>
         <?php endif; ?>
 
         <div class="admin-stats-grid" style="grid-template-columns: repeat(3, 1fr); margin: 14px 0;">
@@ -197,7 +197,7 @@ if (!$editing) {
             </div>
         </div>
 
-        <form method="post" action="/market/admin/utilisateurs.php">
+        <form method="post" action="/market/admin/utilisateurs">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save_role">
             <input type="hidden" name="id" value="<?= (int) $editing['id'] ?>">
@@ -356,7 +356,7 @@ if (!$editing) {
                         <div class="admin-activity-item">
                             <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                             <div>
-                                <div class="admin-activity-text"><a href="/market/produit.php?slug=<?= e($review['product_slug']) ?>" class="link-muted"><?= e($review['product_name']) ?></a> <?= render_stars((float) $review['rating']) ?></div>
+                                <div class="admin-activity-text"><a href="/market/produit?slug=<?= e($review['product_slug']) ?>" class="link-muted"><?= e($review['product_name']) ?></a> <?= render_stars((float) $review['rating']) ?></div>
                                 <div class="admin-activity-time"><?= e(date('d/m/Y à H:i', strtotime((string) $review['created_at']))) ?></div>
                             </div>
                         </div>
@@ -374,8 +374,8 @@ if (!$editing) {
         <div class="filter-sort">
             <label for="type-filter">Filtre</label>
             <select id="type-filter" onchange="location.href = this.value">
-                <option value="/market/admin/utilisateurs.php" <?= $typeFilter === '' ? 'selected' : '' ?>>Tous</option>
-                <option value="/market/admin/utilisateurs.php?type=vendeur" <?= $typeFilter === 'vendeur' ? 'selected' : '' ?>>Commerçants uniquement</option>
+                <option value="/market/admin/utilisateurs" <?= $typeFilter === '' ? 'selected' : '' ?>>Tous</option>
+                <option value="/market/admin/utilisateurs?type=vendeur" <?= $typeFilter === 'vendeur' ? 'selected' : '' ?>>Commerçants uniquement</option>
             </select>
         </div>
     </div>
@@ -410,13 +410,13 @@ if (!$editing) {
                             </td>
                             <td><?= connection_status_html($u['last_activity_at'], $u['last_login_at']) ?></td>
                             <td><?= e(date('d/m/Y', strtotime((string) $u['created_at']))) ?></td>
-                            <td><a href="/market/admin/utilisateurs.php?action=edit&id=<?= (int) $u['id'] ?>" class="btn btn-outline-primary btn-sm">Voir / Modifier</a></td>
+                            <td><a href="/market/admin/utilisateurs?action=edit&id=<?= (int) $u['id'] ?>" class="btn btn-outline-primary btn-sm">Voir / Modifier</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-        <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/admin/utilisateurs.php', $typeFilter !== '' ? ['type' => $typeFilter] : []) ?>
+        <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/admin/utilisateurs', $typeFilter !== '' ? ['type' => $typeFilter] : []) ?>
     <?php endif; ?>
 </div>
 

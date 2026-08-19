@@ -23,28 +23,28 @@ function sitemap_url(string $loc, ?string $lastmod = null, string $changefreq = 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
-echo sitemap_url("{$base}/index.php", null, 'daily', '1.0');
-echo sitemap_url("{$base}/boutiques.php", null, 'daily', '0.9');
-echo sitemap_url("{$base}/offres.php", null, 'daily', '0.8');
-echo sitemap_url("{$base}/services.php", null, 'weekly', '0.6');
-echo sitemap_url("{$base}/actualites.php", null, 'weekly', '0.5');
-echo sitemap_url("{$base}/contact.php", null, 'monthly', '0.3');
+echo sitemap_url("{$base}/index", null, 'daily', '1.0');
+echo sitemap_url("{$base}/boutiques", null, 'daily', '0.9');
+echo sitemap_url("{$base}/offres", null, 'daily', '0.8');
+echo sitemap_url("{$base}/services", null, 'weekly', '0.6');
+echo sitemap_url("{$base}/actualites", null, 'weekly', '0.5');
+echo sitemap_url("{$base}/contact", null, 'monthly', '0.3');
 
 $categories = $db->query('SELECT slug FROM categories')->fetchAll();
 foreach ($categories as $cat) {
-    echo sitemap_url("{$base}/categorie.php?slug=" . urlencode((string) $cat['slug']), null, 'daily', '0.7');
+    echo sitemap_url("{$base}/categorie?slug=" . urlencode((string) $cat['slug']), null, 'daily', '0.7');
 }
 
 $activeShops = active_subscription_shops_subquery();
 
 $shops = $db->query("SELECT slug FROM shops WHERE id IN {$activeShops}")->fetchAll();
 foreach ($shops as $shop) {
-    echo sitemap_url("{$base}/boutique.php?slug=" . urlencode((string) $shop['slug']), null, 'weekly', '0.7');
+    echo sitemap_url("{$base}/boutique?slug=" . urlencode((string) $shop['slug']), null, 'weekly', '0.7');
 }
 
 $products = $db->query("SELECT slug, created_at FROM products WHERE shop_id IN {$activeShops}")->fetchAll();
 foreach ($products as $product) {
-    echo sitemap_url("{$base}/produit.php?slug=" . urlencode((string) $product['slug']), $product['created_at'], 'weekly', '0.6');
+    echo sitemap_url("{$base}/produit?slug=" . urlencode((string) $product['slug']), $product['created_at'], 'weekly', '0.6');
 }
 
 echo '</urlset>' . "\n";

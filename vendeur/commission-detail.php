@@ -17,7 +17,7 @@ if ($commission && $vendor && (int) $commission['vendor_id'] !== (int) $vendor['
 }
 
 if (!$commission) {
-    header('Location: /market/vendeur/commissions.php');
+    header('Location: /market/vendeur/commissions');
     exit;
 }
 
@@ -38,7 +38,7 @@ $refundItems = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/commissions.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commissions</a>
+    <a href="/market/vendeur/commissions" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commissions</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -48,7 +48,7 @@ $refundItems = $stmt->fetchAll();
     </div>
     <ul class="account-info-list">
         <li><span class="account-info-label"><?= icon('shopping-basket', 16) ?> Produit</span><span><?= e($commission['product_name']) ?></span></li>
-        <li><span class="account-info-label"><?= icon('cart', 16) ?> Commande</span><span><a href="/market/vendeur/commande-detail.php?id=<?= (int) $commission['order_id'] ?>" class="link-muted">Commande #<?= (int) $commission['order_id'] ?></a></span></li>
+        <li><span class="account-info-label"><?= icon('cart', 16) ?> Commande</span><span><a href="/market/vendeur/commande-detail?id=<?= (int) $commission['order_id'] ?>" class="link-muted">Commande #<?= (int) $commission['order_id'] ?></a></span></li>
         <li><span class="account-info-label"><?= icon('clock', 16) ?> Créée le</span><span><?= e(date('d/m/Y à H:i', strtotime((string) $commission['created_at']))) ?></span></li>
         <?php if ($commission['reversed_at']): ?>
             <li><span class="account-info-label"><?= icon('x', 16) ?> Dernière annulation le</span><span><?= e(date('d/m/Y à H:i', strtotime((string) $commission['reversed_at']))) ?></span></li>

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -39,7 +39,7 @@ if ($order) {
 }
 
 if (!$order) {
-    header('Location: /market/vendeur/commandes.php');
+    header('Location: /market/vendeur/commandes');
     exit;
 }
 
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vendor_status'])) {
         $stmt = $db->prepare('UPDATE order_items SET fulfillment_status = :status WHERE order_id = :order_id AND shop_id = :shop_id');
         $stmt->execute(['status' => $_POST['vendor_status'], 'order_id' => $orderId, 'shop_id' => $shopId]);
     }
-    header('Location: /market/vendeur/commande-detail.php?id=' . $orderId);
+    header('Location: /market/vendeur/commande-detail?id=' . $orderId);
     exit;
 }
 
@@ -90,13 +90,13 @@ if ($vendorEntity) {
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/commandes.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commandes</a>
+    <a href="/market/vendeur/commandes" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commandes</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
     <div class="admin-toolbar">
         <h2>Commande #<?= $orderId ?></h2>
-        <form method="post" action="/market/vendeur/commande-detail.php?id=<?= $orderId ?>">
+        <form method="post" action="/market/vendeur/commande-detail?id=<?= $orderId ?>">
             <?= csrf_field() ?>
             <select name="vendor_status" class="admin-inline-select" onchange="this.form.submit()">
                 <?php foreach ($vendorStatuses as $s): ?>

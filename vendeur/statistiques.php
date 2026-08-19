@@ -9,7 +9,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -153,7 +153,7 @@ if ($vendorId > 0) {
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
     <h2>Statistiques</h2>
-    <a href="/market/vendeur/statistiques.php?export=orders" class="btn btn-outline-primary btn-sm"><?= icon('send', 14) ?> Exporter mes commandes (CSV)</a>
+    <a href="/market/vendeur/statistiques?export=orders" class="btn btn-outline-primary btn-sm"><?= icon('send', 14) ?> Exporter mes commandes (CSV)</a>
 </div>
 
 <div class="admin-stats-grid">

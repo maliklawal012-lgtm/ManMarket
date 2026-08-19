@@ -160,9 +160,9 @@ $orderStatusColors = [
         <div class="filter-sort">
             <label for="shop-stats-filter">Boutique</label>
             <select id="shop-stats-filter" onchange="location.href = this.value">
-                <option value="/market/admin/statistiques.php" <?= $selectedShopId === 0 ? 'selected' : '' ?>>Choisir une boutique...</option>
+                <option value="/market/admin/statistiques" <?= $selectedShopId === 0 ? 'selected' : '' ?>>Choisir une boutique...</option>
                 <?php foreach ($allShops as $s): ?>
-                    <option value="/market/admin/statistiques.php?shop_id=<?= (int) $s['id'] ?>" <?= $selectedShopId === (int) $s['id'] ? 'selected' : '' ?>><?= e($s['name']) ?></option>
+                    <option value="/market/admin/statistiques?shop_id=<?= (int) $s['id'] ?>" <?= $selectedShopId === (int) $s['id'] ? 'selected' : '' ?>><?= e($s['name']) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>

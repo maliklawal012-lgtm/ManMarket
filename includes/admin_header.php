@@ -14,54 +14,54 @@ $adminNavGroups = [
     [
         'label' => null,
         'items' => [
-            ['key' => 'index.php', 'href' => '/market/admin/index.php', 'icon' => 'menu', 'label' => 'Tableau de bord'],
+            ['key' => 'index.php', 'href' => '/market/admin/index', 'icon' => 'menu', 'label' => 'Tableau de bord'],
         ],
     ],
     [
         'label' => 'Utilisateurs & boutiques',
         'items' => [
-            ['key' => 'utilisateurs.php', 'href' => '/market/admin/utilisateurs.php', 'icon' => 'user', 'label' => 'Utilisateurs'],
-            ['key' => 'utilisateurs.php:vendeur', 'href' => '/market/admin/utilisateurs.php?type=vendeur', 'icon' => 'store', 'label' => 'Commerçants'],
-            ['key' => 'boutiques.php', 'href' => '/market/admin/boutiques.php', 'icon' => 'building-2', 'label' => 'Boutiques'],
+            ['key' => 'utilisateurs.php', 'href' => '/market/admin/utilisateurs', 'icon' => 'user', 'label' => 'Utilisateurs'],
+            ['key' => 'utilisateurs.php:vendeur', 'href' => '/market/admin/utilisateurs?type=vendeur', 'icon' => 'store', 'label' => 'Commerçants'],
+            ['key' => 'boutiques.php', 'href' => '/market/admin/boutiques', 'icon' => 'building-2', 'label' => 'Boutiques'],
         ],
     ],
     [
         'label' => 'Catalogue',
         'items' => [
-            ['key' => 'produits.php', 'href' => '/market/admin/produits.php', 'icon' => 'shopping-basket', 'label' => 'Produits'],
-            ['key' => 'categories.php', 'href' => '/market/admin/categories.php', 'icon' => 'menu', 'label' => 'Catégories'],
-            ['key' => 'promotions.php', 'href' => '/market/admin/promotions.php', 'icon' => 'zap', 'label' => 'Promotions'],
-            ['key' => 'publicites.php', 'href' => '/market/admin/publicites.php', 'icon' => 'send', 'label' => 'Publicités'],
-            ['key' => 'actualites.php', 'href' => '/market/admin/actualites.php', 'icon' => 'calendar', 'label' => 'Actualités & Événements'],
+            ['key' => 'produits.php', 'href' => '/market/admin/produits', 'icon' => 'shopping-basket', 'label' => 'Produits'],
+            ['key' => 'categories.php', 'href' => '/market/admin/categories', 'icon' => 'menu', 'label' => 'Catégories'],
+            ['key' => 'promotions.php', 'href' => '/market/admin/promotions', 'icon' => 'zap', 'label' => 'Promotions'],
+            ['key' => 'publicites.php', 'href' => '/market/admin/publicites', 'icon' => 'send', 'label' => 'Publicités'],
+            ['key' => 'actualites.php', 'href' => '/market/admin/actualites', 'icon' => 'calendar', 'label' => 'Actualités & Événements'],
         ],
     ],
     [
         'label' => 'Ventes',
         'items' => [
-            ['key' => 'commandes-actives.php', 'href' => '/market/admin/commandes-actives.php', 'icon' => 'cart', 'label' => 'Commandes'],
-            ['key' => 'commandes.php', 'href' => '/market/admin/commandes.php', 'icon' => 'cart', 'label' => 'Commandes (archive)'],
-            ['key' => 'livraisons.php', 'href' => '/market/admin/livraisons.php', 'icon' => 'truck', 'label' => 'Livraisons (archive)'],
-            ['key' => 'localites.php', 'href' => '/market/admin/localites.php', 'icon' => 'building-2', 'label' => 'Lieux de livraison'],
-            ['key' => 'abonnements.php', 'href' => '/market/admin/abonnements.php', 'icon' => 'clock', 'label' => 'Abonnements boutiques'],
-            ['key' => 'finances.php', 'href' => '/market/admin/finances.php', 'icon' => 'bar-chart', 'label' => 'Finances & Wallets'],
-            ['key' => 'commissions.php', 'href' => '/market/admin/commissions.php', 'icon' => 'shield', 'label' => 'Commissions'],
-            ['key' => 'retraits.php', 'href' => '/market/admin/retraits.php', 'icon' => 'shield', 'label' => 'Retraits'],
+            ['key' => 'commandes-actives.php', 'href' => '/market/admin/commandes-actives', 'icon' => 'cart', 'label' => 'Commandes'],
+            ['key' => 'commandes.php', 'href' => '/market/admin/commandes', 'icon' => 'cart', 'label' => 'Commandes (archive)'],
+            ['key' => 'livraisons.php', 'href' => '/market/admin/livraisons', 'icon' => 'truck', 'label' => 'Livraisons (archive)'],
+            ['key' => 'localites.php', 'href' => '/market/admin/localites', 'icon' => 'building-2', 'label' => 'Lieux de livraison'],
+            ['key' => 'abonnements.php', 'href' => '/market/admin/abonnements', 'icon' => 'clock', 'label' => 'Abonnements boutiques'],
+            ['key' => 'finances.php', 'href' => '/market/admin/finances', 'icon' => 'bar-chart', 'label' => 'Finances & Wallets'],
+            ['key' => 'commissions.php', 'href' => '/market/admin/commissions', 'icon' => 'shield', 'label' => 'Commissions'],
+            ['key' => 'retraits.php', 'href' => '/market/admin/retraits', 'icon' => 'shield', 'label' => 'Retraits'],
         ],
     ],
     [
         'label' => 'Support',
         'items' => [
-            ['key' => 'messages.php', 'href' => '/market/admin/messages.php', 'icon' => 'send', 'label' => 'Messages'],
-            ['key' => 'avis.php', 'href' => '/market/admin/avis.php', 'icon' => 'star-filled', 'label' => 'Avis & Commentaires'],
-            ['key' => 'reclamations.php', 'href' => '/market/admin/reclamations.php', 'icon' => 'headset', 'label' => 'Réclamations'],
+            ['key' => 'messages.php', 'href' => '/market/admin/messages', 'icon' => 'send', 'label' => 'Messages'],
+            ['key' => 'avis.php', 'href' => '/market/admin/avis', 'icon' => 'star-filled', 'label' => 'Avis & Commentaires'],
+            ['key' => 'reclamations.php', 'href' => '/market/admin/reclamations', 'icon' => 'headset', 'label' => 'Réclamations'],
         ],
     ],
     [
         'label' => 'Plateforme',
         'items' => [
-            ['key' => 'statistiques.php', 'href' => '/market/admin/statistiques.php', 'icon' => 'bar-chart', 'label' => 'Rapports & Statistiques'],
-            ['key' => 'activite.php', 'href' => '/market/admin/activite.php', 'icon' => 'clock', 'label' => "Journal d'activité"],
-            ['key' => 'parametres.php', 'href' => '/market/admin/parametres.php', 'icon' => 'settings', 'label' => 'Paramètres'],
+            ['key' => 'statistiques.php', 'href' => '/market/admin/statistiques', 'icon' => 'bar-chart', 'label' => 'Rapports & Statistiques'],
+            ['key' => 'activite.php', 'href' => '/market/admin/activite', 'icon' => 'clock', 'label' => "Journal d'activité"],
+            ['key' => 'parametres.php', 'href' => '/market/admin/parametres', 'icon' => 'settings', 'label' => 'Paramètres'],
         ],
     ],
 ];
@@ -80,7 +80,7 @@ $adminNavGroups = [
 
 <div class="admin-shell">
     <aside class="admin-sidebar" id="admin-sidebar">
-        <a href="/market/admin/index.php" class="logo">
+        <a href="/market/admin/index" class="logo">
             <span class="logo-mark">M</span>
             <span class="logo-text light">ManMarket<small>Administration</small></span>
         </a>
@@ -104,8 +104,8 @@ $adminNavGroups = [
         </nav>
 
         <div class="admin-sidebar-footer">
-            <a href="/market/index.php" class="link-muted-light"><?= icon('chevron-right', 14) ?> Voir le site</a>
-            <a href="/market/deconnexion.php" class="link-muted-light">Déconnexion</a>
+            <a href="/market/index" class="link-muted-light"><?= icon('chevron-right', 14) ?> Voir le site</a>
+            <a href="/market/deconnexion" class="link-muted-light">Déconnexion</a>
         </div>
     </aside>
 

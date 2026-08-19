@@ -10,6 +10,22 @@ ErrorDocument 404 /market/404.php
 RewriteEngine On
 RewriteRule ^(src|logs|database|cron|tests|backups)/ - [F,L]
 
+# URLs "propres" (sans .php visible dans le navigateur). Exclut explicitement
+# api/ : l'URL du webhook Genius Pay (api/webhooks/geniuspay.php) est enregistree
+# telle quelle cote Genius Pay et ne doit jamais rediriger — un 301 sur un
+# webhook POST est perdu ou casse selon les clients HTTP.
+
+# 1) Redirige toute URL affichant .php vers son equivalent sans extension.
+RewriteCond %{REQUEST_URI} !^/market/api/
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# 2) Sert en interne le fichier .php correspondant pour une URL sans extension.
+RewriteCond %{REQUEST_URI} !^/market/api/
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [L]
+
 # En-tetes de securite de base (pas de Content-Security-Policy : le site
 # utilise des styles/scripts en ligne un peu partout, une CSP stricte
 # casserait des pages sans un audit complet page par page).

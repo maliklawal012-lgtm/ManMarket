@@ -41,10 +41,10 @@ require_once __DIR__ . '/includes/header.php';
         <p>Vos données sont conservées tant que votre compte est actif. En cas de suppression de compte, les données liées aux commandes passées peuvent être conservées le temps requis par nos obligations comptables et légales.</p>
 
         <h2>6. Vos droits</h2>
-        <p>Vous pouvez à tout moment demander l'accès, la correction ou la suppression de vos données personnelles en nous contactant via la page <a href="/market/contact.php">Contact</a>.</p>
+        <p>Vous pouvez à tout moment demander l'accès, la correction ou la suppression de vos données personnelles en nous contactant via la page <a href="/market/contact">Contact</a>.</p>
 
         <h2>7. Contact</h2>
-        <p>Pour toute question relative à cette politique ou à vos données personnelles, contactez-nous via la page <a href="/market/contact.php">Contact</a>.</p>
+        <p>Pour toute question relative à cette politique ou à vos données personnelles, contactez-nous via la page <a href="/market/contact">Contact</a>.</p>
     </div>
 </section>
 

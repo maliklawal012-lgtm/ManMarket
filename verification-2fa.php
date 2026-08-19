@@ -8,13 +8,13 @@ require_once __DIR__ . '/includes/rate_limit.php';
 require_once __DIR__ . '/includes/wallet_bootstrap.php';
 
 if (current_user()) {
-    header('Location: /market/compte.php');
+    header('Location: /market/compte');
     exit;
 }
 
 $pendingUserId = (int) ($_SESSION['pending_2fa_user_id'] ?? 0);
 if ($pendingUserId <= 0) {
-    header('Location: /market/connexion.php');
+    header('Location: /market/connexion');
     exit;
 }
 
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
 }
 
-$redirect = safe_redirect_target((string) ($_SESSION['pending_2fa_redirect'] ?? ''), '/market/compte.php');
+$redirect = safe_redirect_target((string) ($_SESSION['pending_2fa_redirect'] ?? ''), '/market/compte');
 $errors = [];
 $resent = false;
 
@@ -100,7 +100,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
 
-        <form method="post" action="/market/verification-2fa.php" novalidate>
+        <form method="post" action="/market/verification-2fa" novalidate>
             <?= csrf_field() ?>
 
             <div class="form-field">
@@ -111,13 +111,13 @@ require_once __DIR__ . '/includes/header.php';
             <button type="submit" class="btn btn-primary btn-block">Vérifier</button>
         </form>
 
-        <form method="post" action="/market/verification-2fa.php" novalidate>
+        <form method="post" action="/market/verification-2fa" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="resend">
             <button type="submit" class="btn btn-outline-primary btn-block">Renvoyer le code</button>
         </form>
 
-        <p class="auth-switch"><a href="/market/connexion.php">Retour à la connexion</a></p>
+        <p class="auth-switch"><a href="/market/connexion">Retour à la connexion</a></p>
     </div>
 </section>
 

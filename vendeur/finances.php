@@ -59,7 +59,7 @@ function finances_query(array $overrides): string
     $params = array_merge(['type' => $_GET['type'] ?? '', 'page' => $_GET['page'] ?? ''], $overrides);
     $params = array_filter($params, fn ($v) => $v !== '' && $v !== null);
 
-    return '/market/vendeur/finances.php' . ($params ? '?' . http_build_query($params) : '');
+    return '/market/vendeur/finances' . ($params ? '?' . http_build_query($params) : '');
 }
 ?>
 
@@ -104,7 +104,7 @@ function finances_query(array $overrides): string
 
     <p class="char-count">
         Total gagné = somme brute de vos ventes. Commission déjà déduite : <strong><?= format_price((int) round((float) $wallet['total_commission_paid'])) ?></strong>.
-        <a href="/market/vendeur/retraits.php" class="link-muted">Demander un retrait →</a>
+        <a href="/market/vendeur/retraits" class="link-muted">Demander un retrait →</a>
     </p>
 
     <div class="card" style="margin-top: var(--gap);">

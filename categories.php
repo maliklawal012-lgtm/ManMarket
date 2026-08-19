@@ -24,7 +24,7 @@ $categories = get_db()->query('
 
     <div class="categories-grid-page">
         <?php foreach ($categories as $cat): ?>
-            <a href="/market/categorie.php?slug=<?= e($cat['slug']) ?>" class="card category-card-lg">
+            <a href="/market/categorie?slug=<?= e($cat['slug']) ?>" class="card category-card-lg">
                 <span class="category-icon" style="background:<?= e($cat['color']) ?>1a; color:<?= e($cat['color']) ?>">
                     <?= icon($cat['icon'], 28) ?>
                 </span>

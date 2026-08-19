@@ -7,7 +7,7 @@ require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/rate_limit.php';
 
 if (current_user()) {
-    header('Location: /market/compte.php');
+    header('Location: /market/compte');
     exit;
 }
 
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
 }
 
-$redirect = safe_redirect_target((string) ($_GET['redirect'] ?? $_POST['redirect'] ?? ''), '/market/compte.php');
+$redirect = safe_redirect_target((string) ($_GET['redirect'] ?? $_POST['redirect'] ?? ''), '/market/compte');
 $errors = [];
 $old = ['email' => ''];
 
@@ -79,7 +79,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
 
-        <form method="post" action="/market/connexion.php" novalidate>
+        <form method="post" action="/market/connexion" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
 
@@ -93,13 +93,13 @@ require_once __DIR__ . '/includes/header.php';
                 <label for="password">Mot de passe *</label>
                 <input type="password" id="password" name="password" required>
                 <?php if (isset($errors['password'])): ?><span class="field-error"><?= e($errors['password']) ?></span><?php endif; ?>
-                <a href="/market/mot-de-passe-oublie.php" class="char-count">Mot de passe oublié ?</a>
+                <a href="/market/mot-de-passe-oublie" class="char-count">Mot de passe oublié ?</a>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
         </form>
 
-        <p class="auth-switch">Pas encore de compte ? <a href="/market/inscription.php">Créer un compte</a></p>
+        <p class="auth-switch">Pas encore de compte ? <a href="/market/inscription">Créer un compte</a></p>
     </div>
 </section>
 

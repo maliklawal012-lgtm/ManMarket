@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     } catch (PDOException $e) {
         // des abonnements passes referencent encore ce plan (ON DELETE SET NULL) : rien a bloquer.
     }
-    header('Location: /market/admin/abonnements.php');
+    header('Location: /market/admin/abonnements');
     exit;
 }
 
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
             $stmt = $db->prepare('INSERT INTO subscription_plans (name, duration_months, price, is_active) VALUES (:name, :d, :price, :active)');
             $stmt->execute(['name' => $name, 'd' => $durationMonths, 'price' => $price, 'active' => $isActive]);
         }
-        header('Location: /market/admin/abonnements.php');
+        header('Location: /market/admin/abonnements');
         exit;
     }
 }
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'pay')
     if (!$payErrors) {
         apply_subscription_payment($shopId, $plan, (int) $plan['price']);
 
-        header('Location: /market/admin/abonnements.php?paid=1');
+        header('Location: /market/admin/abonnements?paid=1');
         exit;
     }
 }
@@ -118,10 +118,10 @@ $today = date('Y-m-d');
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? 'Modifier le plan' : 'Nouveau plan' ?></h2>
-            <a href="/market/admin/abonnements.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour</a>
+            <a href="/market/admin/abonnements" class="link-more"><?= icon('chevron-right', 14) ?> Retour</a>
         </div>
 
-        <form method="post" action="/market/admin/abonnements.php" novalidate>
+        <form method="post" action="/market/admin/abonnements" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save_plan">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -161,7 +161,7 @@ $today = date('Y-m-d');
     <div class="card" style="margin-bottom: var(--gap);">
         <div class="admin-toolbar">
             <h2>Plans d'abonnement (<?= count($plans) ?>)</h2>
-            <a href="/market/admin/abonnements.php?action=new_plan" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouveau plan</a>
+            <a href="/market/admin/abonnements?action=new_plan" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouveau plan</a>
         </div>
 
         <?php if (!$plans): ?>
@@ -187,8 +187,8 @@ $today = date('Y-m-d');
                                 <td><span class="tag <?= $plan['is_active'] ? 'tag-open' : 'tag-closed' ?>"><?= $plan['is_active'] ? 'Actif' : 'Désactivé' ?></span></td>
                                 <td>
                                     <div class="admin-table-actions">
-                                        <a href="/market/admin/abonnements.php?action=edit_plan&id=<?= (int) $plan['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                        <form method="post" action="/market/admin/abonnements.php" onsubmit="return confirm('Supprimer ce plan ?');">
+                                        <a href="/market/admin/abonnements?action=edit_plan&id=<?= (int) $plan['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                        <form method="post" action="/market/admin/abonnements" onsubmit="return confirm('Supprimer ce plan ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete_plan">
                                             <input type="hidden" name="id" value="<?= (int) $plan['id'] ?>">
@@ -252,10 +252,10 @@ $today = date('Y-m-d');
                                     <span class="tag">Aucun abonnement</span>
                                 <?php endif; ?>
                             </td>
-                            <td><?php if ($sub): ?><a href="/market/admin/abonnement-detail.php?id=<?= (int) $sub['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a><?php endif; ?></td>
+                            <td><?php if ($sub): ?><a href="/market/admin/abonnement-detail?id=<?= (int) $sub['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a><?php endif; ?></td>
                             <?php if ($plans): ?>
                                 <td>
-                                    <form method="post" action="/market/admin/abonnements.php" class="admin-inline-form">
+                                    <form method="post" action="/market/admin/abonnements" class="admin-inline-form">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="pay">
                                         <input type="hidden" name="shop_id" value="<?= (int) $shop['id'] ?>">

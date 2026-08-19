@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'site_in
             }
         }
 
-        header('Location: /market/admin/parametres.php?saved=1');
+        header('Location: /market/admin/parametres?saved=1');
         exit;
     }
 }
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'social'
             $stmt->execute(['key' => 'social_' . $key . '_enabled', 'value' => $enabled, 'value2' => $enabled]);
         }
 
-        header('Location: /market/admin/parametres.php?saved=1');
+        header('Location: /market/admin/parametres?saved=1');
         exit;
     }
 }
@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'payment
         $db->prepare('INSERT INTO settings (`key`, value) VALUES (:key, :value) ON DUPLICATE KEY UPDATE value = :value2')
             ->execute(['key' => 'online_payment_enabled', 'value' => $paymentEnabled, 'value2' => $paymentEnabled]);
 
-        header('Location: /market/admin/parametres.php?saved=1');
+        header('Location: /market/admin/parametres?saved=1');
         exit;
     }
 }
@@ -153,7 +153,7 @@ require_once __DIR__ . '/../includes/admin_header.php';
         <div class="alert alert-success"><?= icon('check-circle', 18) ?><span>Paramètres enregistrés.</span></div>
     <?php endif; ?>
 
-    <form method="post" action="/market/admin/parametres.php" enctype="multipart/form-data" novalidate>
+    <form method="post" action="/market/admin/parametres" enctype="multipart/form-data" novalidate>
         <?= csrf_field() ?>
         <input type="hidden" name="form" value="site_info">
         <?php foreach ($fields as $key => $meta): ?>
@@ -193,7 +193,7 @@ require_once __DIR__ . '/../includes/admin_header.php';
     <p class="char-count">Ce pourcentage est ajouté au total du client (en plus du sous-total et de la livraison — jamais mélangé au prix du produit) uniquement s'il choisit de payer en ligne, pour couvrir les frais prélevés par Genius Pay.</p>
 
     <?php $paymentFeePosted = $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'payment_fee'; ?>
-    <form method="post" action="/market/admin/parametres.php" novalidate>
+    <form method="post" action="/market/admin/parametres" novalidate>
         <?= csrf_field() ?>
         <input type="hidden" name="form" value="payment_fee">
         <div class="form-field">
@@ -224,7 +224,7 @@ require_once __DIR__ . '/../includes/admin_header.php';
     <p class="char-count">Un réseau ne s'affiche dans le pied de page que s'il est actif ET qu'une URL est renseignée.</p>
 
     <?php $wasPosted = $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'social'; ?>
-    <form method="post" action="/market/admin/parametres.php" enctype="multipart/form-data" novalidate>
+    <form method="post" action="/market/admin/parametres" enctype="multipart/form-data" novalidate>
         <?= csrf_field() ?>
         <input type="hidden" name="form" value="social">
         <?php foreach ($socialNetworks as $key => $label): ?>

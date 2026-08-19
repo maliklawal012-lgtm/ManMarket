@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
         WHERE id = :id AND shop_id = :shop_id AND subject = 'Réclamation'
     ");
     $stmt->execute(['id' => $complaintId, 'shop_id' => $shopId]);
-    header('Location: /market/vendeur/reclamation-detail.php?id=' . $complaintId);
+    header('Location: /market/vendeur/reclamation-detail?id=' . $complaintId);
     exit;
 }
 
@@ -41,7 +41,7 @@ $stmt->execute(['id' => $complaintId, 'shop_id' => $shopId]);
 $complaint = $stmt->fetch() ?: null;
 
 if (!$complaint) {
-    header('Location: /market/vendeur/messages.php');
+    header('Location: /market/vendeur/messages');
     exit;
 }
 
@@ -67,7 +67,7 @@ $otherByCustomer = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/messages.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux messages</a>
+    <a href="/market/vendeur/messages" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux messages</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -75,7 +75,7 @@ $otherByCustomer = $stmt->fetchAll();
         <h2>Réclamation #<?= $complaintId ?></h2>
         <div class="admin-table-actions">
             <span class="tag <?= $complaint['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $complaint['status'] === 'pending' ? 'Non traitée' : 'Traitée' ?></span>
-            <form method="post" action="/market/vendeur/reclamation-detail.php?id=<?= $complaintId ?>">
+            <form method="post" action="/market/vendeur/reclamation-detail?id=<?= $complaintId ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="toggle_status" value="1">
                 <button type="submit" class="btn btn-outline-primary btn-sm"><?= $complaint['status'] === 'pending' ? 'Marquer traitée' : 'Rouvrir' ?></button>
@@ -105,7 +105,7 @@ $otherByCustomer = $stmt->fetchAll();
                 <div class="admin-activity-item">
                     <span class="admin-activity-icon"><?= icon('headset', 15) ?></span>
                     <div>
-                        <div class="admin-activity-text"><a href="/market/vendeur/reclamation-detail.php?id=<?= (int) $c['id'] ?>" class="link-muted"><?= e(mb_strimwidth($c['message'], 0, 60, '…')) ?></a></div>
+                        <div class="admin-activity-text"><a href="/market/vendeur/reclamation-detail?id=<?= (int) $c['id'] ?>" class="link-muted"><?= e(mb_strimwidth($c['message'], 0, 60, '…')) ?></a></div>
                         <div class="admin-activity-time"><span class="tag <?= $c['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $c['status'] === 'pending' ? 'Non traitée' : 'Traitée' ?></span> · <?= e(date('d/m/Y', strtotime((string) $c['created_at']))) ?></div>
                     </div>
                 </div>

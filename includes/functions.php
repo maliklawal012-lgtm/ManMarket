@@ -754,7 +754,7 @@ function add_to_cart_button_html(array $product, string $sizeClass = 'btn-sm btn
     }
 
     if (($product['size_type'] ?? 'none') !== 'none') {
-        return '<a href="/market/produit.php?slug=' . e($product['slug']) . '" class="btn btn-primary ' . $sizeClass . '">Voir le produit</a>';
+        return '<a href="/market/produit?slug=' . e($product['slug']) . '" class="btn btn-primary ' . $sizeClass . '">Voir le produit</a>';
     }
 
     return '<button type="button" class="btn btn-primary ' . $sizeClass . ' add-cart-btn" data-id="product-' . (int) $product['id'] . '" data-name="' . e($product['name']) . '">Ajouter au panier</button>';

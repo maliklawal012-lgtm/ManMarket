@@ -76,7 +76,7 @@ function require_login(): array
     $user = current_user();
 
     if (!$user) {
-        header('Location: /market/connexion.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+        header('Location: /market/connexion?redirect=' . urlencode($_SERVER['REQUEST_URI']));
         exit;
     }
 
@@ -88,7 +88,7 @@ function require_admin(): array
     $user = current_user();
 
     if (!$user) {
-        header('Location: /market/admin/connexion.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+        header('Location: /market/admin/connexion?redirect=' . urlencode($_SERVER['REQUEST_URI']));
         exit;
     }
 

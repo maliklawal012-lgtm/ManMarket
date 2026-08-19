@@ -20,7 +20,7 @@ $stmt->execute(['id' => $subscriptionId]);
 $subscription = $stmt->fetch() ?: null;
 
 if (!$subscription) {
-    header('Location: /market/admin/abonnements.php');
+    header('Location: /market/admin/abonnements');
     exit;
 }
 
@@ -51,7 +51,7 @@ $otherSubscriptions = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/abonnements.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux abonnements</a>
+    <a href="/market/admin/abonnements" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux abonnements</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -63,7 +63,7 @@ $otherSubscriptions = $stmt->fetchAll();
         </div>
     </div>
     <ul class="account-info-list">
-        <li><span class="account-info-label"><?= icon('store', 16) ?> Boutique</span><span><a href="/market/admin/boutique-detail.php?id=<?= $shopId ?>" class="link-muted"><?= e($subscription['shop_name']) ?></a><?php if ($subscription['business_name']): ?> — <?= e($subscription['business_name']) ?><?php endif; ?></span></li>
+        <li><span class="account-info-label"><?= icon('store', 16) ?> Boutique</span><span><a href="/market/admin/boutique-detail?id=<?= $shopId ?>" class="link-muted"><?= e($subscription['shop_name']) ?></a><?php if ($subscription['business_name']): ?> — <?= e($subscription['business_name']) ?><?php endif; ?></span></li>
         <li><span class="account-info-label"><?= icon('shield', 16) ?> Formule</span><span><?= e($subscription['plan_name']) ?></span></li>
         <li><span class="account-info-label"><?= icon('cart', 16) ?> Prix payé</span><span><?= format_price((int) $subscription['price_paid']) ?></span></li>
         <li><span class="account-info-label"><?= icon('clock', 16) ?> Période</span><span><?= e(date('d/m/Y', strtotime((string) $subscription['starts_at']))) ?> → <?= e(date('d/m/Y', strtotime((string) $subscription['ends_at']))) ?></span></li>
@@ -97,7 +97,7 @@ $otherSubscriptions = $stmt->fetchAll();
                             <td><?= format_price((int) $s['price_paid']) ?></td>
                             <td><?= e(date('d/m/Y', strtotime((string) $s['starts_at']))) ?></td>
                             <td><?= e(date('d/m/Y', strtotime((string) $s['ends_at']))) ?></td>
-                            <td><a href="/market/admin/abonnement-detail.php?id=<?= (int) $s['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/admin/abonnement-detail?id=<?= (int) $s['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

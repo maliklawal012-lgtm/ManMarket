@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['s
         $stmt = $db->prepare("UPDATE contact_messages SET status = :status WHERE id = :id AND subject = 'Commande'");
         $stmt->execute(['status' => $_POST['status'], 'id' => (int) $_POST['order_id']]);
     }
-    header('Location: /market/admin/commandes.php' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
+    header('Location: /market/admin/commandes' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
     exit;
 }
 
@@ -73,9 +73,9 @@ if ($orderIds) {
         <div class="filter-sort">
             <label for="status-filter">Statut</label>
             <select id="status-filter" onchange="location.href = this.value">
-                <option value="/market/admin/commandes.php" <?= $statusFilter === '' ? 'selected' : '' ?>>Toutes</option>
+                <option value="/market/admin/commandes" <?= $statusFilter === '' ? 'selected' : '' ?>>Toutes</option>
                 <?php foreach ($orderStatuses as $s): ?>
-                    <option value="/market/admin/commandes.php?status=<?= e($s) ?>" <?= $statusFilter === $s ? 'selected' : '' ?>><?= e(order_status_label($s)) ?></option>
+                    <option value="/market/admin/commandes?status=<?= e($s) ?>" <?= $statusFilter === $s ? 'selected' : '' ?>><?= e(order_status_label($s)) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -133,7 +133,7 @@ if ($orderIds) {
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <form method="post" action="/market/admin/commandes.php<?= $statusFilter !== '' ? '?status=' . e($statusFilter) : '' ?>">
+                                <form method="post" action="/market/admin/commandes<?= $statusFilter !== '' ? '?status=' . e($statusFilter) : '' ?>">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
                                     <select name="status" class="admin-inline-select" onchange="this.form.submit()">

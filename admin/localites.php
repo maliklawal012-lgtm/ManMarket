@@ -18,7 +18,7 @@ $deleteError = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_id'])) {
     $stmt = $db->prepare('UPDATE locations SET is_active = IF(is_active = 1, 0, 1) WHERE id = :id');
     $stmt->execute(['id' => (int) $_POST['toggle_id']]);
-    header('Location: /market/admin/localites.php');
+    header('Location: /market/admin/localites');
     exit;
 }
 
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     try {
         $stmt = $db->prepare('DELETE FROM locations WHERE id = :id');
         $stmt->execute(['id' => (int) $_POST['id']]);
-        header('Location: /market/admin/localites.php');
+        header('Location: /market/admin/localites');
         exit;
     } catch (PDOException $e) {
         $deleteError = "Impossible de supprimer cette localité.";
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             $stmt = $db->prepare('INSERT INTO locations (name, parent_id, is_active, sort_order, delivery_fee) VALUES (:name, :parent_id, :is_active, :sort_order, :delivery_fee)');
             $stmt->execute(['name' => $name, 'parent_id' => $parentId, 'is_active' => $isActive, 'sort_order' => $sortOrder, 'delivery_fee' => $deliveryFee]);
         }
-        header('Location: /market/admin/localites.php');
+        header('Location: /market/admin/localites');
         exit;
     }
 }
@@ -88,10 +88,10 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? 'Modifier la localité' : 'Nouvelle localité' ?></h2>
-            <a href="/market/admin/localites.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/admin/localites" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
-        <form method="post" action="/market/admin/localites.php" novalidate>
+        <form method="post" action="/market/admin/localites" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -142,7 +142,7 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2>Lieux de livraison</h2>
-            <a href="/market/admin/localites.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle ville</a>
+            <a href="/market/admin/localites?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle ville</a>
         </div>
 
         <?php if ($deleteError): ?>
@@ -168,15 +168,15 @@ if ($editing):
                             <span class="tag tag-processing"><?= (int) $city['delivery_fee'] > 0 ? format_price((int) $city['delivery_fee']) : 'Gratuit' ?></span>
                         </h2>
                         <div class="admin-table-actions">
-                            <a href="/market/admin/localite-detail.php?id=<?= (int) $city['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                            <a href="/market/admin/localites.php?action=new&parent_id=<?= (int) $city['id'] ?>" class="btn btn-outline-primary btn-sm"><?= icon('plus', 14) ?> Quartier</a>
-                            <form method="post" action="/market/admin/localites.php">
+                            <a href="/market/admin/localite-detail?id=<?= (int) $city['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                            <a href="/market/admin/localites?action=new&parent_id=<?= (int) $city['id'] ?>" class="btn btn-outline-primary btn-sm"><?= icon('plus', 14) ?> Quartier</a>
+                            <form method="post" action="/market/admin/localites">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="toggle_id" value="<?= (int) $city['id'] ?>">
                                 <button type="submit" class="btn btn-outline-primary btn-sm"><?= $city['is_active'] ? 'Désactiver' : 'Activer' ?></button>
                             </form>
-                            <a href="/market/admin/localites.php?action=edit&id=<?= (int) $city['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                            <form method="post" action="/market/admin/localites.php" onsubmit="return confirm('Supprimer cette ville et ses quartiers ?');">
+                            <a href="/market/admin/localites?action=edit&id=<?= (int) $city['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                            <form method="post" action="/market/admin/localites" onsubmit="return confirm('Supprimer cette ville et ses quartiers ?');">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= (int) $city['id'] ?>">
@@ -196,14 +196,14 @@ if ($editing):
                                             <td><?= (int) $n['delivery_fee'] > 0 ? format_price((int) $n['delivery_fee']) : 'Gratuit' ?></td>
                                             <td>
                                                 <div class="admin-table-actions">
-                                                    <a href="/market/admin/localite-detail.php?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                                    <form method="post" action="/market/admin/localites.php">
+                                                    <a href="/market/admin/localite-detail?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                                    <form method="post" action="/market/admin/localites">
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="toggle_id" value="<?= (int) $n['id'] ?>">
                                                         <button type="submit" class="btn btn-outline-primary btn-sm"><?= $n['is_active'] ? 'Désactiver' : 'Activer' ?></button>
                                                     </form>
-                                                    <a href="/market/admin/localites.php?action=edit&id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                                    <form method="post" action="/market/admin/localites.php" onsubmit="return confirm('Supprimer ce quartier ?');">
+                                                    <a href="/market/admin/localites?action=edit&id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                                    <form method="post" action="/market/admin/localites" onsubmit="return confirm('Supprimer ce quartier ?');">
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="action" value="delete">
                                                         <input type="hidden" name="id" value="<?= (int) $n['id'] ?>">

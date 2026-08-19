@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         delete_uploaded_image($galleryImage);
     }
 
-    header('Location: /market/admin/produits.php');
+    header('Location: /market/admin/produits');
     exit;
 }
 
@@ -218,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             }
         }
 
-        header('Location: /market/admin/produits.php');
+        header('Location: /market/admin/produits');
         exit;
     }
 }
@@ -274,10 +274,10 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? 'Modifier le produit' : 'Nouveau produit' ?></h2>
-            <a href="/market/admin/produits.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/admin/produits" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
-        <form method="post" action="/market/admin/produits.php" enctype="multipart/form-data" novalidate>
+        <form method="post" action="/market/admin/produits" enctype="multipart/form-data" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -473,7 +473,7 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2>Produits (<?= $pagination['total_items'] ?>)</h2>
-            <a href="/market/admin/produits.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouveau produit</a>
+            <a href="/market/admin/produits?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouveau produit</a>
         </div>
 
         <?php if (!$products): ?>
@@ -508,9 +508,9 @@ if ($editing):
                                 <td><?= $p['is_featured'] ? icon('check', 16) : '—' ?></td>
                                 <td>
                                     <div class="admin-table-actions">
-                                        <a href="/market/admin/produit-detail.php?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                        <a href="/market/admin/produits.php?action=edit&id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                        <form method="post" action="/market/admin/produits.php" onsubmit="return confirm('Supprimer ce produit ?');">
+                                        <a href="/market/admin/produit-detail?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                        <a href="/market/admin/produits?action=edit&id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                        <form method="post" action="/market/admin/produits" onsubmit="return confirm('Supprimer ce produit ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
@@ -523,7 +523,7 @@ if ($editing):
                     </tbody>
                 </table>
             </div>
-            <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/admin/produits.php') ?>
+            <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/admin/produits') ?>
         <?php endif; ?>
     </div>
 

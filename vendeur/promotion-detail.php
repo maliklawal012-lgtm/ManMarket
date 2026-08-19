@@ -8,7 +8,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -26,7 +26,7 @@ $stmt->execute(['id' => $promotionId]);
 $promotion = $stmt->fetch() ?: null;
 
 if (!$promotion) {
-    header('Location: /market/vendeur/promotions.php');
+    header('Location: /market/vendeur/promotions');
     exit;
 }
 
@@ -62,7 +62,7 @@ $yourProducts = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/promotions.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux promotions</a>
+    <a href="/market/vendeur/promotions" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux promotions</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -74,7 +74,7 @@ $yourProducts = $stmt->fetchAll();
         <li><span class="account-info-label"><?= icon('zap', 16) ?> Remise</span><span>-<?= (int) $promotion['discount_percent'] ?>%</span></li>
         <li><span class="account-info-label"><?= icon('menu', 16) ?> Portée</span><span>
             <?php if ($promotion['scope'] === 'category'): ?>
-                <a href="/market/vendeur/categorie-detail.php?id=<?= (int) $promotion['category_id'] ?>" class="link-muted"><?= e($promotion['category_name']) ?></a>
+                <a href="/market/vendeur/categorie-detail?id=<?= (int) $promotion['category_id'] ?>" class="link-muted"><?= e($promotion['category_name']) ?></a>
             <?php else: ?>
                 Tout le site
             <?php endif; ?>
@@ -120,7 +120,7 @@ $yourProducts = $stmt->fetchAll();
                                     <span class="char-count">—</span>
                                 <?php endif; ?>
                             </td>
-                            <td><a href="/market/vendeur/produit-detail.php?id=<?= (int) $prod['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/vendeur/produit-detail?id=<?= (int) $prod['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

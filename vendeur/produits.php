@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         }
     }
 
-    header('Location: /market/vendeur/produits.php');
+    header('Location: /market/vendeur/produits');
     exit;
 }
 
@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             }
         }
 
-        header('Location: /market/vendeur/produits.php');
+        header('Location: /market/vendeur/produits');
         exit;
     }
 }
@@ -279,10 +279,10 @@ require_once __DIR__ . '/../includes/vendor_header.php';
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? 'Modifier le produit' : 'Nouveau produit' ?></h2>
-            <a href="/market/vendeur/produits.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/vendeur/produits" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
-        <form method="post" action="/market/vendeur/produits.php" enctype="multipart/form-data" novalidate>
+        <form method="post" action="/market/vendeur/produits" enctype="multipart/form-data" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -464,11 +464,11 @@ require_once __DIR__ . '/../includes/vendor_header.php';
     <div class="card">
         <div class="admin-toolbar">
             <h2>Mes produits (<?= $pagination['total_items'] ?>)</h2>
-            <a href="/market/vendeur/produits.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouveau produit</a>
+            <a href="/market/vendeur/produits?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouveau produit</a>
         </div>
 
         <?php if (!$products): ?>
-            <p class="empty-state">Aucun produit pour le moment. <a href="/market/vendeur/produits.php?action=new">Ajouter mon premier produit</a></p>
+            <p class="empty-state">Aucun produit pour le moment. <a href="/market/vendeur/produits?action=new">Ajouter mon premier produit</a></p>
         <?php else: ?>
             <div class="table-responsive">
                 <table class="admin-table">
@@ -488,7 +488,7 @@ require_once __DIR__ . '/../includes/vendor_header.php';
                             <tr>
                                 <td><div class="product-thumb admin-table-thumb"><?= product_thumb_html($p, 20) ?></div></td>
                                 <td><?= e($p['name']) ?></td>
-                                <td><a href="/market/vendeur/categorie-detail.php?id=<?= (int) $p['category_id'] ?>" class="link-muted"><?= e($p['category_name']) ?></a></td>
+                                <td><a href="/market/vendeur/categorie-detail?id=<?= (int) $p['category_id'] ?>" class="link-muted"><?= e($p['category_name']) ?></a></td>
                                 <td>
                                     <?= format_price((int) $p['price']) ?>
                                     <?php if ($p['original_price']): ?><br><span class="price-old"><?= format_price((int) $p['original_price']) ?></span><?php endif; ?>
@@ -497,9 +497,9 @@ require_once __DIR__ . '/../includes/vendor_header.php';
                                 <td><?= $p['is_featured'] ? icon('check', 16) : '—' ?></td>
                                 <td>
                                     <div class="admin-table-actions">
-                                        <a href="/market/vendeur/produit-detail.php?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                        <a href="/market/vendeur/produits.php?action=edit&id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                        <form method="post" action="/market/vendeur/produits.php" onsubmit="return confirm('Supprimer ce produit ?');">
+                                        <a href="/market/vendeur/produit-detail?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                        <a href="/market/vendeur/produits?action=edit&id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                        <form method="post" action="/market/vendeur/produits" onsubmit="return confirm('Supprimer ce produit ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
@@ -512,7 +512,7 @@ require_once __DIR__ . '/../includes/vendor_header.php';
                     </tbody>
                 </table>
             </div>
-            <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/vendeur/produits.php') ?>
+            <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/vendeur/produits') ?>
         <?php endif; ?>
     </div>
 

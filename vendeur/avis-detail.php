@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -44,7 +44,7 @@ if ($review && (int) $review['shop_id'] !== $shopId) {
 }
 
 if (!$review) {
-    header('Location: /market/vendeur/avis.php');
+    header('Location: /market/vendeur/avis');
     exit;
 }
 
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'reply
     $stmt = $db->prepare('UPDATE reviews SET vendor_reply = :reply, vendor_reply_at = CURRENT_TIMESTAMP WHERE id = :id');
     $stmt->execute(['reply' => $reply !== '' ? $reply : null, 'id' => $reviewId]);
 
-    header('Location: /market/vendeur/avis-detail.php?id=' . $reviewId);
+    header('Location: /market/vendeur/avis-detail?id=' . $reviewId);
     exit;
 }
 
@@ -86,7 +86,7 @@ if ($review['user_id']) {
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/avis.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux avis</a>
+    <a href="/market/vendeur/avis" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux avis</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -94,7 +94,7 @@ if ($review['user_id']) {
         <h2>Avis #<?= $reviewId ?></h2>
     </div>
     <ul class="account-info-list">
-        <li><span class="account-info-label"><?= icon('shopping-basket', 16) ?> Produit</span><span><a href="/market/produit.php?slug=<?= e($review['product_slug']) ?>" class="link-muted"><?= e($review['product_name']) ?></a></span></li>
+        <li><span class="account-info-label"><?= icon('shopping-basket', 16) ?> Produit</span><span><a href="/market/produit?slug=<?= e($review['product_slug']) ?>" class="link-muted"><?= e($review['product_name']) ?></a></span></li>
         <li><span class="account-info-label"><?= icon('user', 16) ?> Client</span><span>
             <?= e($review['name']) ?>
             <?php if ($review['is_verified_purchase']): ?> <span class="tag tag-green">Achat vérifié</span><?php endif; ?>
@@ -117,7 +117,7 @@ if ($review['user_id']) {
     <?php if ($review['vendor_reply']): ?>
         <p class="char-count">Répondu le <?= e(date('d/m/Y à H:i', strtotime((string) $review['vendor_reply_at']))) ?></p>
     <?php endif; ?>
-    <form method="post" action="/market/vendeur/avis-detail.php?id=<?= $reviewId ?>" class="vendor-reply-form">
+    <form method="post" action="/market/vendeur/avis-detail?id=<?= $reviewId ?>" class="vendor-reply-form">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="reply">
         <textarea name="vendor_reply" rows="3" placeholder="Répondre à cet avis..."><?= e((string) ($review['vendor_reply'] ?? '')) ?></textarea>
@@ -139,7 +139,7 @@ if ($review['user_id']) {
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/vendeur/avis-detail.php?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
+                            <div class="admin-activity-text"><a href="/market/vendeur/avis-detail?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
                             <div class="admin-activity-time"><?= $r['comment'] ? e(mb_strimwidth($r['comment'], 0, 80, '…')) . ' · ' : '' ?><?= e(date('d/m/Y', strtotime((string) $r['created_at']))) ?></div>
                         </div>
                     </div>
@@ -162,7 +162,7 @@ if ($review['user_id']) {
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/vendeur/avis-detail.php?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['product_name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
+                            <div class="admin-activity-text"><a href="/market/vendeur/avis-detail?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['product_name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
                             <div class="admin-activity-time"><?= $r['comment'] ? e(mb_strimwidth($r['comment'], 0, 80, '…')) . ' · ' : '' ?><?= e(date('d/m/Y', strtotime((string) $r['created_at']))) ?></div>
                         </div>
                     </div>

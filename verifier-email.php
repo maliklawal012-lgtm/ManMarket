@@ -51,7 +51,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
 
-        <p class="auth-switch"><a href="/market/compte.php">Retour à mon compte</a></p>
+        <p class="auth-switch"><a href="/market/compte">Retour à mon compte</a></p>
     </div>
 </section>
 

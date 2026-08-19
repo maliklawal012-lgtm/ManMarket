@@ -38,7 +38,7 @@ $reviewErrors = [];
 
 if ($product && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'review') {
     if (!$loggedInUser) {
-        header('Location: /market/connexion.php?redirect=' . urlencode('/market/produit.php?slug=' . $slug));
+        header('Location: /market/connexion?redirect=' . urlencode('/market/produit?slug=' . $slug));
         exit;
     }
 
@@ -70,7 +70,7 @@ if ($product && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? ''
         ]);
         recompute_product_rating((int) $product['id']);
 
-        header('Location: /market/produit.php?slug=' . $slug . '#avis');
+        header('Location: /market/produit?slug=' . $slug . '#avis');
         exit;
     }
 }
@@ -82,7 +82,7 @@ if (!$product):
     <section class="container not-found">
         <h1>Produit introuvable</h1>
         <p>Ce produit n'existe pas ou n'est plus disponible.</p>
-        <a href="/market/offres.php" class="btn btn-primary">Voir les offres</a>
+        <a href="/market/offres" class="btn btn-primary">Voir les offres</a>
     </section>
     <?php
     require_once __DIR__ . '/includes/footer.php';
@@ -130,8 +130,8 @@ $relatedProducts = $relatedStmt->fetchAll();
 
 <section class="container">
     <nav class="breadcrumb-light">
-        <a href="/market/index.php">Accueil</a> <?= icon('chevron-right', 12) ?>
-        <a href="/market/categorie.php?slug=<?= e($product['category_slug']) ?>"><?= e($product['category_name']) ?></a> <?= icon('chevron-right', 12) ?>
+        <a href="/market/index">Accueil</a> <?= icon('chevron-right', 12) ?>
+        <a href="/market/categorie?slug=<?= e($product['category_slug']) ?>"><?= e($product['category_name']) ?></a> <?= icon('chevron-right', 12) ?>
         <span><?= e($product['name']) ?></span>
     </nav>
 </section>
@@ -160,7 +160,7 @@ $relatedProducts = $relatedStmt->fetchAll();
         <div class="product-detail-info">
             <?php if ($pp['discount_percent']): ?><span class="badge-discount product-detail-badge">-<?= $pp['discount_percent'] ?>%</span><?php endif; ?>
             <h1><?= e($product['name']) ?></h1>
-            <a href="/market/boutique.php?slug=<?= e($product['shop_slug']) ?>" class="product-shop-link"><?= icon('store', 14) ?><?= e($product['shop_name']) ?></a>
+            <a href="/market/boutique?slug=<?= e($product['shop_slug']) ?>" class="product-shop-link"><?= icon('store', 14) ?><?= e($product['shop_name']) ?></a>
 
             <?= product_rating_html($product) ?>
 
@@ -227,7 +227,7 @@ $relatedProducts = $relatedStmt->fetchAll();
         <div class="card">
             <div class="card-header">
                 <h2>Produits similaires</h2>
-                <a href="/market/categorie.php?slug=<?= e($product['category_slug']) ?>" class="link-more">Voir la catégorie <?= icon('chevron-right', 14) ?></a>
+                <a href="/market/categorie?slug=<?= e($product['category_slug']) ?>" class="link-more">Voir la catégorie <?= icon('chevron-right', 14) ?></a>
             </div>
             <div class="scroll-row reveal">
                 <?php foreach ($relatedProducts as $p): $pp = get_product_price($p); ?>
@@ -236,7 +236,7 @@ $relatedProducts = $relatedStmt->fetchAll();
                             <?= icon('heart', 16) ?>
                         </button>
                         <?php if ($pp['discount_percent']): ?><span class="badge-discount">-<?= $pp['discount_percent'] ?>%</span><?php endif; ?>
-                        <a href="/market/produit.php?slug=<?= e($p['slug']) ?>" class="product-card-link">
+                        <a href="/market/produit?slug=<?= e($p['slug']) ?>" class="product-card-link">
                             <div class="product-thumb"><?= product_thumb_html($p, 34) ?></div>
                             <h3><?= e($p['name']) ?></h3>
                         </a>
@@ -259,7 +259,7 @@ $relatedProducts = $relatedStmt->fetchAll();
         </div>
 
         <?php if ($loggedInUser): ?>
-            <form method="post" action="/market/produit.php?slug=<?= e($slug) ?>#avis" class="review-form" novalidate>
+            <form method="post" action="/market/produit?slug=<?= e($slug) ?>#avis" class="review-form" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="review">
 
@@ -290,7 +290,7 @@ $relatedProducts = $relatedStmt->fetchAll();
             </form>
         <?php else: ?>
             <p class="empty-state">
-                <a href="/market/connexion.php?redirect=<?= urlencode('/market/produit.php?slug=' . $slug) ?>">Connectez-vous</a>
+                <a href="/market/connexion?redirect=<?= urlencode('/market/produit?slug=' . $slug) ?>">Connectez-vous</a>
                 pour laisser un avis sur ce produit.
             </p>
         <?php endif; ?>

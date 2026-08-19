@@ -8,7 +8,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -26,7 +26,7 @@ if ($subscription && (int) $subscription['shop_id'] !== $shopId) {
 }
 
 if (!$subscription) {
-    header('Location: /market/vendeur/abonnements.php');
+    header('Location: /market/vendeur/abonnements');
     exit;
 }
 
@@ -56,7 +56,7 @@ $otherSubscriptions = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/abonnements.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux abonnements</a>
+    <a href="/market/vendeur/abonnements" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux abonnements</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap); max-width:640px;">
@@ -77,7 +77,7 @@ $otherSubscriptions = $stmt->fetchAll();
         <?php endif; ?>
     </ul>
     <?php if (!$isCurrent && $subscription['ends_at'] < $today): ?>
-        <p class="char-count" style="margin-top:8px;"><a href="/market/vendeur/abonnements.php" class="link-muted">Renouveler mon abonnement →</a></p>
+        <p class="char-count" style="margin-top:8px;"><a href="/market/vendeur/abonnements" class="link-muted">Renouveler mon abonnement →</a></p>
     <?php endif; ?>
 </div>
 
@@ -104,7 +104,7 @@ $otherSubscriptions = $stmt->fetchAll();
                             <td><?= format_price((int) $s['price_paid']) ?></td>
                             <td><?= e(date('d/m/Y', strtotime((string) $s['starts_at']))) ?></td>
                             <td><?= e(date('d/m/Y', strtotime((string) $s['ends_at']))) ?></td>
-                            <td><a href="/market/vendeur/abonnement-detail.php?id=<?= (int) $s['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/vendeur/abonnement-detail?id=<?= (int) $s['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

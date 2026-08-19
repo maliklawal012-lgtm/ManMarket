@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         recompute_product_rating((int) $productId);
     }
 
-    header('Location: /market/admin/avis.php');
+    header('Location: /market/admin/avis');
     exit;
 }
 
@@ -69,15 +69,15 @@ $reviews = $db->query("
                     <?php foreach ($reviews as $r): ?>
                         <tr>
                             <td><?= e(date('d/m/Y H:i', strtotime((string) $r['created_at']))) ?></td>
-                            <td><a href="/market/produit.php?slug=<?= e($r['product_slug']) ?>" class="link-muted"><?= e($r['product_name']) ?></a></td>
+                            <td><a href="/market/produit?slug=<?= e($r['product_slug']) ?>" class="link-muted"><?= e($r['product_name']) ?></a></td>
                             <td><?= e($r['name']) ?><?= $r['is_verified_purchase'] ? ' <span class="tag tag-green">Achat vérifié</span>' : '' ?></td>
                             <td><div class="rating-row"><?= render_stars((float) $r['rating']) ?></div></td>
                             <td class="wrap"><?= $r['comment'] ? nl2br(e($r['comment'])) : '—' ?></td>
                             <td class="wrap"><?= $r['vendor_reply'] ? nl2br(e($r['vendor_reply'])) : '—' ?></td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <a href="/market/admin/avis-detail.php?id=<?= (int) $r['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                    <form method="post" action="/market/admin/avis.php" onsubmit="return confirm('Supprimer cet avis ?');">
+                                    <a href="/market/admin/avis-detail?id=<?= (int) $r['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                    <form method="post" action="/market/admin/avis" onsubmit="return confirm('Supprimer cet avis ?');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">

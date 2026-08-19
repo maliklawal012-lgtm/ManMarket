@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         recompute_product_rating((int) $productId);
     }
 
-    header('Location: /market/admin/avis.php');
+    header('Location: /market/admin/avis');
     exit;
 }
 
@@ -46,7 +46,7 @@ $stmt->execute(['id' => $reviewId]);
 $review = $stmt->fetch() ?: null;
 
 if (!$review) {
-    header('Location: /market/admin/avis.php');
+    header('Location: /market/admin/avis');
     exit;
 }
 
@@ -83,24 +83,24 @@ if ($review['user_id']) {
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/avis.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux avis</a>
+    <a href="/market/admin/avis" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux avis</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
     <div class="admin-toolbar">
         <h2>Avis #<?= $reviewId ?></h2>
-        <form method="post" action="/market/admin/avis-detail.php?id=<?= $reviewId ?>" onsubmit="return confirm('Supprimer cet avis ?');">
+        <form method="post" action="/market/admin/avis-detail?id=<?= $reviewId ?>" onsubmit="return confirm('Supprimer cet avis ?');">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete">
             <button type="submit" class="btn btn-outline-primary btn-sm">Supprimer</button>
         </form>
     </div>
     <ul class="account-info-list">
-        <li><span class="account-info-label"><?= icon('shopping-basket', 16) ?> Produit</span><span><a href="/market/produit.php?slug=<?= e($review['product_slug']) ?>" class="link-muted"><?= e($review['product_name']) ?></a> — <a href="/market/admin/boutique-detail.php?id=<?= (int) $review['shop_id'] ?>" class="link-muted"><?= e($review['shop_name']) ?></a></span></li>
+        <li><span class="account-info-label"><?= icon('shopping-basket', 16) ?> Produit</span><span><a href="/market/produit?slug=<?= e($review['product_slug']) ?>" class="link-muted"><?= e($review['product_name']) ?></a> — <a href="/market/admin/boutique-detail?id=<?= (int) $review['shop_id'] ?>" class="link-muted"><?= e($review['shop_name']) ?></a></span></li>
         <li><span class="account-info-label"><?= icon('user', 16) ?> Client</span><span>
             <?= e($review['name']) ?>
             <?php if ($review['is_verified_purchase']): ?> <span class="tag tag-green">Achat vérifié</span><?php endif; ?>
-            <?php if ($review['user_id']): ?><br><span class="char-count"><a href="/market/admin/utilisateurs.php?action=edit&id=<?= (int) $review['user_id'] ?>" class="link-muted"><?= e($review['user_email']) ?></a><?php if ($review['user_phone']): ?> — <?= e($review['user_phone']) ?><?php endif; ?></span>
+            <?php if ($review['user_id']): ?><br><span class="char-count"><a href="/market/admin/utilisateurs?action=edit&id=<?= (int) $review['user_id'] ?>" class="link-muted"><?= e($review['user_email']) ?></a><?php if ($review['user_phone']): ?> — <?= e($review['user_phone']) ?><?php endif; ?></span>
             <?php else: ?><br><span class="char-count">Compte supprimé ou avis anonyme</span><?php endif; ?>
         </span></li>
         <li><span class="account-info-label"><?= icon('star-filled', 16) ?> Note</span><span><div class="rating-row"><?= render_stars((float) $review['rating']) ?></div></span></li>
@@ -142,7 +142,7 @@ if ($review['user_id']) {
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/admin/avis-detail.php?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
+                            <div class="admin-activity-text"><a href="/market/admin/avis-detail?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
                             <div class="admin-activity-time"><?= $r['comment'] ? e(mb_strimwidth($r['comment'], 0, 80, '…')) . ' · ' : '' ?><?= e(date('d/m/Y', strtotime((string) $r['created_at']))) ?></div>
                         </div>
                     </div>
@@ -165,7 +165,7 @@ if ($review['user_id']) {
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/admin/avis-detail.php?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['product_name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
+                            <div class="admin-activity-text"><a href="/market/admin/avis-detail?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['product_name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
                             <div class="admin-activity-time"><?= $r['comment'] ? e(mb_strimwidth($r['comment'], 0, 80, '…')) . ' · ' : '' ?><?= e(date('d/m/Y', strtotime((string) $r['created_at']))) ?></div>
                         </div>
                     </div>

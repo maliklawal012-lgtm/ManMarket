@@ -16,7 +16,7 @@ $promotionId = (int) ($_GET['id'] ?? 0);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     $db->prepare('DELETE FROM promotions WHERE id = :id')->execute(['id' => $promotionId]);
-    header('Location: /market/admin/promotions.php');
+    header('Location: /market/admin/promotions');
     exit;
 }
 
@@ -30,7 +30,7 @@ $stmt->execute(['id' => $promotionId]);
 $promotion = $stmt->fetch() ?: null;
 
 if (!$promotion) {
-    header('Location: /market/admin/promotions.php');
+    header('Location: /market/admin/promotions');
     exit;
 }
 
@@ -67,7 +67,7 @@ if ($promotion['scope'] === 'category') {
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/promotions.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux promotions</a>
+    <a href="/market/admin/promotions" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux promotions</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -75,8 +75,8 @@ if ($promotion['scope'] === 'category') {
         <h2><?= e($promotion['name']) ?></h2>
         <div class="admin-table-actions">
             <span class="tag <?= $statusClass ?>"><?= e($statusLabel) ?></span>
-            <a href="/market/admin/promotions.php?action=edit&id=<?= $promotionId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-            <form method="post" action="/market/admin/promotion-detail.php?id=<?= $promotionId ?>" onsubmit="return confirm('Supprimer cette promotion ?');">
+            <a href="/market/admin/promotions?action=edit&id=<?= $promotionId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+            <form method="post" action="/market/admin/promotion-detail?id=<?= $promotionId ?>" onsubmit="return confirm('Supprimer cette promotion ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Supprimer</button>
@@ -87,7 +87,7 @@ if ($promotion['scope'] === 'category') {
         <li><span class="account-info-label"><?= icon('zap', 16) ?> Remise</span><span>-<?= (int) $promotion['discount_percent'] ?>%</span></li>
         <li><span class="account-info-label"><?= icon('menu', 16) ?> Portée</span><span>
             <?php if ($promotion['scope'] === 'category'): ?>
-                <a href="/market/admin/categorie-detail.php?id=<?= (int) $promotion['category_id'] ?>" class="link-muted"><?= e($promotion['category_name']) ?></a>
+                <a href="/market/admin/categorie-detail?id=<?= (int) $promotion['category_id'] ?>" class="link-muted"><?= e($promotion['category_name']) ?></a>
             <?php else: ?>
                 Tout le site
             <?php endif; ?>
@@ -103,7 +103,7 @@ if ($promotion['scope'] === 'category') {
 <div class="card">
     <div class="admin-toolbar">
         <h2>Produits concernés <?= $promotion['scope'] === 'category' ? '(' . count($affectedProducts) . ')' : '' ?></h2>
-        <a href="/market/admin/produits.php" class="link-more">Gérer les produits <?= icon('chevron-right', 14) ?></a>
+        <a href="/market/admin/produits" class="link-more">Gérer les produits <?= icon('chevron-right', 14) ?></a>
     </div>
     <?php if ($promotion['scope'] === 'all'): ?>
         <p class="char-count" style="margin-bottom:12px;">Portée « Tout le site » — <?= $totalProductCount ?> produit(s) au total. Aperçu des 20 premiers :</p>
@@ -140,7 +140,7 @@ if ($promotion['scope'] === 'category') {
                                     <span class="char-count">—</span>
                                 <?php endif; ?>
                             </td>
-                            <td><a href="/market/admin/produit-detail.php?id=<?= (int) $prod['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/admin/produit-detail?id=<?= (int) $prod['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

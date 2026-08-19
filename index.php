@@ -65,7 +65,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                     <h1><?= e(get_setting('site_hero_title_main', 'Le plus grand marché en ligne de')) ?> <span class="text-accent"><?= e(get_setting('site_hero_title_accent', 'la ville de Man')) ?></span></h1>
                     <p><?= e(get_setting('site_hero_subtitle', 'Achetez local, soutenez nos vendeurs, faites-vous livrer partout à Man.')) ?></p>
                     <div class="hero-actions">
-                        <a href="/market/offres.php" class="btn btn-primary">Acheter maintenant</a>
+                        <a href="/market/offres" class="btn btn-primary">Acheter maintenant</a>
                         <a href="#categories" class="btn btn-outline">Découvrir</a>
                     </div>
                 </div>
@@ -94,18 +94,18 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
         <div class="card categories-card" id="categories">
             <div class="card-header">
                 <h2>Catégories populaires</h2>
-                <a href="/market/categories.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
+                <a href="/market/categories" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
             </div>
             <div class="categories-grid reveal">
                 <?php foreach ($categories as $cat): ?>
-                    <a class="category-item" href="/market/categorie.php?slug=<?= e($cat['slug']) ?>">
+                    <a class="category-item" href="/market/categorie?slug=<?= e($cat['slug']) ?>">
                         <span class="category-icon" style="background:<?= e($cat['color']) ?>1a; color:<?= e($cat['color']) ?>">
                             <?= icon($cat['icon'], 22) ?>
                         </span>
                         <span><?= e($cat['name']) ?></span>
                     </a>
                 <?php endforeach; ?>
-                <a class="category-item category-more" href="/market/categories.php">
+                <a class="category-item category-more" href="/market/categories">
                     <span class="category-icon"><?= icon('chevron-right', 22) ?></span>
                     <span>Plus de catégories</span>
                 </a>
@@ -117,7 +117,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
         <div class="card">
             <div class="card-header">
                 <h2>Meilleures offres du moment</h2>
-                <a href="/market/offres.php" class="link-more">Voir toutes les offres <?= icon('chevron-right', 14) ?></a>
+                <a href="/market/offres" class="link-more">Voir toutes les offres <?= icon('chevron-right', 14) ?></a>
             </div>
             <div class="scroll-row reveal">
                 <?php foreach ($offers as $p): $pp = get_product_price($p); ?>
@@ -126,7 +126,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                             <?= icon('heart', 16) ?>
                         </button>
                         <?php if ($pp['discount_percent']): ?><span class="badge-discount">-<?= $pp['discount_percent'] ?>%</span><?php endif; ?>
-                        <a href="/market/produit.php?slug=<?= e($p['slug']) ?>" class="product-card-link">
+                        <a href="/market/produit?slug=<?= e($p['slug']) ?>" class="product-card-link">
                             <div class="product-thumb"><?= product_thumb_html($p, 34) ?></div>
                             <h3><?= e($p['name']) ?></h3>
                         </a>
@@ -145,7 +145,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
             <div class="card">
                 <div class="card-header">
                     <h2>Nouveaux produits</h2>
-                    <a href="/market/offres.php" class="link-more">Voir tout <?= icon('chevron-right', 14) ?></a>
+                    <a href="/market/offres" class="link-more">Voir tout <?= icon('chevron-right', 14) ?></a>
                 </div>
                 <div class="scroll-row reveal">
                     <?php foreach ($newProducts as $p): $pp = get_product_price($p); ?>
@@ -154,7 +154,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                                 <?= icon('heart', 16) ?>
                             </button>
                             <?php if ($pp['discount_percent']): ?><span class="badge-discount">-<?= $pp['discount_percent'] ?>%</span><?php endif; ?>
-                            <a href="/market/produit.php?slug=<?= e($p['slug']) ?>" class="product-card-link">
+                            <a href="/market/produit?slug=<?= e($p['slug']) ?>" class="product-card-link">
                                 <div class="product-thumb"><?= product_thumb_html($p, 34) ?></div>
                                 <h3><?= e($p['name']) ?></h3>
                             </a>
@@ -202,11 +202,11 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
         <div class="card">
             <div class="card-header">
                 <h2>Boutiques populaires</h2>
-                <a href="/market/boutiques.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
+                <a href="/market/boutiques" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
             </div>
             <div class="scroll-row reveal">
                 <?php foreach ($shops as $s): ?>
-                    <a class="shop-card" href="/market/boutique.php?slug=<?= e($s['slug']) ?>">
+                    <a class="shop-card" href="/market/boutique?slug=<?= e($s['slug']) ?>">
                         <div class="shop-logo" style="background:<?= e($s['color']) ?>"><?= shop_logo_html($s) ?></div>
                         <h3><?= e($s['name']) ?></h3>
                         <span class="shop-location"><?= icon('map-pin', 13) ?><?= e($s['neighborhood']) ?></span>
@@ -225,7 +225,7 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
             <div class="banner-text">
                 <h2>Livraison express à Man</h2>
                 <p>Commandez aujourd'hui, recevez aujourd'hui !</p>
-                <a href="/market/services.php" class="btn btn-white">En savoir plus</a>
+                <a href="/market/services" class="btn btn-white">En savoir plus</a>
             </div>
             <div class="banner-illustration"><?= icon('zap', 40) ?></div>
         </div>
@@ -241,13 +241,13 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                     if ($s['lat'] === null || $s['lng'] === null) { continue; }
                     [$x, $y] = map_position((float) $s['lat'], (float) $s['lng'], $latMin, $latMax, $lngMin, $lngMax);
                 ?>
-                    <a class="map-pin-item" href="/market/boutique.php?slug=<?= e($s['slug']) ?>" style="left:<?= $x ?>%; top:<?= $y ?>%" title="<?= e($s['name']) ?>"><?= icon('map-pin', 20) ?></a>
+                    <a class="map-pin-item" href="/market/boutique?slug=<?= e($s['slug']) ?>" style="left:<?= $x ?>%; top:<?= $y ?>%" title="<?= e($s['name']) ?>"><?= icon('map-pin', 20) ?></a>
                 <?php endforeach; ?>
             </div>
             <ul class="shop-list">
                 <?php foreach ($shops as $s): ?>
                     <li>
-                        <a class="shop-list-link" href="/market/boutique.php?slug=<?= e($s['slug']) ?>">
+                        <a class="shop-list-link" href="/market/boutique?slug=<?= e($s['slug']) ?>">
                             <div class="shop-list-logo" style="background:<?= e($s['color']) ?>"><?= shop_logo_html($s) ?></div>
                             <div class="shop-list-info">
                                 <strong><?= e($s['name']) ?></strong>
@@ -263,13 +263,13 @@ function map_position(float $lat, float $lng, float $latMin, float $latMax, floa
                     </li>
                 <?php endforeach; ?>
             </ul>
-            <a href="/market/boutiques.php" class="btn btn-outline btn-block">Voir plus de boutiques</a>
+            <a href="/market/boutiques" class="btn btn-outline btn-block">Voir plus de boutiques</a>
         </div>
 
         <div class="card">
             <div class="card-header">
                 <h2>Actualités &amp; Événements à Man</h2>
-                <a href="/market/actualites.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
+                <a href="/market/actualites" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
             </div>
             <div class="news-grid">
                 <?php foreach ($news as $n): ?>

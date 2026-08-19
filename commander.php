@@ -238,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $paymentInitError = $paymentResult->error ?? 'Le paiement en ligne est momentanément indisponible.';
             }
 
-            header('Location: /market/commande-confirmee.php?order=' . $orderId . ($paymentInitError ? '&payment_error=1' : ''));
+            header('Location: /market/commande-confirmee?order=' . $orderId . ($paymentInitError ? '&payment_error=1' : ''));
             exit;
         }
     }
@@ -265,7 +265,7 @@ require_once __DIR__ . '/includes/header.php';
                 <span>
                     <?= e($errors['items']) ?>
                     <?php if (!empty($errors['items_contact'])): ?>
-                        <a href="/market/panier.php">Modifier mon panier</a>
+                        <a href="/market/panier">Modifier mon panier</a>
                         <?php $supportPhone = get_setting('site_phone'); $supportWhatsapp = get_setting('site_whatsapp'); ?>
                         <?php if ($supportPhone || $supportWhatsapp): ?>
                             ou contactez le support
@@ -278,7 +278,7 @@ require_once __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <?php if (!$summary): ?>
-            <p class="empty-state">Votre panier est vide. <a href="/market/offres.php">Découvrir les offres</a></p>
+            <p class="empty-state">Votre panier est vide. <a href="/market/offres">Découvrir les offres</a></p>
         <?php else: ?>
             <div class="card-header">
                 <h2>Récapitulatif</h2>
@@ -311,7 +311,7 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
             </div>
 
-            <form method="post" action="/market/commander.php" novalidate>
+            <form method="post" action="/market/commander" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="items" value="<?= e($old['items']) ?>">
 

@@ -17,7 +17,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     $stmt = $db->prepare('DELETE FROM promotions WHERE id = :id');
     $stmt->execute(['id' => (int) $_POST['id']]);
-    header('Location: /market/admin/promotions.php');
+    header('Location: /market/admin/promotions');
     exit;
 }
 
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             ]);
         }
 
-        header('Location: /market/admin/promotions.php');
+        header('Location: /market/admin/promotions');
         exit;
     }
 }
@@ -103,10 +103,10 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? 'Modifier la promotion' : 'Nouvelle promotion' ?></h2>
-            <a href="/market/admin/promotions.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/admin/promotions" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
-        <form method="post" action="/market/admin/promotions.php" novalidate>
+        <form method="post" action="/market/admin/promotions" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -170,7 +170,7 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2>Promotions (<?= count($promotions) ?>)</h2>
-            <a href="/market/admin/promotions.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle promotion</a>
+            <a href="/market/admin/promotions?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle promotion</a>
         </div>
 
         <?php if (!$promotions): ?>
@@ -211,9 +211,9 @@ if ($editing):
                                 </td>
                                 <td>
                                     <div class="admin-table-actions">
-                                        <a href="/market/admin/promotion-detail.php?id=<?= (int) $promo['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                        <a href="/market/admin/promotions.php?action=edit&id=<?= (int) $promo['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                        <form method="post" action="/market/admin/promotions.php" onsubmit="return confirm('Supprimer cette promotion ?');">
+                                        <a href="/market/admin/promotion-detail?id=<?= (int) $promo['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                        <a href="/market/admin/promotions?action=edit&id=<?= (int) $promo['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                        <form method="post" action="/market/admin/promotions" onsubmit="return confirm('Supprimer cette promotion ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= (int) $promo['id'] ?>">

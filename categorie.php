@@ -23,7 +23,7 @@ if (!$category):
     <section class="container not-found">
         <h1>Catégorie introuvable</h1>
         <p>Cette catégorie n'existe pas ou n'est plus disponible.</p>
-        <a href="/market/index.php" class="btn btn-primary">Retour à l'accueil</a>
+        <a href="/market/index" class="btn btn-primary">Retour à l'accueil</a>
     </section>
     <?php
     require_once __DIR__ . '/includes/footer.php';
@@ -52,7 +52,7 @@ $products = $stmt->fetchAll();
 
 <section class="container category-chips">
     <?php foreach ($navCategories as $cat): ?>
-        <a href="/market/categorie.php?slug=<?= e($cat['slug']) ?>" class="chip <?= $cat['slug'] === $category['slug'] ? 'chip-active' : '' ?>">
+        <a href="/market/categorie?slug=<?= e($cat['slug']) ?>" class="chip <?= $cat['slug'] === $category['slug'] ? 'chip-active' : '' ?>">
             <?= e($cat['name']) ?>
         </a>
     <?php endforeach; ?>
@@ -93,11 +93,11 @@ $products = $stmt->fetchAll();
                         <?= icon('heart', 16) ?>
                     </button>
                     <?php if ($pp['discount_percent']): ?><span class="badge-discount">-<?= $pp['discount_percent'] ?>%</span><?php endif; ?>
-                    <a href="/market/produit.php?slug=<?= e($p['slug']) ?>" class="product-card-link">
+                    <a href="/market/produit?slug=<?= e($p['slug']) ?>" class="product-card-link">
                         <div class="product-thumb"><?= product_thumb_html($p, 34) ?></div>
                         <h3><?= e($p['name']) ?></h3>
                     </a>
-                    <a href="/market/boutique.php?slug=<?= e($p['shop_slug']) ?>" class="product-shop-link">
+                    <a href="/market/boutique?slug=<?= e($p['shop_slug']) ?>" class="product-shop-link">
                         <?= icon('store', 12) ?><?= e($p['shop_name']) ?>
                     </a>
                     <div class="price-row">

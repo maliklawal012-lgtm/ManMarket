@@ -8,7 +8,7 @@ require_once __DIR__ . '/includes/rate_limit.php';
 require_once __DIR__ . '/includes/wallet_bootstrap.php';
 
 if (current_user()) {
-    header('Location: /market/compte.php');
+    header('Location: /market/compte');
     exit;
 }
 
@@ -73,7 +73,7 @@ require_once __DIR__ . '/includes/header.php';
                 <span>Si un compte existe avec cette adresse, un lien de réinitialisation vient de lui être envoyé. Vérifiez votre boîte de réception.</span>
             </div>
         <?php else: ?>
-            <form method="post" action="/market/mot-de-passe-oublie.php" novalidate>
+            <form method="post" action="/market/mot-de-passe-oublie" novalidate>
                 <?= csrf_field() ?>
 
                 <div class="form-field <?= isset($errors['email']) ? 'has-error' : '' ?>">
@@ -86,7 +86,7 @@ require_once __DIR__ . '/includes/header.php';
             </form>
         <?php endif; ?>
 
-        <p class="auth-switch"><a href="/market/connexion.php">Retour à la connexion</a></p>
+        <p class="auth-switch"><a href="/market/connexion">Retour à la connexion</a></p>
     </div>
 </section>
 

@@ -17,7 +17,7 @@ if ($withdrawal && $vendor && (int) $withdrawal['vendor_id'] !== (int) $vendor['
 }
 
 if (!$withdrawal) {
-    header('Location: /market/vendeur/retraits.php');
+    header('Location: /market/vendeur/retraits');
     exit;
 }
 
@@ -41,7 +41,7 @@ $transactions = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/retraits.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux retraits</a>
+    <a href="/market/vendeur/retraits" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux retraits</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">

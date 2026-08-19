@@ -67,7 +67,7 @@ $faq = [
         <div class="banner-text">
             <h2>Vous êtes vendeur à Man ?</h2>
             <p>Rejoignez ManMarket et vendez vos produits à des milliers de clients de la ville.</p>
-            <a href="/market/inscription.php?type=vendeur" class="btn btn-white">Devenir vendeur</a>
+            <a href="/market/inscription?type=vendeur" class="btn btn-white">Devenir vendeur</a>
         </div>
         <div class="banner-illustration"><?= icon('store', 40) ?></div>
     </div>

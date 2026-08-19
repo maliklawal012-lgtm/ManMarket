@@ -47,7 +47,7 @@ foreach ($products as $p) {
     <script>window.MM_PRODUCTS = <?= json_encode($productsMap, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
 
     <div class="products-grid" id="favorites-grid"></div>
-    <p class="empty-state" id="favorites-empty" hidden>Vous n'avez aucun favori pour le moment. <a href="/market/offres.php">Découvrir les offres</a></p>
+    <p class="empty-state" id="favorites-empty" hidden>Vous n'avez aucun favori pour le moment. <a href="/market/offres">Découvrir les offres</a></p>
 
 </section>
 

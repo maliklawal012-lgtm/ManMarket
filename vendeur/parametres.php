@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'logo_letter' => $logoLetter, 'logo' => $finalLogo, 'fast_delivery' => $fastDelivery, 'is_open' => $isOpen, 'lat' => $lat, 'lng' => $lng, 'id' => $shopId,
         ]);
 
-        header('Location: /market/vendeur/parametres.php?saved=1');
+        header('Location: /market/vendeur/parametres?saved=1');
         exit;
     }
 
@@ -135,7 +135,7 @@ require_once __DIR__ . '/../includes/vendor_header.php';
         <div class="alert alert-success"><?= icon('check-circle', 18) ?><span>Les informations de votre boutique ont été mises à jour.</span></div>
     <?php endif; ?>
 
-    <form method="post" action="/market/vendeur/parametres.php" enctype="multipart/form-data" novalidate>
+    <form method="post" action="/market/vendeur/parametres" enctype="multipart/form-data" novalidate>
         <?= csrf_field() ?>
         <div class="form-field <?= isset($errors['name']) ? 'has-error' : '' ?>">
             <label for="name">Nom de la boutique *</label>

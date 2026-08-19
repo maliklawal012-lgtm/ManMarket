@@ -1,10 +1,10 @@
 User-agent: *
 Disallow: /admin/
 Disallow: /vendeur/
-Disallow: /panier.php
-Disallow: /favoris.php
-Disallow: /compte.php
-Disallow: /commandes.php
+Disallow: /panier
+Disallow: /favoris
+Disallow: /compte
+Disallow: /commandes
 
-# Sitemap: https://VOTRE-VRAI-DOMAINE/market/sitemap.php
+# Sitemap: https://VOTRE-VRAI-DOMAINE/market/sitemap
 # ^ A decommenter et completer avec le vrai domaine une fois le site deploye publiquement (voir DEPLOYMENT.md).

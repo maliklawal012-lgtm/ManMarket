@@ -55,7 +55,7 @@ if ($productsMap) {
                 <h2>Articles</h2>
             </div>
             <div id="cart-items"></div>
-            <p class="empty-state" id="cart-empty" hidden>Votre panier est vide. <a href="/market/offres.php">Voir les offres</a></p>
+            <p class="empty-state" id="cart-empty" hidden>Votre panier est vide. <a href="/market/offres">Voir les offres</a></p>
         </div>
 
         <div class="card cart-summary-card" id="cart-summary" hidden>

@@ -493,7 +493,7 @@
                     : p.stock <= 0
                         ? `<button type="button" class="btn btn-outline-primary btn-sm btn-block" disabled>Rupture de stock</button>`
                         : p.sizeType && p.sizeType !== 'none'
-                            ? `<a href="/market/produit.php?slug=${escapeHtml(p.slug)}" class="btn btn-primary btn-sm btn-block">Voir le produit</a>`
+                            ? `<a href="/market/produit?slug=${escapeHtml(p.slug)}" class="btn btn-primary btn-sm btn-block">Voir le produit</a>`
                             : `<button type="button" class="btn btn-primary btn-sm btn-block add-cart-btn" data-id="${escapeHtml(id)}" data-name="${escapeHtml(p.name)}">Ajouter au panier</button>`;
                 return `
                     <article class="product-card">
@@ -625,7 +625,7 @@
                     if (item.size) payload.size = item.size;
                     return payload;
                 });
-                checkoutBtn.href = `/market/commander.php?items=${encodeURIComponent(JSON.stringify(itemsPayload))}`;
+                checkoutBtn.href = `/market/commander?items=${encodeURIComponent(JSON.stringify(itemsPayload))}`;
             }
         };
 

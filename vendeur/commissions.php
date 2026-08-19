@@ -69,7 +69,7 @@ function vendor_commissions_query(array $overrides): string
     $params = array_merge(['status' => $_GET['status'] ?? '', 'page' => $_GET['page'] ?? ''], $overrides);
     $params = array_filter($params, fn ($v) => $v !== '' && $v !== null);
 
-    return '/market/vendeur/commissions.php' . ($params ? '?' . http_build_query($params) : '');
+    return '/market/vendeur/commissions' . ($params ? '?' . http_build_query($params) : '');
 }
 ?>
 
@@ -97,7 +97,7 @@ function vendor_commissions_query(array $overrides): string
         </div>
     </div>
 
-    <p class="char-count">La commission est prélevée automatiquement sur chaque vente réglée en ligne, au taux en vigueur au moment de la commande. Un remboursement annule proportionnellement la commission déjà prélevée. <a href="/market/vendeur/finances.php" class="link-muted">Voir le journal complet du portefeuille →</a></p>
+    <p class="char-count">La commission est prélevée automatiquement sur chaque vente réglée en ligne, au taux en vigueur au moment de la commande. Un remboursement annule proportionnellement la commission déjà prélevée. <a href="/market/vendeur/finances" class="link-muted">Voir le journal complet du portefeuille →</a></p>
 
     <div class="card" style="margin-top: var(--gap);">
         <div class="admin-toolbar">
@@ -143,7 +143,7 @@ function vendor_commissions_query(array $overrides): string
                                 <td><?= format_price((int) round((float) $c['commission_amount'])) ?></td>
                                 <td><?= (float) $c['reversed_amount'] > 0 ? format_price((int) round((float) $c['reversed_amount'])) : '<span class="char-count">—</span>' ?></td>
                                 <td><span class="tag <?= commission_status_tag_class($c['status']) ?>"><?= e(commission_status_label($c['status'])) ?></span></td>
-                                <td><a href="/market/vendeur/commission-detail.php?id=<?= (int) $c['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                                <td><a href="/market/vendeur/commission-detail?id=<?= (int) $c['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

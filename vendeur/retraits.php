@@ -37,7 +37,7 @@ if ($vendor && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '')
     }
 
     if ($result && $result->ok) {
-        header('Location: /market/vendeur/retraits.php');
+        header('Location: /market/vendeur/retraits');
         exit;
     }
     if ($result) {
@@ -102,7 +102,7 @@ if ($vendor) {
             <?php if ($spendable <= 0): ?>
                 <p class="empty-state">Aucun solde disponible pour le moment.</p>
             <?php else: ?>
-                <form method="post" action="/market/vendeur/retraits.php" novalidate>
+                <form method="post" action="/market/vendeur/retraits" novalidate>
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="request">
 
@@ -169,7 +169,7 @@ if ($vendor) {
                                         <span class="tag <?= wallet_withdrawal_status_tag_class($w['status']) ?>"><?= e(wallet_withdrawal_status_label($w['status'])) ?></span>
                                         <?php if ($w['admin_note']): ?><br><span class="char-count"><?= e($w['admin_note']) ?></span><?php endif; ?>
                                     </td>
-                                    <td><a href="/market/vendeur/retrait-detail.php?id=<?= (int) $w['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                                    <td><a href="/market/vendeur/retrait-detail?id=<?= (int) $w['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

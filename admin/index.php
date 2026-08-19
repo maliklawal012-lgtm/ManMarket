@@ -66,7 +66,7 @@ $recentOrders = $db->query("
     <div class="card" style="margin-bottom: var(--gap); border: 1px solid #fecaca;">
         <div class="admin-toolbar">
             <h2><?= icon('x', 18) ?> <?= $unresolvedFailures ?> échec(s) de rapprochement non résolu(s)</h2>
-            <a href="/market/admin/finances.php" class="link-more">Voir le détail <?= icon('chevron-right', 14) ?></a>
+            <a href="/market/admin/finances" class="link-more">Voir le détail <?= icon('chevron-right', 14) ?></a>
         </div>
         <p class="char-count">Un paiement confirmé ne correspondait pas à la somme des parts vendeurs + commission — aucun crédit automatique n'a été effectué, l'argent reste intact.</p>
     </div>
@@ -98,17 +98,17 @@ $recentOrders = $db->query("
         <span class="admin-stat-value"><?= $userCount ?></span>
         <span class="admin-stat-label">Utilisateur(s) inscrit(s)</span>
     </div>
-    <a href="/market/admin/retraits.php?status=PENDING" class="card admin-stat-card" style="text-decoration:none; color:inherit;">
+    <a href="/market/admin/retraits?status=PENDING" class="card admin-stat-card" style="text-decoration:none; color:inherit;">
         <span class="admin-stat-icon" style="background:#fef3c7; color:#92400e;"><?= icon('shield', 18) ?></span>
         <span class="admin-stat-value"><?= $pendingWithdrawals ?></span>
         <span class="admin-stat-label">Retrait(s) en attente</span>
     </a>
-    <a href="/market/admin/abonnements.php" class="card admin-stat-card" style="text-decoration:none; color:inherit;">
+    <a href="/market/admin/abonnements" class="card admin-stat-card" style="text-decoration:none; color:inherit;">
         <span class="admin-stat-icon" style="background:#fee2e2; color:#b91c1c;"><?= icon('clock', 18) ?></span>
         <span class="admin-stat-value"><?= $subscriptionsToWatch ?></span>
         <span class="admin-stat-label">Abonnement(s) à surveiller</span>
     </a>
-    <a href="/market/admin/finances.php" class="card admin-stat-card" style="text-decoration:none; color:inherit;">
+    <a href="/market/admin/finances" class="card admin-stat-card" style="text-decoration:none; color:inherit;">
         <span class="admin-stat-icon" style="background:#e0e7ff; color:#4338ca;"><?= icon('bar-chart', 18) ?></span>
         <span class="admin-stat-value"><?= format_price($walletHeld) ?></span>
         <span class="admin-stat-label">Détenu dans les wallets vendeurs</span>
@@ -159,7 +159,7 @@ $recentOrders = $db->query("
         <div class="card">
             <div class="admin-toolbar">
                 <h2>Dernières commandes</h2>
-                <a href="/market/admin/commandes-actives.php" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
+                <a href="/market/admin/commandes-actives" class="link-more">Voir toutes <?= icon('chevron-right', 14) ?></a>
             </div>
 
             <?php if (!$recentOrders): ?>
@@ -202,7 +202,7 @@ $recentOrders = $db->query("
     <div class="card">
         <div class="admin-toolbar">
             <h2>Activité récente</h2>
-            <a href="/market/admin/activite.php" class="link-more">Tout voir <?= icon('chevron-right', 14) ?></a>
+            <a href="/market/admin/activite" class="link-more">Tout voir <?= icon('chevron-right', 14) ?></a>
         </div>
 
         <?php if (!$activity): ?>

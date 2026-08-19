@@ -33,7 +33,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="card auth-card">
             <?php if (!$order): ?>
                 <p class="empty-state">Commande introuvable.</p>
-                <a href="/market/index.php" class="btn btn-primary">Retour à l'accueil</a>
+                <a href="/market/index" class="btn btn-primary">Retour à l'accueil</a>
             <?php else: ?>
                 <div class="alert alert-success">
                     <?= icon('check-circle', 18) ?>
@@ -82,7 +82,7 @@ require_once __DIR__ . '/includes/header.php';
 
                 <script type="application/json" id="clear-cart-ids"><?= json_encode(array_map(fn ($i) => 'product-' . (int) $i['product_id'], $items), JSON_UNESCAPED_SLASHES) ?></script>
 
-                <a href="/market/commandes.php" class="btn btn-primary" style="margin-top:16px;">Suivre ma commande</a>
+                <a href="/market/commandes" class="btn btn-primary" style="margin-top:16px;">Suivre ma commande</a>
             <?php endif; ?>
         </div>
     </div>

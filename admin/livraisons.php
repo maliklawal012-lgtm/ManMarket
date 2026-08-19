@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['s
         $stmt = $db->prepare("UPDATE contact_messages SET status = :status WHERE id = :id AND subject = 'Commande'");
         $stmt->execute(['status' => $_POST['status'], 'id' => (int) $_POST['order_id']]);
     }
-    header('Location: /market/admin/livraisons.php');
+    header('Location: /market/admin/livraisons');
     exit;
 }
 
@@ -54,7 +54,7 @@ $shippingCount = (int) $db->query("SELECT COUNT(*) FROM contact_messages WHERE s
 <div class="card">
     <div class="admin-toolbar">
         <h2>À livrer (<?= count($orders) ?>)</h2>
-        <a href="/market/admin/commandes.php" class="link-more">Toutes les commandes <?= icon('chevron-right', 14) ?></a>
+        <a href="/market/admin/commandes" class="link-more">Toutes les commandes <?= icon('chevron-right', 14) ?></a>
     </div>
 
     <?php if (!$orders): ?>
@@ -86,7 +86,7 @@ $shippingCount = (int) $db->query("SELECT COUNT(*) FROM contact_messages WHERE s
                             <td class="wrap"><?= nl2br(e($order['message'])) ?></td>
                             <td><span class="tag <?= order_status_tag_class($order['status']) ?>"><?= e(order_status_label($order['status'])) ?></span></td>
                             <td>
-                                <form method="post" action="/market/admin/livraisons.php">
+                                <form method="post" action="/market/admin/livraisons">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
                                     <select name="status" class="admin-inline-select" onchange="this.form.submit()">

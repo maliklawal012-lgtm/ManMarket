@@ -27,7 +27,7 @@ $stmt->execute(['id' => $withdrawalId]);
 $withdrawal = $stmt->fetch() ?: null;
 
 if (!$withdrawal) {
-    header('Location: /market/admin/retraits.php');
+    header('Location: /market/admin/retraits');
     exit;
 }
 
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') !== '') {
             'complete' => 'withdrawal_completed', 'fail' => 'withdrawal_failed', 'reverse' => 'withdrawal_reversed',
         ][$action] ?? 'withdrawal_' . $action;
         wallet_audit_log_repo()->record($adminId, $auditAction, 'withdrawal', $withdrawalId, $note !== '' ? $note : null, $_SERVER['REMOTE_ADDR'] ?? null);
-        header('Location: /market/admin/retrait-detail.php?id=' . $withdrawalId);
+        header('Location: /market/admin/retrait-detail?id=' . $withdrawalId);
         exit;
     }
 }
@@ -94,7 +94,7 @@ $otherWithdrawals = array_filter(
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/retraits.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux retraits</a>
+    <a href="/market/admin/retraits" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux retraits</a>
 </div>
 
 <?php if ($actionError): ?>
@@ -107,7 +107,7 @@ $otherWithdrawals = array_filter(
         <span class="tag <?= wallet_withdrawal_status_tag_class($withdrawal['status']) ?>"><?= e(wallet_withdrawal_status_label($withdrawal['status'])) ?></span>
     </div>
     <ul class="account-info-list">
-        <li><span class="account-info-label"><?= icon('store', 16) ?> Vendeur</span><span><a href="/market/admin/vendeur-finance.php?id=<?= $vendorId ?>" class="link-muted"><?= e($withdrawal['business_name']) ?></a> — <?= e($withdrawal['user_name']) ?> — <?= e($withdrawal['user_email']) ?></span></li>
+        <li><span class="account-info-label"><?= icon('store', 16) ?> Vendeur</span><span><a href="/market/admin/vendeur-finance?id=<?= $vendorId ?>" class="link-muted"><?= e($withdrawal['business_name']) ?></a> — <?= e($withdrawal['user_name']) ?> — <?= e($withdrawal['user_email']) ?></span></li>
         <li><span class="account-info-label"><?= icon('cart', 16) ?> Montant demandé</span><span><?= format_price((int) round((float) $withdrawal['amount'])) ?></span></li>
         <?php if ((float) $withdrawal['fee'] > 0): ?>
             <li><span class="account-info-label"><?= icon('x', 16) ?> Frais</span><span><?= format_price((int) round((float) $withdrawal['fee'])) ?></span></li>
@@ -149,40 +149,40 @@ $otherWithdrawals = array_filter(
     </div>
     <div class="admin-table-actions">
         <?php if ($withdrawal['status'] === 'PENDING'): ?>
-            <form method="post" action="/market/admin/retrait-detail.php?id=<?= $withdrawalId ?>">
+            <form method="post" action="/market/admin/retrait-detail?id=<?= $withdrawalId ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="approve">
                 <button type="submit" class="btn btn-primary btn-sm">Approuver</button>
             </form>
-            <form method="post" action="/market/admin/retrait-detail.php?id=<?= $withdrawalId ?>" onsubmit="return confirm('Rejeter cette demande de retrait ?');">
+            <form method="post" action="/market/admin/retrait-detail?id=<?= $withdrawalId ?>" onsubmit="return confirm('Rejeter cette demande de retrait ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="reject">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Rejeter</button>
             </form>
         <?php elseif ($withdrawal['status'] === 'APPROVED'): ?>
-            <form method="post" action="/market/admin/retrait-detail.php?id=<?= $withdrawalId ?>">
+            <form method="post" action="/market/admin/retrait-detail?id=<?= $withdrawalId ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="processing">
                 <button type="submit" class="btn btn-primary btn-sm">Marquer en cours</button>
             </form>
-            <form method="post" action="/market/admin/retrait-detail.php?id=<?= $withdrawalId ?>" onsubmit="return confirm('Rejeter cette demande de retrait ?');">
+            <form method="post" action="/market/admin/retrait-detail?id=<?= $withdrawalId ?>" onsubmit="return confirm('Rejeter cette demande de retrait ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="reject">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Rejeter</button>
             </form>
         <?php elseif ($withdrawal['status'] === 'PROCESSING'): ?>
-            <form method="post" action="/market/admin/retrait-detail.php?id=<?= $withdrawalId ?>" onsubmit="return confirm('Confirmer que l\'argent a bien été envoyé au vendeur ?');">
+            <form method="post" action="/market/admin/retrait-detail?id=<?= $withdrawalId ?>" onsubmit="return confirm('Confirmer que l\'argent a bien été envoyé au vendeur ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="complete">
                 <button type="submit" class="btn btn-primary btn-sm">Marquer payé</button>
             </form>
-            <form method="post" action="/market/admin/retrait-detail.php?id=<?= $withdrawalId ?>" onsubmit="return confirm('Marquer ce transfert comme échoué ?');">
+            <form method="post" action="/market/admin/retrait-detail?id=<?= $withdrawalId ?>" onsubmit="return confirm('Marquer ce transfert comme échoué ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="fail">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Échec</button>
             </form>
         <?php elseif ($withdrawal['status'] === 'COMPLETED'): ?>
-            <form method="post" action="/market/admin/retrait-detail.php?id=<?= $withdrawalId ?>" onsubmit="return confirm('Annuler ce retrait et recréditer le vendeur ? À utiliser uniquement en cas d\'erreur (argent jamais réellement envoyé).');">
+            <form method="post" action="/market/admin/retrait-detail?id=<?= $withdrawalId ?>" onsubmit="return confirm('Annuler ce retrait et recréditer le vendeur ? À utiliser uniquement en cas d\'erreur (argent jamais réellement envoyé).');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="reverse">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Annuler / recréditer</button>
@@ -238,7 +238,7 @@ $otherWithdrawals = array_filter(
                             <td><?= e(date('d/m/Y H:i', strtotime((string) $w['created_at']))) ?></td>
                             <td><?= format_price((int) round((float) $w['amount'])) ?></td>
                             <td><span class="tag <?= wallet_withdrawal_status_tag_class($w['status']) ?>"><?= e(wallet_withdrawal_status_label($w['status'])) ?></span></td>
-                            <td><a href="/market/admin/retrait-detail.php?id=<?= (int) $w['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/admin/retrait-detail?id=<?= (int) $w['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

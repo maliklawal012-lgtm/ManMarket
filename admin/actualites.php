@@ -17,7 +17,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     $stmt = $db->prepare('DELETE FROM news WHERE id = :id');
     $stmt->execute(['id' => (int) $_POST['id']]);
-    header('Location: /market/admin/actualites.php');
+    header('Location: /market/admin/actualites');
     exit;
 }
 
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             ]);
         }
 
-        header('Location: /market/admin/actualites.php');
+        header('Location: /market/admin/actualites');
         exit;
     }
 }
@@ -95,10 +95,10 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? "Modifier l'actualité" : 'Nouvelle actualité' ?></h2>
-            <a href="/market/admin/actualites.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/admin/actualites" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
-        <form method="post" action="/market/admin/actualites.php" novalidate>
+        <form method="post" action="/market/admin/actualites" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -150,7 +150,7 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2>Actualités & Événements (<?= count($news) ?>)</h2>
-            <a href="/market/admin/actualites.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle actualité</a>
+            <a href="/market/admin/actualites?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle actualité</a>
         </div>
 
         <?php if (!$news): ?>
@@ -174,9 +174,9 @@ if ($editing):
                                 <td class="wrap"><?= e($n['excerpt']) ?></td>
                                 <td>
                                     <div class="admin-table-actions">
-                                        <a href="/market/admin/actualite-detail.php?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                        <a href="/market/admin/actualites.php?action=edit&id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                        <form method="post" action="/market/admin/actualites.php" onsubmit="return confirm('Supprimer cette actualité ?');">
+                                        <a href="/market/admin/actualite-detail?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                        <a href="/market/admin/actualites?action=edit&id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                        <form method="post" action="/market/admin/actualites" onsubmit="return confirm('Supprimer cette actualité ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= (int) $n['id'] ?>">

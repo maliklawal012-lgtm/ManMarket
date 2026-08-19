@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
         $stmt->execute(['id' => $reset['user_id']]);
         $isAdmin = (int) $stmt->fetchColumn() === 1;
 
-        header('Location: ' . ($isAdmin ? '/market/admin/connexion.php?reset=ok' : '/market/connexion.php?reset=ok'));
+        header('Location: ' . ($isAdmin ? '/market/admin/connexion?reset=ok' : '/market/connexion?reset=ok'));
         exit;
     }
 }
@@ -80,9 +80,9 @@ require_once __DIR__ . '/includes/header.php';
                 <?= icon('x', 18) ?>
                 <span>Ce lien de réinitialisation est invalide ou a expiré.</span>
             </div>
-            <p class="auth-switch"><a href="/market/mot-de-passe-oublie.php">Demander un nouveau lien</a></p>
+            <p class="auth-switch"><a href="/market/mot-de-passe-oublie">Demander un nouveau lien</a></p>
         <?php else: ?>
-            <form method="post" action="/market/reinitialiser-mot-de-passe.php" novalidate>
+            <form method="post" action="/market/reinitialiser-mot-de-passe" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="token" value="<?= e($token) ?>">
 
@@ -102,7 +102,7 @@ require_once __DIR__ . '/includes/header.php';
             </form>
         <?php endif; ?>
 
-        <p class="auth-switch"><a href="/market/connexion.php">Retour à la connexion</a></p>
+        <p class="auth-switch"><a href="/market/connexion">Retour à la connexion</a></p>
     </div>
 </section>
 

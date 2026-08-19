@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
         WHERE id = :id AND subject = 'Réclamation'
     ");
     $stmt->execute(['id' => $complaintId]);
-    header('Location: /market/admin/reclamation-detail.php?id=' . $complaintId);
+    header('Location: /market/admin/reclamation-detail?id=' . $complaintId);
     exit;
 }
 
@@ -36,7 +36,7 @@ $stmt->execute(['id' => $complaintId]);
 $complaint = $stmt->fetch() ?: null;
 
 if (!$complaint) {
-    header('Location: /market/admin/reclamations.php');
+    header('Location: /market/admin/reclamations');
     exit;
 }
 
@@ -75,7 +75,7 @@ if ($complaint['shop_id']) {
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/reclamations.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux réclamations</a>
+    <a href="/market/admin/reclamations" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux réclamations</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -83,7 +83,7 @@ if ($complaint['shop_id']) {
         <h2>Réclamation #<?= $complaintId ?></h2>
         <div class="admin-table-actions">
             <span class="tag <?= $complaint['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $complaint['status'] === 'pending' ? 'Non traitée' : 'Traitée' ?></span>
-            <form method="post" action="/market/admin/reclamation-detail.php?id=<?= $complaintId ?>">
+            <form method="post" action="/market/admin/reclamation-detail?id=<?= $complaintId ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="toggle_status" value="1">
                 <button type="submit" class="btn btn-outline-primary btn-sm"><?= $complaint['status'] === 'pending' ? 'Marquer traitée' : 'Rouvrir' ?></button>
@@ -93,11 +93,11 @@ if ($complaint['shop_id']) {
     <ul class="account-info-list">
         <li><span class="account-info-label"><?= icon('user', 16) ?> Client</span><span>
             <?= e($complaint['name']) ?>
-            <?php if ($complaint['user_id']): ?><br><span class="char-count"><a href="/market/admin/utilisateurs.php?action=edit&id=<?= (int) $complaint['user_id'] ?>" class="link-muted"><?= e($complaint['user_name'] ?? $complaint['user_account_email']) ?></a> — compte lié</span><?php endif; ?>
+            <?php if ($complaint['user_id']): ?><br><span class="char-count"><a href="/market/admin/utilisateurs?action=edit&id=<?= (int) $complaint['user_id'] ?>" class="link-muted"><?= e($complaint['user_name'] ?? $complaint['user_account_email']) ?></a> — compte lié</span><?php endif; ?>
         </span></li>
         <li><span class="account-info-label"><?= icon('send', 16) ?> Contact</span><span><a href="mailto:<?= e($complaint['email']) ?>" class="link-muted"><?= e($complaint['email']) ?></a><?php if ($complaint['phone']): ?> — <?= e($complaint['phone']) ?><?php endif; ?></span></li>
         <?php if ($complaint['shop_id']): ?>
-            <li><span class="account-info-label"><?= icon('store', 16) ?> Boutique concernée</span><span><a href="/market/admin/boutique-detail.php?id=<?= (int) $complaint['shop_id'] ?>" class="link-muted"><?= e($complaint['shop_name']) ?></a></span></li>
+            <li><span class="account-info-label"><?= icon('store', 16) ?> Boutique concernée</span><span><a href="/market/admin/boutique-detail?id=<?= (int) $complaint['shop_id'] ?>" class="link-muted"><?= e($complaint['shop_name']) ?></a></span></li>
         <?php endif; ?>
         <?php if ($complaint['delivery_location']): ?>
             <li><span class="account-info-label"><?= icon('map-pin', 16) ?> Lieu de livraison</span><span><?= e($complaint['delivery_location']) ?></span></li>
@@ -120,7 +120,7 @@ if ($complaint['shop_id']) {
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('headset', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/admin/reclamation-detail.php?id=<?= (int) $c['id'] ?>" class="link-muted"><?= e(mb_strimwidth($c['message'], 0, 60, '…')) ?></a></div>
+                            <div class="admin-activity-text"><a href="/market/admin/reclamation-detail?id=<?= (int) $c['id'] ?>" class="link-muted"><?= e(mb_strimwidth($c['message'], 0, 60, '…')) ?></a></div>
                             <div class="admin-activity-time"><span class="tag <?= $c['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $c['status'] === 'pending' ? 'Non traitée' : 'Traitée' ?></span> · <?= e(date('d/m/Y', strtotime((string) $c['created_at']))) ?></div>
                         </div>
                     </div>
@@ -143,7 +143,7 @@ if ($complaint['shop_id']) {
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('headset', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/admin/reclamation-detail.php?id=<?= (int) $c['id'] ?>" class="link-muted"><?= e($c['name']) ?></a> — <?= e(mb_strimwidth($c['message'], 0, 60, '…')) ?></div>
+                            <div class="admin-activity-text"><a href="/market/admin/reclamation-detail?id=<?= (int) $c['id'] ?>" class="link-muted"><?= e($c['name']) ?></a> — <?= e(mb_strimwidth($c['message'], 0, 60, '…')) ?></div>
                             <div class="admin-activity-time"><span class="tag <?= $c['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $c['status'] === 'pending' ? 'Non traitée' : 'Traitée' ?></span> · <?= e(date('d/m/Y', strtotime((string) $c['created_at']))) ?></div>
                         </div>
                     </div>

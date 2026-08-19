@@ -8,7 +8,7 @@ require_once __DIR__ . '/includes/rate_limit.php';
 require_once __DIR__ . '/includes/wallet_bootstrap.php';
 
 if (current_user()) {
-    header('Location: /market/compte.php');
+    header('Location: /market/compte');
     exit;
 }
 
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             wallet_notification_service()->emailVerificationRequested($newUserId, site_base_url() . '/verifier-email.php?token=' . $verifyToken);
 
             login_user($newUserId);
-            header('Location: /market/compte.php');
+            header('Location: /market/compte');
             exit;
         } catch (PDOException $e) {
             // Deux inscriptions simultanees avec le meme email : la verification
@@ -116,7 +116,7 @@ require_once __DIR__ . '/includes/header.php';
             <p class="vendor-note"><?= icon('store', 16) ?> Après votre inscription, notre équipe vous contactera pour finaliser l'ouverture de votre boutique.</p>
         <?php endif; ?>
 
-        <form method="post" action="/market/inscription.php" novalidate>
+        <form method="post" action="/market/inscription" novalidate>
             <?= csrf_field() ?>
             <?php if ($isVendor): ?><input type="hidden" name="type" value="vendeur"><?php endif; ?>
             <div class="form-field <?= isset($errors['name']) ? 'has-error' : '' ?>">
@@ -153,7 +153,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="form-field <?= isset($errors['consent']) ? 'has-error' : '' ?>">
                 <label class="filter-toggle consent-toggle">
                     <input type="checkbox" id="consent_data_processing" name="consent_data_processing" value="1" required>
-                    <span>J'accepte que mes données personnelles soient collectées et utilisées par <?= e(get_setting('site_name') ?: 'ManMarket') ?> pour créer mon compte, gérer mes commandes, assurer la livraison et fournir les services proposés. Je reconnais avoir pris connaissance de la <a href="/market/politique-confidentialite.php" target="_blank" rel="noopener">Politique de confidentialité</a>.</span>
+                    <span>J'accepte que mes données personnelles soient collectées et utilisées par <?= e(get_setting('site_name') ?: 'ManMarket') ?> pour créer mon compte, gérer mes commandes, assurer la livraison et fournir les services proposés. Je reconnais avoir pris connaissance de la <a href="/market/politique-confidentialite" target="_blank" rel="noopener">Politique de confidentialité</a>.</span>
                 </label>
                 <?php if (isset($errors['consent'])): ?><span class="field-error"><?= e($errors['consent']) ?></span><?php endif; ?>
             </div>
@@ -176,7 +176,7 @@ require_once __DIR__ . '/includes/header.php';
         })();
         </script>
 
-        <p class="auth-switch">Déjà inscrit ? <a href="/market/connexion.php">Se connecter</a></p>
+        <p class="auth-switch">Déjà inscrit ? <a href="/market/connexion">Se connecter</a></p>
     </div>
 </section>
 

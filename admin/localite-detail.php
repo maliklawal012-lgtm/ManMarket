@@ -17,14 +17,14 @@ $deleteError = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_id'])) {
     $db->prepare('UPDATE locations SET is_active = IF(is_active = 1, 0, 1) WHERE id = :id')->execute(['id' => $locationId]);
-    header('Location: /market/admin/localite-detail.php?id=' . $locationId);
+    header('Location: /market/admin/localite-detail?id=' . $locationId);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     try {
         $db->prepare('DELETE FROM locations WHERE id = :id')->execute(['id' => $locationId]);
-        header('Location: /market/admin/localites.php');
+        header('Location: /market/admin/localites');
         exit;
     } catch (PDOException $e) {
         $deleteError = 'Impossible de supprimer cette localité.';
@@ -36,7 +36,7 @@ $stmt->execute(['id' => $locationId]);
 $location = $stmt->fetch() ?: null;
 
 if (!$location) {
-    header('Location: /market/admin/localites.php');
+    header('Location: /market/admin/localites');
     exit;
 }
 
@@ -82,7 +82,7 @@ $recentOrders = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/localites.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux lieux de livraison</a>
+    <a href="/market/admin/localites" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux lieux de livraison</a>
 </div>
 
 <?php if ($deleteError): ?>
@@ -94,13 +94,13 @@ $recentOrders = $stmt->fetchAll();
         <h2><?= e($location['name']) ?></h2>
         <div class="admin-table-actions">
             <span class="tag <?= $location['is_active'] ? 'tag-open' : 'tag-closed' ?>"><?= $location['is_active'] ? 'Active' : 'Désactivée' ?></span>
-            <form method="post" action="/market/admin/localite-detail.php?id=<?= $locationId ?>">
+            <form method="post" action="/market/admin/localite-detail?id=<?= $locationId ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="toggle_id" value="<?= $locationId ?>">
                 <button type="submit" class="btn btn-outline-primary btn-sm"><?= $location['is_active'] ? 'Désactiver' : 'Activer' ?></button>
             </form>
-            <a href="/market/admin/localites.php?action=edit&id=<?= $locationId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-            <form method="post" action="/market/admin/localite-detail.php?id=<?= $locationId ?>" onsubmit="return confirm('Supprimer cette localité ?');">
+            <a href="/market/admin/localites?action=edit&id=<?= $locationId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+            <form method="post" action="/market/admin/localite-detail?id=<?= $locationId ?>" onsubmit="return confirm('Supprimer cette localité ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Supprimer</button>
@@ -111,7 +111,7 @@ $recentOrders = $stmt->fetchAll();
         <?php if ($isCity): ?>
             Ville (localité principale) — <?= count($neighborhoods) ?> quartier(s) enregistré(s).
         <?php else: ?>
-            Quartier de <a href="/market/admin/localite-detail.php?id=<?= (int) $parentCity['id'] ?>" class="link-muted"><?= e($parentCity['name']) ?></a>.
+            Quartier de <a href="/market/admin/localite-detail?id=<?= (int) $parentCity['id'] ?>" class="link-muted"><?= e($parentCity['name']) ?></a>.
         <?php endif; ?>
     </p>
 </div>
@@ -133,7 +133,7 @@ $recentOrders = $stmt->fetchAll();
     <div class="card" style="margin-bottom: var(--gap);">
         <div class="admin-toolbar">
             <h2>Quartiers (<?= count($neighborhoods) ?>)</h2>
-            <a href="/market/admin/localites.php?action=new&parent_id=<?= $locationId ?>" class="btn btn-outline-primary btn-sm"><?= icon('plus', 14) ?> Quartier</a>
+            <a href="/market/admin/localites?action=new&parent_id=<?= $locationId ?>" class="btn btn-outline-primary btn-sm"><?= icon('plus', 14) ?> Quartier</a>
         </div>
         <?php if (!$neighborhoods): ?>
             <p class="empty-state">Aucun quartier enregistré pour cette ville.</p>
@@ -146,7 +146,7 @@ $recentOrders = $stmt->fetchAll();
                             <tr>
                                 <td><?= e($n['name']) ?></td>
                                 <td><span class="tag <?= $n['is_active'] ? 'tag-open' : 'tag-closed' ?>"><?= $n['is_active'] ? 'Actif' : 'Désactivé' ?></span></td>
-                                <td><a href="/market/admin/localite-detail.php?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                                <td><a href="/market/admin/localite-detail?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -168,7 +168,7 @@ $recentOrders = $stmt->fetchAll();
                 <div class="admin-activity-item">
                     <span class="admin-activity-icon"><?= icon('cart', 15) ?></span>
                     <div>
-                        <div class="admin-activity-text"><a href="/market/admin/commande-detail.php?id=<?= (int) $o['id'] ?>" class="link-muted"><?= e($o['customer_name']) ?></a> — <?= format_price((int) round((float) $o['total_amount'])) ?> <span class="tag <?= order_status_tag_class($o['fulfillment_status']) ?>"><?= e(order_status_label($o['fulfillment_status'])) ?></span></div>
+                        <div class="admin-activity-text"><a href="/market/admin/commande-detail?id=<?= (int) $o['id'] ?>" class="link-muted"><?= e($o['customer_name']) ?></a> — <?= format_price((int) round((float) $o['total_amount'])) ?> <span class="tag <?= order_status_tag_class($o['fulfillment_status']) ?>"><?= e(order_status_label($o['fulfillment_status'])) ?></span></div>
                         <div class="admin-activity-time"><?= e($o['delivery_location']) ?> · <?= e(date('d/m/Y H:i', strtotime((string) $o['created_at']))) ?></div>
                     </div>
                 </div>

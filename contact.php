@@ -136,7 +136,7 @@ $contactInfo = [
             </div>
         <?php endif; ?>
 
-        <form method="post" action="/market/contact.php#contact-form" id="contact-form" novalidate>
+        <form method="post" action="/market/contact#contact-form" id="contact-form" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="shop_id" value="<?= (int) $old['shop_id'] ?>">
             <div class="form-row">

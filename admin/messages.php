@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_id'])) {
         WHERE id = :id AND subject NOT IN ('Commande', 'Réclamation')
     ");
     $stmt->execute(['id' => (int) $_POST['toggle_id']]);
-    header('Location: /market/admin/messages.php' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
+    header('Location: /market/admin/messages' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
     exit;
 }
 
@@ -52,9 +52,9 @@ $messages = $stmt->fetchAll();
         <div class="filter-sort">
             <label for="status-filter">Statut</label>
             <select id="status-filter" onchange="location.href = this.value">
-                <option value="/market/admin/messages.php" <?= $statusFilter === '' ? 'selected' : '' ?>>Tous</option>
-                <option value="/market/admin/messages.php?status=pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Non traités</option>
-                <option value="/market/admin/messages.php?status=processed" <?= $statusFilter === 'processed' ? 'selected' : '' ?>>Traités</option>
+                <option value="/market/admin/messages" <?= $statusFilter === '' ? 'selected' : '' ?>>Tous</option>
+                <option value="/market/admin/messages?status=pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Non traités</option>
+                <option value="/market/admin/messages?status=processed" <?= $statusFilter === 'processed' ? 'selected' : '' ?>>Traités</option>
             </select>
         </div>
     </div>
@@ -89,8 +89,8 @@ $messages = $stmt->fetchAll();
                             <td><span class="tag <?= $msg['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $msg['status'] === 'pending' ? 'Non traité' : 'Traité' ?></span></td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <a href="/market/admin/message-detail.php?id=<?= (int) $msg['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                    <form method="post" action="/market/admin/messages.php<?= $statusFilter !== '' ? '?status=' . e($statusFilter) : '' ?>">
+                                    <a href="/market/admin/message-detail?id=<?= (int) $msg['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                    <form method="post" action="/market/admin/messages<?= $statusFilter !== '' ? '?status=' . e($statusFilter) : '' ?>">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="toggle_id" value="<?= (int) $msg['id'] ?>">
                                         <button type="submit" class="btn btn-outline-primary btn-sm">

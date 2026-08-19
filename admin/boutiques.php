@@ -22,7 +22,7 @@ $deleteError = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_id'])) {
     $stmt = $db->prepare('UPDATE shops SET is_open = IF(is_open = 1, 0, 1) WHERE id = :id');
     $stmt->execute(['id' => (int) $_POST['toggle_id']]);
-    header('Location: /market/admin/boutiques.php');
+    header('Location: /market/admin/boutiques');
     exit;
 }
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         if ($logoToDelete) {
             delete_uploaded_image($logoToDelete);
         }
-        header('Location: /market/admin/boutiques.php');
+        header('Location: /market/admin/boutiques');
         exit;
     } catch (PDOException $e) {
         $deleteError = "Impossible de supprimer cette boutique : des produits y sont encore associés.";
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'appro
         wallet_notification_service()->shopApprovalDecision($requestId, true, null);
         wallet_audit_log_repo()->record((int) $adminUser['id'], 'shop_approved', 'shop', $requestId, null, $_SERVER['REMOTE_ADDR'] ?? null);
     }
-    header('Location: /market/admin/boutiques.php');
+    header('Location: /market/admin/boutiques');
     exit;
 }
 
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'rejec
         wallet_notification_service()->shopApprovalDecision($requestId, false, $reason);
         wallet_audit_log_repo()->record((int) $adminUser['id'], 'shop_rejected', 'shop', $requestId, $reason, $_SERVER['REMOTE_ADDR'] ?? null);
     }
-    header('Location: /market/admin/boutiques.php');
+    header('Location: /market/admin/boutiques');
     exit;
 }
 
@@ -197,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             ]);
         }
 
-        header('Location: /market/admin/boutiques.php');
+        header('Location: /market/admin/boutiques');
         exit;
     }
 }
@@ -231,10 +231,10 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? 'Modifier la boutique' : 'Nouvelle boutique' ?></h2>
-            <a href="/market/admin/boutiques.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/admin/boutiques" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
-        <form method="post" action="/market/admin/boutiques.php" novalidate>
+        <form method="post" action="/market/admin/boutiques" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -369,7 +369,7 @@ if ($editing):
                             <td><?= e($req['owner_name']) ?> (<?= e($req['owner_email']) ?>)</td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <form method="post" action="/market/admin/boutiques.php" onsubmit="return confirm('Approuver cette demande de boutique ?');">
+                                    <form method="post" action="/market/admin/boutiques" onsubmit="return confirm('Approuver cette demande de boutique ?');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="approve_request">
                                         <input type="hidden" name="id" value="<?= (int) $req['id'] ?>">
@@ -377,7 +377,7 @@ if ($editing):
                                     </form>
                                     <details>
                                         <summary class="btn btn-outline-primary btn-sm" style="display:inline-block; cursor:pointer;">Refuser</summary>
-                                        <form method="post" action="/market/admin/boutiques.php" style="margin-top:8px; min-width:220px;" onsubmit="return confirm('Refuser cette demande de boutique ?');">
+                                        <form method="post" action="/market/admin/boutiques" style="margin-top:8px; min-width:220px;" onsubmit="return confirm('Refuser cette demande de boutique ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="reject_request">
                                             <input type="hidden" name="id" value="<?= (int) $req['id'] ?>">
@@ -402,8 +402,8 @@ if ($editing):
         <div class="admin-toolbar">
             <h2>Boutiques (<?= count($shops) ?>)</h2>
             <div class="admin-table-actions">
-                <a href="/market/admin/abonnements.php" class="link-more"><?= icon('clock', 14) ?> Gérer les abonnements</a>
-                <a href="/market/admin/boutiques.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle boutique</a>
+                <a href="/market/admin/abonnements" class="link-more"><?= icon('clock', 14) ?> Gérer les abonnements</a>
+                <a href="/market/admin/boutiques?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle boutique</a>
             </div>
         </div>
 
@@ -452,14 +452,14 @@ if ($editing):
                                 </td>
                                 <td>
                                     <div class="admin-table-actions">
-                                        <a href="/market/admin/boutique-detail.php?id=<?= (int) $shop['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                        <form method="post" action="/market/admin/boutiques.php">
+                                        <a href="/market/admin/boutique-detail?id=<?= (int) $shop['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                        <form method="post" action="/market/admin/boutiques">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="toggle_id" value="<?= (int) $shop['id'] ?>">
                                             <button type="submit" class="btn btn-outline-primary btn-sm"><?= $shop['is_open'] ? 'Fermer' : 'Ouvrir' ?></button>
                                         </form>
-                                        <a href="/market/admin/boutiques.php?action=edit&id=<?= (int) $shop['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                        <form method="post" action="/market/admin/boutiques.php" onsubmit="return confirm('Supprimer cette boutique ?');">
+                                        <a href="/market/admin/boutiques?action=edit&id=<?= (int) $shop['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                        <form method="post" action="/market/admin/boutiques" onsubmit="return confirm('Supprimer cette boutique ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= (int) $shop['id'] ?>">

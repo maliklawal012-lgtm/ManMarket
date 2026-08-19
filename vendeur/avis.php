@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'reply
         ]);
     }
 
-    header('Location: /market/vendeur/avis.php');
+    header('Location: /market/vendeur/avis');
     exit;
 }
 
@@ -75,9 +75,9 @@ $reviews = $stmt->fetchAll();
                     <div class="review-item-header">
                         <strong><?= e($r['name']) ?></strong>
                         <span class="review-item-date"><?= e(date('d/m/Y', strtotime((string) $r['created_at']))) ?></span>
-                        <a href="/market/vendeur/avis-detail.php?id=<?= (int) $r['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                        <a href="/market/vendeur/avis-detail?id=<?= (int) $r['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
                     </div>
-                    <a href="/market/produit.php?slug=<?= e($r['product_slug']) ?>" class="link-muted"><?= e($r['product_name']) ?></a>
+                    <a href="/market/produit?slug=<?= e($r['product_slug']) ?>" class="link-muted"><?= e($r['product_name']) ?></a>
                     <div class="rating-row"><?= render_stars((float) $r['rating']) ?></div>
                     <?php if ($r['comment']): ?><p class="review-item-comment"><?= nl2br(e($r['comment'])) ?></p><?php endif; ?>
 
@@ -89,7 +89,7 @@ $reviews = $stmt->fetchAll();
                         </div>
                     <?php endif; ?>
 
-                    <form method="post" action="/market/vendeur/avis.php" class="vendor-reply-form">
+                    <form method="post" action="/market/vendeur/avis" class="vendor-reply-form">
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="reply">
                         <input type="hidden" name="review_id" value="<?= (int) $r['id'] ?>">

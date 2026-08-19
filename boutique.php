@@ -30,7 +30,7 @@ if (!$shop):
     <section class="container not-found">
         <h1>Boutique introuvable</h1>
         <p>Cette boutique n'existe pas ou n'est plus disponible.</p>
-        <a href="/market/boutiques.php" class="btn btn-primary">Retour aux boutiques</a>
+        <a href="/market/boutiques" class="btn btn-primary">Retour aux boutiques</a>
     </section>
     <?php
     require_once __DIR__ . '/includes/footer.php';
@@ -52,8 +52,8 @@ $products = $stmt->fetchAll();
 <section class="shop-hero" style="background: linear-gradient(120deg, <?= e($shop['color']) ?> 0%, #0e2a1c 130%)">
     <div class="container shop-hero-inner">
         <nav class="breadcrumb">
-            <a href="/market/index.php">Accueil</a> <?= icon('chevron-right', 12) ?>
-            <a href="/market/boutiques.php">Boutiques</a> <?= icon('chevron-right', 12) ?>
+            <a href="/market/index">Accueil</a> <?= icon('chevron-right', 12) ?>
+            <a href="/market/boutiques">Boutiques</a> <?= icon('chevron-right', 12) ?>
             <span><?= e($shop['name']) ?></span>
         </nav>
 
@@ -69,7 +69,7 @@ $products = $stmt->fetchAll();
                 <?= shop_rating_html($shop) ?>
                 <?php if ($shop['fast_delivery']): ?><span class="tag tag-green">Livraison rapide</span><?php endif; ?>
                 <div class="shop-contact-actions">
-                    <a href="/market/contact.php?shop_id=<?= (int) $shop['id'] ?>&subject=<?= urlencode('Question générale') ?>&message=<?= urlencode('Bonjour, j\'ai une question à propos de la boutique ' . $shop['name'] . ' : ') ?>" class="btn btn-outline btn-sm"><?= icon('send', 15) ?> Contacter cette boutique</a>
+                    <a href="/market/contact?shop_id=<?= (int) $shop['id'] ?>&subject=<?= urlencode('Question générale') ?>&message=<?= urlencode('Bonjour, j\'ai une question à propos de la boutique ' . $shop['name'] . ' : ') ?>" class="btn btn-outline btn-sm"><?= icon('send', 15) ?> Contacter cette boutique</a>
                     <?php if ($shop['whatsapp']): ?>
                         <a href="https://wa.me/<?= e(preg_replace('/\D/', '', (string) $shop['whatsapp'])) ?>?text=<?= urlencode('Bonjour ' . $shop['name'] . ', ') ?>" class="btn btn-outline btn-sm" target="_blank" rel="noopener"><?= icon('send', 15) ?> WhatsApp</a>
                     <?php endif; ?>
@@ -94,7 +94,7 @@ $products = $stmt->fetchAll();
                         <?= icon('heart', 16) ?>
                     </button>
                     <?php if ($pp['discount_percent']): ?><span class="badge-discount">-<?= $pp['discount_percent'] ?>%</span><?php endif; ?>
-                    <a href="/market/produit.php?slug=<?= e($p['slug']) ?>" class="product-card-link">
+                    <a href="/market/produit?slug=<?= e($p['slug']) ?>" class="product-card-link">
                         <div class="product-thumb"><?= product_thumb_html($p, 34) ?></div>
                         <h3><?= e($p['name']) ?></h3>
                     </a>
@@ -108,7 +108,7 @@ $products = $stmt->fetchAll();
                 </article>
             <?php endforeach; ?>
         </div>
-        <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/boutique.php', ['slug' => $slug]) ?>
+        <?= pagination_html($pagination['page'], $pagination['total_pages'], '/market/boutique', ['slug' => $slug]) ?>
     <?php elseif ($pagination['total_items'] === 0): ?>
         <p class="empty-state">Cette boutique n'a pas encore de produits en ligne.</p>
     <?php else: ?>

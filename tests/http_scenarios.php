@@ -103,7 +103,7 @@ function http_csrf(string $html): string
 // Verification pre-vol : le serveur local doit repondre
 // ----------------------------------------------------------------------
 
-$ping = http_do(http_actor(), 'GET', BASE_URL . '/index.php');
+$ping = http_do(http_actor(), 'GET', BASE_URL . '/index');
 if ($ping['status'] !== 200) {
     echo "ECHEC : le serveur local (" . BASE_URL . ") ne repond pas (http={$ping['status']}" . ($ping['error'] ? ", erreur: {$ping['error']}" : '') . ").\n";
     echo "Cette suite necessite WAMP demarre. Abandon.\n";
@@ -154,10 +154,10 @@ $userBlocked = ht_make_user($db, $created, 'blocked', 'Test1234!', false, true);
 
 ht_run($results, '1. Connexion — mot de passe incorrect', function () use ($userCorrect) {
     $ch = http_actor();
-    $get = http_do($ch, 'GET', BASE_URL . '/connexion.php');
+    $get = http_do($ch, 'GET', BASE_URL . '/connexion');
     $token = http_csrf($get['body']);
 
-    $post = http_do($ch, 'POST', BASE_URL . '/connexion.php', [
+    $post = http_do($ch, 'POST', BASE_URL . '/connexion', [
         '_csrf' => $token, 'email' => $userCorrect['email'], 'password' => 'MauvaisMotDePasse',
     ]);
 
@@ -167,18 +167,18 @@ ht_run($results, '1. Connexion — mot de passe incorrect', function () use ($us
 
 ht_run($results, '2. Connexion — identifiants corrects', function () use ($userCorrect) {
     $ch = http_actor();
-    $get = http_do($ch, 'GET', BASE_URL . '/connexion.php');
+    $get = http_do($ch, 'GET', BASE_URL . '/connexion');
     $token = http_csrf($get['body']);
 
-    $post = http_do($ch, 'POST', BASE_URL . '/connexion.php', [
+    $post = http_do($ch, 'POST', BASE_URL . '/connexion', [
         '_csrf' => $token, 'email' => $userCorrect['email'], 'password' => $userCorrect['password'],
     ]);
 
-    if ($post['status'] !== 302 || $post['location'] !== '/market/compte.php') {
-        return [false, "redirection attendue vers /market/compte.php, obtenu status={$post['status']} location=" . ($post['location'] ?? 'aucune')];
+    if ($post['status'] !== 302 || $post['location'] !== '/market/compte') {
+        return [false, "redirection attendue vers /market/compte, obtenu status={$post['status']} location=" . ($post['location'] ?? 'aucune')];
     }
 
-    $compte = http_do($ch, 'GET', BASE_URL . '/compte.php');
+    $compte = http_do($ch, 'GET', BASE_URL . '/compte');
     $ok = $compte['status'] === 200 && str_contains($compte['body'], 'HTTP Test login');
 
     return [$ok, "apres connexion, /compte.php http={$compte['status']}, nom affiche=" . (str_contains($compte['body'], 'HTTP Test login') ? 'oui' : 'non')];
@@ -186,10 +186,10 @@ ht_run($results, '2. Connexion — identifiants corrects', function () use ($use
 
 ht_run($results, '3. Connexion — compte bloque', function () use ($userBlocked) {
     $ch = http_actor();
-    $get = http_do($ch, 'GET', BASE_URL . '/connexion.php');
+    $get = http_do($ch, 'GET', BASE_URL . '/connexion');
     $token = http_csrf($get['body']);
 
-    $post = http_do($ch, 'POST', BASE_URL . '/connexion.php', [
+    $post = http_do($ch, 'POST', BASE_URL . '/connexion', [
         '_csrf' => $token, 'email' => $userBlocked['email'], 'password' => $userBlocked['password'],
     ]);
 
@@ -204,9 +204,9 @@ ht_run($results, '4. Connexion — limite de tentatives (10/900s)', function () 
     // sert uniquement a decouvrir la vraie cle rl_key utilisee par le serveur
     // pour CE client (son REMOTE_ADDR reel : "localhost" peut resoudre en
     // IPv4 ou IPv6 selon la machine, on ne le suppose jamais).
-    $get = http_do($ch, 'GET', BASE_URL . '/connexion.php');
+    $get = http_do($ch, 'GET', BASE_URL . '/connexion');
     $token = http_csrf($get['body']);
-    http_do($ch, 'POST', BASE_URL . '/connexion.php', ['_csrf' => $token, 'email' => $userCorrect['email'], 'password' => 'peu-importe']);
+    http_do($ch, 'POST', BASE_URL . '/connexion', ['_csrf' => $token, 'email' => $userCorrect['email'], 'password' => 'peu-importe']);
 
     $key = $db->query("SELECT rl_key FROM rate_limit_hits WHERE rl_key LIKE 'login:%' ORDER BY id DESC LIMIT 1")->fetchColumn();
     if (!$key) {
@@ -220,9 +220,9 @@ ht_run($results, '4. Connexion — limite de tentatives (10/900s)', function () 
     }
 
     // Meme avec les VRAIS bons identifiants, cette tentative doit etre bloquee.
-    $get2 = http_do($ch, 'GET', BASE_URL . '/connexion.php');
+    $get2 = http_do($ch, 'GET', BASE_URL . '/connexion');
     $token2 = http_csrf($get2['body']);
-    $post = http_do($ch, 'POST', BASE_URL . '/connexion.php', [
+    $post = http_do($ch, 'POST', BASE_URL . '/connexion', [
         '_csrf' => $token2, 'email' => $userCorrect['email'], 'password' => $userCorrect['password'],
     ]);
 
@@ -234,9 +234,9 @@ ht_run($results, '4. Connexion — limite de tentatives (10/900s)', function () 
 
 ht_run($results, '5. Connexion — page protegee inaccessible sans session', function () {
     $ch = http_actor();
-    $get = http_do($ch, 'GET', BASE_URL . '/compte.php');
+    $get = http_do($ch, 'GET', BASE_URL . '/compte');
 
-    $ok = $get['status'] === 302 && str_starts_with((string) $get['location'], '/market/connexion.php');
+    $ok = $get['status'] === 302 && str_starts_with((string) $get['location'], '/market/connexion');
     return [$ok, "http={$get['status']}, location=" . ($get['location'] ?? 'aucune')];
 });
 
@@ -265,31 +265,31 @@ $db->prepare("INSERT INTO products (name, slug, category_id, shop_id, price, sto
     ->execute(['c' => $catId, 's' => $invisibleShopId]);
 
 ht_run($results, '6. Recherche — requete vide', function () {
-    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche.php');
+    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche');
     $ok = $get['status'] === 200 && str_contains($get['body'], 'Saisissez un mot-clé');
     return [$ok, "http={$get['status']}"];
 });
 
 ht_run($results, '7. Recherche — aucun resultat', function () {
-    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche.php?q=' . urlencode('xyzzynoexiste123'));
+    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche?q=' . urlencode('xyzzynoexiste123'));
     $ok = $get['status'] === 200 && str_contains($get['body'], 'Aucun résultat');
     return [$ok, "http={$get['status']}"];
 });
 
 ht_run($results, '8. Recherche — trouve un produit reel', function () {
-    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche.php?q=' . urlencode('Zzargle Produit Visible'));
+    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche?q=' . urlencode('Zzargle Produit Visible'));
     $ok = $get['status'] === 200 && str_contains($get['body'], 'httptest-product-visible');
     return [$ok, "http={$get['status']}, produit present dans les resultats=" . (str_contains($get['body'], 'httptest-product-visible') ? 'oui' : 'non')];
 });
 
 ht_run($results, '9. Recherche — respecte la visibilite (boutique sans abonnement absente)', function () {
-    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche.php?q=' . urlencode('Zzargle Produit Invisible'));
+    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche?q=' . urlencode('Zzargle Produit Invisible'));
     $ok = $get['status'] === 200 && str_contains($get['body'], 'Aucun résultat') && !str_contains($get['body'], 'httptest-product-invisible');
     return [$ok, "http={$get['status']}, correctement absent=" . (!str_contains($get['body'], 'httptest-product-invisible') ? 'oui' : 'NON (fuite de visibilite)')];
 });
 
 ht_run($results, "10. Recherche — entree exotique (guillemets/quotes) ne casse rien", function () {
-    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche.php?q=' . urlencode("' OR '1'='1"));
+    $get = http_do(http_actor(), 'GET', BASE_URL . '/recherche?q=' . urlencode("' OR '1'='1"));
     $ok = $get['status'] === 200;
     return [$ok, "http={$get['status']} (doit rester 200, jamais d'erreur serveur)"];
 });
@@ -302,29 +302,29 @@ $userRegular = ht_make_user($db, $created, 'regular', 'Test1234!');
 $userAdmin = ht_make_user($db, $created, 'admin', 'Test1234!', true);
 
 ht_run($results, '11. Admin — anonyme redirige vers la connexion admin', function () {
-    $get = http_do(http_actor(), 'GET', BASE_URL . '/admin/index.php');
-    $ok = $get['status'] === 302 && str_starts_with((string) $get['location'], '/market/admin/connexion.php');
+    $get = http_do(http_actor(), 'GET', BASE_URL . '/admin/index');
+    $ok = $get['status'] === 302 && str_starts_with((string) $get['location'], '/market/admin/connexion');
     return [$ok, "http={$get['status']}, location=" . ($get['location'] ?? 'aucune')];
 });
 
 ht_run($results, '12. Admin — utilisateur non-admin bloque (403)', function () use ($userRegular) {
     $ch = http_actor();
-    $get = http_do($ch, 'GET', BASE_URL . '/connexion.php');
+    $get = http_do($ch, 'GET', BASE_URL . '/connexion');
     $token = http_csrf($get['body']);
-    http_do($ch, 'POST', BASE_URL . '/connexion.php', ['_csrf' => $token, 'email' => $userRegular['email'], 'password' => $userRegular['password']]);
+    http_do($ch, 'POST', BASE_URL . '/connexion', ['_csrf' => $token, 'email' => $userRegular['email'], 'password' => $userRegular['password']]);
 
-    $adminPage = http_do($ch, 'GET', BASE_URL . '/admin/index.php');
+    $adminPage = http_do($ch, 'GET', BASE_URL . '/admin/index');
     $ok = $adminPage['status'] === 403;
     return [$ok, "http={$adminPage['status']} (attendu 403)"];
 });
 
 ht_run($results, '13. Admin — connexion 2FA complete donne acces', function () use ($db, $userAdmin) {
     $ch = http_actor();
-    $get = http_do($ch, 'GET', BASE_URL . '/admin/connexion.php');
+    $get = http_do($ch, 'GET', BASE_URL . '/admin/connexion');
     $token = http_csrf($get['body']);
-    $login = http_do($ch, 'POST', BASE_URL . '/admin/connexion.php', ['_csrf' => $token, 'email' => $userAdmin['email'], 'password' => $userAdmin['password']]);
+    $login = http_do($ch, 'POST', BASE_URL . '/admin/connexion', ['_csrf' => $token, 'email' => $userAdmin['email'], 'password' => $userAdmin['password']]);
 
-    if ($login['status'] !== 302 || $login['location'] !== '/market/verification-2fa.php') {
+    if ($login['status'] !== 302 || $login['location'] !== '/market/verification-2fa') {
         return [false, "apres mot de passe, redirection 2FA attendue, obtenu status={$login['status']} location=" . ($login['location'] ?? 'aucune')];
     }
 
@@ -333,15 +333,15 @@ ht_run($results, '13. Admin — connexion 2FA complete donne acces', function ()
     // reste de cette session de travail le fait pour les tests 2FA.
     $code = issue_login_2fa_code($userAdmin['id']);
 
-    $twofa = http_do($ch, 'GET', BASE_URL . '/verification-2fa.php');
+    $twofa = http_do($ch, 'GET', BASE_URL . '/verification-2fa');
     $token2 = http_csrf($twofa['body']);
-    $verify = http_do($ch, 'POST', BASE_URL . '/verification-2fa.php', ['_csrf' => $token2, 'code' => $code]);
+    $verify = http_do($ch, 'POST', BASE_URL . '/verification-2fa', ['_csrf' => $token2, 'code' => $code]);
 
-    if ($verify['status'] !== 302 || $verify['location'] !== '/market/admin/index.php') {
+    if ($verify['status'] !== 302 || $verify['location'] !== '/market/admin/index') {
         return [false, "apres code 2FA, redirection admin attendue, obtenu status={$verify['status']} location=" . ($verify['location'] ?? 'aucune')];
     }
 
-    $adminPage = http_do($ch, 'GET', BASE_URL . '/admin/index.php');
+    $adminPage = http_do($ch, 'GET', BASE_URL . '/admin/index');
     $ok = $adminPage['status'] === 200 && str_contains($adminPage['body'], 'HTTP Test admin');
 
     return [$ok, "acces admin/index.php apres connexion complete : http={$adminPage['status']}" . ($adminPage['error'] ? " erreur cURL: {$adminPage['error']}" : '')];

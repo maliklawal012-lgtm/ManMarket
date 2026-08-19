@@ -3,7 +3,7 @@
 <footer class="site-footer">
     <div class="container footer-grid">
         <div class="footer-col footer-brand">
-            <a href="/market/index.php" class="logo">
+            <a href="/market/index" class="logo">
                 <?php $siteLogo = get_setting('site_logo'); ?>
                 <?php if ($siteLogo): ?>
                     <img src="/market/<?= e($siteLogo) ?>" alt="<?= e(get_setting('site_name') ?: 'ManMarket') ?>" class="logo-mark logo-mark-img">
@@ -25,12 +25,12 @@
             <div class="footer-col-group">
                 <h4>Liens rapides</h4>
                 <ul>
-                    <li><a href="/market/index.php">Accueil</a></li>
-                    <li><a href="/market/boutiques.php">Boutiques</a></li>
-                    <li><a href="/market/offres.php">Offres</a></li>
-                    <li><a href="/market/services.php">Services</a></li>
-                    <li><a href="/market/actualites.php">Actualités</a></li>
-                    <li><a href="/market/contact.php">Contact</a></li>
+                    <li><a href="/market/index">Accueil</a></li>
+                    <li><a href="/market/boutiques">Boutiques</a></li>
+                    <li><a href="/market/offres">Offres</a></li>
+                    <li><a href="/market/services">Services</a></li>
+                    <li><a href="/market/actualites">Actualités</a></li>
+                    <li><a href="/market/contact">Contact</a></li>
                 </ul>
             </div>
 
@@ -38,7 +38,7 @@
                 <h4>Catégories</h4>
                 <ul>
                     <?php foreach ($navCategories ?? [] as $cat): ?>
-                        <li><a href="/market/categorie.php?slug=<?= e($cat['slug']) ?>"><?= e($cat['name']) ?></a></li>
+                        <li><a href="/market/categorie?slug=<?= e($cat['slug']) ?>"><?= e($cat['name']) ?></a></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
@@ -56,7 +56,7 @@
 
     <div class="footer-bottom">
         <div class="container footer-bottom-inner">
-            <p>&copy; <?= date('Y') ?> <?= e(get_setting('site_name')) ?>. Tous droits réservés. <a href="/market/politique-confidentialite.php" class="link-muted-light">Politique de confidentialité</a></p>
+            <p>&copy; <?= date('Y') ?> <?= e(get_setting('site_name')) ?>. Tous droits réservés. <a href="/market/politique-confidentialite" class="link-muted-light">Politique de confidentialité</a></p>
             <p>Fait avec soin pour la ville de Man.</p>
         </div>
     </div>

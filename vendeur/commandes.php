@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['v
         $stmt = $db->prepare('UPDATE order_items SET fulfillment_status = :status WHERE order_id = :order_id AND shop_id = :shop_id');
         $stmt->execute(['status' => $_POST['vendor_status'], 'order_id' => $postedOrderId, 'shop_id' => $shopId]);
     }
-    header('Location: /market/vendeur/commandes.php');
+    header('Location: /market/vendeur/commandes');
     exit;
 }
 
@@ -128,7 +128,7 @@ foreach ($stmt->fetchAll() as $n) {
                                 <?php if (!$order['delivery_location']): ?>
                                     <span class="char-count">—</span>
                                 <?php elseif (isset($locationIdsByLabel[$order['delivery_location']])): ?>
-                                    <a href="/market/vendeur/localite-detail.php?id=<?= $locationIdsByLabel[$order['delivery_location']] ?>" class="link-muted"><?= e($order['delivery_location']) ?></a>
+                                    <a href="/market/vendeur/localite-detail?id=<?= $locationIdsByLabel[$order['delivery_location']] ?>" class="link-muted"><?= e($order['delivery_location']) ?></a>
                                 <?php else: ?>
                                     <?= e($order['delivery_location']) ?>
                                 <?php endif; ?>
@@ -149,8 +149,8 @@ foreach ($stmt->fetchAll() as $n) {
                             </td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <a href="/market/vendeur/commande-detail.php?id=<?= (int) $order['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                    <form method="post" action="/market/vendeur/commandes.php">
+                                    <a href="/market/vendeur/commande-detail?id=<?= (int) $order['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                    <form method="post" action="/market/vendeur/commandes">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
                                         <select name="vendor_status" class="admin-inline-select" onchange="this.form.submit()">

@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vendor_id'], $_POST['
         } elseif ($_POST['action'] === 'reactivate') {
             wallet_vendor_admin_service()->reactivate($vendorId, $adminId, $ip);
         }
-        header('Location: /market/admin/finances.php');
+        header('Location: /market/admin/finances');
         exit;
     } catch (\Throwable $e) {
         $actionError = $e->getMessage();
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vendor_id'], $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['failure_id'], $_POST['action']) && $_POST['action'] === 'resolve_failure') {
     $note = trim((string) ($_POST['note'] ?? ''));
     wallet_settlement_failure_repo()->resolve((int) $_POST['failure_id'], (int) $adminUser['id'], $note !== '' ? $note : 'Résolu par l\'administrateur');
-    header('Location: /market/admin/finances.php');
+    header('Location: /market/admin/finances');
     exit;
 }
 
@@ -171,13 +171,13 @@ $recentPayments = $db->query("
                     <?php foreach ($settlementFailures as $f): ?>
                         <tr>
                             <td><?= e(date('d/m/Y H:i', strtotime((string) $f['created_at']))) ?></td>
-                            <td><a href="/market/admin/commandes-actives.php" class="link-muted">#<?= (int) $f['order_id'] ?></a></td>
+                            <td><a href="/market/admin/commandes-actives" class="link-muted">#<?= (int) $f['order_id'] ?></a></td>
                             <td><?= format_price((int) round((float) $f['expected_total'])) ?></td>
                             <td><?= format_price((int) round((float) $f['computed_total'])) ?></td>
                             <td style="color:#dc2626;"><?= format_price((int) round((float) $f['difference'])) ?></td>
                             <td class="wrap"><?= e($f['error_message']) ?></td>
                             <td>
-                                <form method="post" action="/market/admin/finances.php" onsubmit="return confirm('Marquer cet incident comme résolu ?');">
+                                <form method="post" action="/market/admin/finances" onsubmit="return confirm('Marquer cet incident comme résolu ?');">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="failure_id" value="<?= (int) $f['id'] ?>">
                                     <input type="hidden" name="action" value="resolve_failure">
@@ -218,7 +218,7 @@ $recentPayments = $db->query("
         <span class="admin-stat-value"><?= format_price($totalWithdrawn) ?></span>
         <span class="admin-stat-label">Total déjà retiré</span>
     </div>
-    <a href="/market/admin/retraits.php?status=PENDING" class="card admin-stat-card" style="text-decoration:none; color:inherit;">
+    <a href="/market/admin/retraits?status=PENDING" class="card admin-stat-card" style="text-decoration:none; color:inherit;">
         <span class="admin-stat-icon" style="background:#fef3c7; color:#92400e;"><?= icon('clock', 18) ?></span>
         <span class="admin-stat-value"><?= $pendingWithdrawalsCount ?></span>
         <span class="admin-stat-label">Retrait(s) en attente (<?= format_price($pendingWithdrawalsAmount) ?>)</span>
@@ -330,7 +330,7 @@ $recentPayments = $db->query("
     </div>
 
     <?php if (!$vendorRows): ?>
-        <p class="empty-state">Aucun vendeur pour le moment. Assignez un propriétaire à une boutique depuis <a href="/market/admin/boutiques.php">Boutiques</a> pour en créer un.</p>
+        <p class="empty-state">Aucun vendeur pour le moment. Assignez un propriétaire à une boutique depuis <a href="/market/admin/boutiques">Boutiques</a> pour en créer un.</p>
     <?php else: ?>
         <div class="table-responsive">
             <table class="admin-table">
@@ -359,16 +359,16 @@ $recentPayments = $db->query("
                             <td><?= format_price((int) round((float) $v['total_withdrawn'])) ?></td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <a href="/market/admin/vendeur-finance.php?id=<?= (int) $v['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                    <a href="/market/admin/vendeur-finance?id=<?= (int) $v['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
                                     <?php if ($v['status'] === 'active'): ?>
-                                        <form method="post" action="/market/admin/finances.php" onsubmit="return confirm('Suspendre ce vendeur ? Il ne pourra plus demander de retrait.');">
+                                        <form method="post" action="/market/admin/finances" onsubmit="return confirm('Suspendre ce vendeur ? Il ne pourra plus demander de retrait.');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="vendor_id" value="<?= (int) $v['id'] ?>">
                                             <input type="hidden" name="action" value="suspend">
                                             <button type="submit" class="btn btn-outline-primary btn-sm">Suspendre</button>
                                         </form>
                                     <?php else: ?>
-                                        <form method="post" action="/market/admin/finances.php">
+                                        <form method="post" action="/market/admin/finances">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="vendor_id" value="<?= (int) $v['id'] ?>">
                                             <input type="hidden" name="action" value="reactivate">
@@ -388,7 +388,7 @@ $recentPayments = $db->query("
 <div class="card">
     <div class="admin-toolbar">
         <h2>Derniers paiements (<?= count($recentPayments) ?>)</h2>
-        <a href="/market/admin/finances.php?export=payments" class="btn btn-outline-primary btn-sm"><?= icon('send', 14) ?> Exporter CSV</a>
+        <a href="/market/admin/finances?export=payments" class="btn btn-outline-primary btn-sm"><?= icon('send', 14) ?> Exporter CSV</a>
     </div>
 
     <?php if (!$recentPayments): ?>

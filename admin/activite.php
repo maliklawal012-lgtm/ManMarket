@@ -26,9 +26,9 @@ $activity = array_slice($activity, 0, 60);
         <div class="filter-sort">
             <label for="type-filter">Type</label>
             <select id="type-filter" onchange="location.href = this.value">
-                <option value="/market/admin/activite.php" <?= $typeFilter === '' ? 'selected' : '' ?>>Tous</option>
+                <option value="/market/admin/activite" <?= $typeFilter === '' ? 'selected' : '' ?>>Tous</option>
                 <?php foreach ($typeLabels as $key => $label): ?>
-                    <option value="/market/admin/activite.php?type=<?= e($key) ?>" <?= $typeFilter === $key ? 'selected' : '' ?>><?= e($label) ?></option>
+                    <option value="/market/admin/activite?type=<?= e($key) ?>" <?= $typeFilter === $key ? 'selected' : '' ?>><?= e($label) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>

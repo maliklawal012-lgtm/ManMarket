@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_id'])) {
         WHERE id = :id AND shop_id = :shop_id
     ");
     $stmt->execute(['id' => (int) $_POST['toggle_id'], 'shop_id' => $shopId]);
-    header('Location: /market/vendeur/messages.php');
+    header('Location: /market/vendeur/messages');
     exit;
 }
 
@@ -72,11 +72,11 @@ $messages = $stmt->fetchAll();
                             <td>
                                 <div class="admin-table-actions">
                                     <?php if ($msg['subject'] === 'Réclamation'): ?>
-                                        <a href="/market/vendeur/reclamation-detail.php?id=<?= (int) $msg['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                        <a href="/market/vendeur/reclamation-detail?id=<?= (int) $msg['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
                                     <?php else: ?>
-                                        <a href="/market/vendeur/message-detail.php?id=<?= (int) $msg['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                        <a href="/market/vendeur/message-detail?id=<?= (int) $msg['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
                                     <?php endif; ?>
-                                    <form method="post" action="/market/vendeur/messages.php">
+                                    <form method="post" action="/market/vendeur/messages">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="toggle_id" value="<?= (int) $msg['id'] ?>">
                                         <button type="submit" class="btn btn-outline-primary btn-sm">

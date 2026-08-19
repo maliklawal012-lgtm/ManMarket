@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     try {
         $stmt = $db->prepare('DELETE FROM categories WHERE id = :id');
         $stmt->execute(['id' => $categoryId]);
-        header('Location: /market/admin/categories.php');
+        header('Location: /market/admin/categories');
         exit;
     } catch (PDOException $e) {
         $deleteError = 'Impossible de supprimer cette catégorie : des produits y sont encore associés.';
@@ -31,7 +31,7 @@ $stmt->execute(['id' => $categoryId]);
 $category = $stmt->fetch() ?: null;
 
 if (!$category) {
-    header('Location: /market/admin/categories.php');
+    header('Location: /market/admin/categories');
     exit;
 }
 
@@ -71,7 +71,7 @@ $products = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/categories.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux catégories</a>
+    <a href="/market/admin/categories" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux catégories</a>
 </div>
 
 <?php if ($deleteError): ?>
@@ -85,8 +85,8 @@ $products = $stmt->fetchAll();
             <?= e($category['name']) ?>
         </h2>
         <div class="admin-table-actions">
-            <a href="/market/admin/categories.php?action=edit&id=<?= $categoryId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-            <form method="post" action="/market/admin/categorie-detail.php?id=<?= $categoryId ?>" onsubmit="return confirm('Supprimer cette catégorie ?');">
+            <a href="/market/admin/categories?action=edit&id=<?= $categoryId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+            <form method="post" action="/market/admin/categorie-detail?id=<?= $categoryId ?>" onsubmit="return confirm('Supprimer cette catégorie ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Supprimer</button>
@@ -122,7 +122,7 @@ $products = $stmt->fetchAll();
 <div class="card">
     <div class="admin-toolbar">
         <h2>Produits de cette catégorie (<?= count($products) ?>)</h2>
-        <a href="/market/admin/produits.php" class="link-more">Gérer les produits <?= icon('chevron-right', 14) ?></a>
+        <a href="/market/admin/produits" class="link-more">Gérer les produits <?= icon('chevron-right', 14) ?></a>
     </div>
     <?php if (!$products): ?>
         <p class="empty-state">Aucun produit dans cette catégorie pour le moment.</p>
@@ -144,10 +144,10 @@ $products = $stmt->fetchAll();
                         <tr>
                             <td><div class="product-thumb admin-table-thumb"><?= product_thumb_html($p, 20) ?></div></td>
                             <td><?= e($p['name']) ?></td>
-                            <td><a href="/market/admin/boutique-detail.php?id=<?= (int) $p['shop_id'] ?>" class="link-muted"><?= e($p['shop_name']) ?></a></td>
+                            <td><a href="/market/admin/boutique-detail?id=<?= (int) $p['shop_id'] ?>" class="link-muted"><?= e($p['shop_name']) ?></a></td>
                             <td><?= format_price((int) $p['price']) ?></td>
                             <td><?= (int) $p['stock'] === 0 ? '<span class="tag tag-closed">Rupture</span>' : (int) $p['stock'] ?></td>
-                            <td><a href="/market/admin/produit-detail.php?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/admin/produit-detail?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

@@ -8,7 +8,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -21,7 +21,7 @@ $stmt->execute(['id' => $locationId]);
 $location = $stmt->fetch() ?: null;
 
 if (!$location) {
-    header('Location: /market/vendeur/commandes.php');
+    header('Location: /market/vendeur/commandes');
     exit;
 }
 
@@ -79,7 +79,7 @@ $recentOrders = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/commandes.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commandes</a>
+    <a href="/market/vendeur/commandes" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commandes</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -90,7 +90,7 @@ $recentOrders = $stmt->fetchAll();
         <?php if ($isCity): ?>
             Ville — <?= count($neighborhoods) ?> quartier(s) enregistré(s).
         <?php else: ?>
-            Quartier de <a href="/market/vendeur/localite-detail.php?id=<?= (int) $parentCity['id'] ?>" class="link-muted"><?= e($parentCity['name']) ?></a>.
+            Quartier de <a href="/market/vendeur/localite-detail?id=<?= (int) $parentCity['id'] ?>" class="link-muted"><?= e($parentCity['name']) ?></a>.
         <?php endif; ?>
     </p>
 </div>
@@ -120,7 +120,7 @@ $recentOrders = $stmt->fetchAll();
                     <?php foreach ($neighborhoods as $n): ?>
                         <tr>
                             <td><?= e($n['name']) ?></td>
-                            <td><a href="/market/vendeur/localite-detail.php?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/vendeur/localite-detail?id=<?= (int) $n['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -141,7 +141,7 @@ $recentOrders = $stmt->fetchAll();
                 <div class="admin-activity-item">
                     <span class="admin-activity-icon"><?= icon('cart', 15) ?></span>
                     <div>
-                        <div class="admin-activity-text"><a href="/market/vendeur/commande-detail.php?id=<?= (int) $o['id'] ?>" class="link-muted"><?= e($o['customer_name']) ?></a> <span class="tag <?= order_status_tag_class($o['fulfillment_status']) ?>"><?= e(order_status_label($o['fulfillment_status'])) ?></span></div>
+                        <div class="admin-activity-text"><a href="/market/vendeur/commande-detail?id=<?= (int) $o['id'] ?>" class="link-muted"><?= e($o['customer_name']) ?></a> <span class="tag <?= order_status_tag_class($o['fulfillment_status']) ?>"><?= e(order_status_label($o['fulfillment_status'])) ?></span></div>
                         <div class="admin-activity-time"><?= e(date('d/m/Y H:i', strtotime((string) $o['created_at']))) ?></div>
                     </div>
                 </div>

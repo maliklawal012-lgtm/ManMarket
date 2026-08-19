@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -136,7 +136,7 @@ $phone = get_setting('site_phone');
     <?php if (!$plans): ?>
         <p class="empty-state">Aucun plan disponible pour le moment. Contactez l'équipe ManMarket.</p>
     <?php else: ?>
-        <form method="post" action="/market/vendeur/abonnements.php" novalidate>
+        <form method="post" action="/market/vendeur/abonnements" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="pay_online">
 
@@ -239,7 +239,7 @@ $phone = get_setting('site_phone');
                             <td><?= format_price((int) $sub['price_paid']) ?></td>
                             <td><?= e(date('d/m/Y', strtotime((string) $sub['starts_at']))) ?></td>
                             <td><?= e(date('d/m/Y', strtotime((string) $sub['ends_at']))) ?></td>
-                            <td><a href="/market/vendeur/abonnement-detail.php?id=<?= (int) $sub['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/vendeur/abonnement-detail?id=<?= (int) $sub['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

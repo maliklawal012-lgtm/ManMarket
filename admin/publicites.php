@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         delete_uploaded_image($image);
     }
 
-    header('Location: /market/admin/publicites.php');
+    header('Location: /market/admin/publicites');
     exit;
 }
 
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             ]);
         }
 
-        header('Location: /market/admin/publicites.php');
+        header('Location: /market/admin/publicites');
         exit;
     }
 }
@@ -143,10 +143,10 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? 'Modifier la publicité' : 'Nouvelle publicité' ?></h2>
-            <a href="/market/admin/publicites.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/admin/publicites" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
-        <form method="post" action="/market/admin/publicites.php" enctype="multipart/form-data" novalidate>
+        <form method="post" action="/market/admin/publicites" enctype="multipart/form-data" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -175,7 +175,7 @@ if ($editing):
 
             <div class="form-field <?= isset($errors['link_url']) ? 'has-error' : '' ?>">
                 <label for="link_url">Lien au clic *</label>
-                <input type="text" id="link_url" name="link_url" value="<?= e((string) ($editing['link_url'] ?? '')) ?>" placeholder="/market/boutique.php?slug=... ou https://..." required>
+                <input type="text" id="link_url" name="link_url" value="<?= e((string) ($editing['link_url'] ?? '')) ?>" placeholder="/market/boutique?slug=... ou https://..." required>
                 <?php if (isset($errors['link_url'])): ?><span class="field-error"><?= e($errors['link_url']) ?></span><?php endif; ?>
             </div>
 
@@ -216,7 +216,7 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2>Publicités (<?= count($ads) ?>)</h2>
-            <a href="/market/admin/publicites.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle publicité</a>
+            <a href="/market/admin/publicites?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle publicité</a>
         </div>
 
         <?php if (!$ads): ?>
@@ -257,9 +257,9 @@ if ($editing):
                                 </td>
                                 <td>
                                     <div class="admin-table-actions">
-                                        <a href="/market/admin/publicite-detail.php?id=<?= (int) $ad['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                        <a href="/market/admin/publicites.php?action=edit&id=<?= (int) $ad['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                        <form method="post" action="/market/admin/publicites.php" onsubmit="return confirm('Supprimer cette publicité ?');">
+                                        <a href="/market/admin/publicite-detail?id=<?= (int) $ad['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                        <a href="/market/admin/publicites?action=edit&id=<?= (int) $ad['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                        <form method="post" action="/market/admin/publicites" onsubmit="return confirm('Supprimer cette publicité ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= (int) $ad['id'] ?>">

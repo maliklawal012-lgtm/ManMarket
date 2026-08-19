@@ -61,7 +61,7 @@ $shops = attach_live_shop_ratings($shops);
 
                 <?php if ($s['fast_delivery']): ?><span class="tag tag-green">Livraison rapide</span><?php endif; ?>
 
-                <a href="/market/boutique.php?slug=<?= e($s['slug']) ?>" class="btn btn-outline-primary btn-sm btn-block">
+                <a href="/market/boutique?slug=<?= e($s['slug']) ?>" class="btn btn-outline-primary btn-sm btn-block">
                     Voir la boutique <?= icon('chevron-right', 14) ?>
                 </a>
             </article>

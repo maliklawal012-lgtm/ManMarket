@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         delete_uploaded_image($image);
     }
 
-    header('Location: /market/admin/publicites.php');
+    header('Location: /market/admin/publicites');
     exit;
 }
 
@@ -34,7 +34,7 @@ $stmt->execute(['id' => $adId]);
 $ad = $stmt->fetch() ?: null;
 
 if (!$ad) {
-    header('Location: /market/admin/publicites.php');
+    header('Location: /market/admin/publicites');
     exit;
 }
 
@@ -68,7 +68,7 @@ if ($ad['link_url'] && preg_match('#/market/boutique\.php\?slug=([^&]+)#', (stri
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/publicites.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux publicités</a>
+    <a href="/market/admin/publicites" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux publicités</a>
 </div>
 
 <div class="card">
@@ -76,8 +76,8 @@ if ($ad['link_url'] && preg_match('#/market/boutique\.php\?slug=([^&]+)#', (stri
         <h2><?= e($ad['title']) ?></h2>
         <div class="admin-table-actions">
             <span class="tag <?= $statusClass ?>"><?= e($statusLabel) ?></span>
-            <a href="/market/admin/publicites.php?action=edit&id=<?= $adId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-            <form method="post" action="/market/admin/publicite-detail.php?id=<?= $adId ?>" onsubmit="return confirm('Supprimer cette publicité ?');">
+            <a href="/market/admin/publicites?action=edit&id=<?= $adId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+            <form method="post" action="/market/admin/publicite-detail?id=<?= $adId ?>" onsubmit="return confirm('Supprimer cette publicité ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Supprimer</button>
@@ -95,7 +95,7 @@ if ($ad['link_url'] && preg_match('#/market/boutique\.php\?slug=([^&]+)#', (stri
         <li><span class="account-info-label"><?= icon('send', 16) ?> Lien au clic</span><span>
             <?php if ($ad['link_url']): ?>
                 <a href="<?= e($ad['link_url']) ?>" class="link-muted" target="_blank"><?= e($ad['link_url']) ?> <?= icon('chevron-right', 12) ?></a>
-                <?php if ($linkedShop): ?><br><span class="char-count">Boutique détectée : <a href="/market/admin/boutique-detail.php?id=<?= (int) $linkedShop['id'] ?>" class="link-muted"><?= e($linkedShop['name']) ?></a></span><?php endif; ?>
+                <?php if ($linkedShop): ?><br><span class="char-count">Boutique détectée : <a href="/market/admin/boutique-detail?id=<?= (int) $linkedShop['id'] ?>" class="link-muted"><?= e($linkedShop['name']) ?></a></span><?php endif; ?>
             <?php else: ?>
                 —
             <?php endif; ?>

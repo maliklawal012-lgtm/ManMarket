@@ -8,7 +8,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -59,7 +59,7 @@ $itemsStmt = $db->prepare('SELECT * FROM order_items WHERE order_id = :order_id 
 <div class="card">
     <div class="admin-toolbar">
         <h2>À livrer (<?= count($orders) ?>)</h2>
-        <a href="/market/vendeur/commandes.php" class="link-more">Toutes mes commandes <?= icon('chevron-right', 14) ?></a>
+        <a href="/market/vendeur/commandes" class="link-more">Toutes mes commandes <?= icon('chevron-right', 14) ?></a>
     </div>
 
     <?php if (!$orders): ?>

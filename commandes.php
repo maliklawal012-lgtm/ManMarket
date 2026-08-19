@@ -25,7 +25,7 @@ $onlinePaymentMethods = [
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['order_id']) && $_POST['action'] === 'delete') {
     wallet_order_repo()->delete((int) $_POST['order_id'], (int) $user['id']);
-    header('Location: /market/commandes.php');
+    header('Location: /market/commandes');
     exit;
 }
 
@@ -101,7 +101,7 @@ require_once __DIR__ . '/includes/header.php';
 
         <?php if (!$orders): ?>
             <div class="card auth-card">
-                <p class="empty-state">Vous n'avez encore passé aucune commande. <a href="/market/offres.php">Découvrir les offres</a></p>
+                <p class="empty-state">Vous n'avez encore passé aucune commande. <a href="/market/offres">Découvrir les offres</a></p>
             </div>
         <?php else: ?>
             <?php foreach ($orders as $order): ?>
@@ -119,7 +119,7 @@ require_once __DIR__ . '/includes/header.php';
                                 <span class="tag <?= payment_status_tag_class($payment['status']) ?>"><?= icon('cart', 12) ?> <?= e(payment_status_label($payment['status'])) ?></span>
                             <?php endif; ?>
                         </span>
-                        <form method="post" action="/market/commandes.php" class="order-delete-form" onsubmit="return confirm('Supprimer cette commande de votre historique ?');">
+                        <form method="post" action="/market/commandes" class="order-delete-form" onsubmit="return confirm('Supprimer cette commande de votre historique ?');">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
@@ -175,7 +175,7 @@ require_once __DIR__ . '/includes/header.php';
                             <?php if ($retryOrderId === (int) $order['id'] && $retryError): ?>
                                 <div class="alert alert-error"><?= icon('x', 16) ?><span><?= e($retryError) ?></span></div>
                             <?php endif; ?>
-                            <form method="post" action="/market/commandes.php#order-<?= (int) $order['id'] ?>">
+                            <form method="post" action="/market/commandes#order-<?= (int) $order['id'] ?>">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="retry_payment">
                                 <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">

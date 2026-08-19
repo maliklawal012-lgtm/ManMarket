@@ -9,7 +9,7 @@ require_once __DIR__ . '/../includes/wallet_bootstrap.php';
 
 $currentUser = current_user();
 if ($currentUser) {
-    header('Location: ' . ((int) $currentUser['is_admin'] === 1 ? '/market/admin/index.php' : '/market/compte.php'));
+    header('Location: ' . ((int) $currentUser['is_admin'] === 1 ? '/market/admin/index' : '/market/compte'));
     exit;
 }
 
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
 }
 
-$redirect = safe_redirect_target((string) ($_GET['redirect'] ?? $_POST['redirect'] ?? ''), '/market/admin/index.php');
+$redirect = safe_redirect_target((string) ($_GET['redirect'] ?? $_POST['redirect'] ?? ''), '/market/admin/index');
 $errors = [];
 $old = ['email' => ''];
 
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['pending_2fa_user_id'] = (int) $user['id'];
             $_SESSION['pending_2fa_redirect'] = $redirect;
 
-            header('Location: /market/verification-2fa.php');
+            header('Location: /market/verification-2fa');
             exit;
         }
     }
@@ -87,7 +87,7 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
         <?php endif; ?>
 
-        <form method="post" action="/market/admin/connexion.php" novalidate>
+        <form method="post" action="/market/admin/connexion" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
 
@@ -101,7 +101,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <label for="password">Mot de passe *</label>
                 <input type="password" id="password" name="password" required>
                 <?php if (isset($errors['password'])): ?><span class="field-error"><?= e($errors['password']) ?></span><?php endif; ?>
-                <a href="/market/mot-de-passe-oublie.php" class="char-count">Mot de passe oublié ?</a>
+                <a href="/market/mot-de-passe-oublie" class="char-count">Mot de passe oublié ?</a>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">Se connecter</button>

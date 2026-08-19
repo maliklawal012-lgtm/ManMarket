@@ -12,7 +12,7 @@ $commissionId = (int) ($_GET['id'] ?? 0);
 $commission = wallet_commission_repo()->findById($commissionId);
 
 if (!$commission) {
-    header('Location: /market/admin/commissions.php');
+    header('Location: /market/admin/commissions');
     exit;
 }
 
@@ -39,7 +39,7 @@ $refundItems = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/commissions.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commissions</a>
+    <a href="/market/admin/commissions" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux commissions</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -48,9 +48,9 @@ $refundItems = $stmt->fetchAll();
         <span class="tag <?= commission_status_tag_class($commission['status']) ?>"><?= e(commission_status_label($commission['status'])) ?></span>
     </div>
     <ul class="account-info-list">
-        <li><span class="account-info-label"><?= icon('store', 16) ?> Boutique</span><span><a href="/market/admin/boutique-detail.php?id=<?= (int) $commission['shop_id'] ?>" class="link-muted"><?= e($commission['shop_name']) ?></a> — <?= e($commission['business_name']) ?></span></li>
+        <li><span class="account-info-label"><?= icon('store', 16) ?> Boutique</span><span><a href="/market/admin/boutique-detail?id=<?= (int) $commission['shop_id'] ?>" class="link-muted"><?= e($commission['shop_name']) ?></a> — <?= e($commission['business_name']) ?></span></li>
         <li><span class="account-info-label"><?= icon('shopping-basket', 16) ?> Produit</span><span><?= e($commission['product_name']) ?></span></li>
-        <li><span class="account-info-label"><?= icon('cart', 16) ?> Commande</span><span><a href="/market/admin/commande-detail.php?id=<?= (int) $commission['order_id'] ?>" class="link-muted">Commande #<?= (int) $commission['order_id'] ?></a><?php if ($order): ?> — <?= e(date('d/m/Y à H:i', strtotime((string) $order['created_at']))) ?><?php endif; ?></span></li>
+        <li><span class="account-info-label"><?= icon('cart', 16) ?> Commande</span><span><a href="/market/admin/commande-detail?id=<?= (int) $commission['order_id'] ?>" class="link-muted">Commande #<?= (int) $commission['order_id'] ?></a><?php if ($order): ?> — <?= e(date('d/m/Y à H:i', strtotime((string) $order['created_at']))) ?><?php endif; ?></span></li>
         <li><span class="account-info-label"><?= icon('clock', 16) ?> Créée le</span><span><?= e(date('d/m/Y à H:i', strtotime((string) $commission['created_at']))) ?></span></li>
         <?php if ($commission['applied_at']): ?>
             <li><span class="account-info-label"><?= icon('check-circle', 16) ?> Appliquée le</span><span><?= e(date('d/m/Y à H:i', strtotime((string) $commission['applied_at']))) ?></span></li>

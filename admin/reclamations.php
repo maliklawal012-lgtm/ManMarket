@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_id'])) {
         WHERE id = :id AND subject = 'Réclamation'
     ");
     $stmt->execute(['id' => (int) $_POST['toggle_id']]);
-    header('Location: /market/admin/reclamations.php' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
+    header('Location: /market/admin/reclamations' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
     exit;
 }
 
@@ -47,9 +47,9 @@ $complaints = $stmt->fetchAll();
         <div class="filter-sort">
             <label for="status-filter">Statut</label>
             <select id="status-filter" onchange="location.href = this.value">
-                <option value="/market/admin/reclamations.php" <?= $statusFilter === '' ? 'selected' : '' ?>>Toutes</option>
-                <option value="/market/admin/reclamations.php?status=pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Non traitées</option>
-                <option value="/market/admin/reclamations.php?status=processed" <?= $statusFilter === 'processed' ? 'selected' : '' ?>>Traitées</option>
+                <option value="/market/admin/reclamations" <?= $statusFilter === '' ? 'selected' : '' ?>>Toutes</option>
+                <option value="/market/admin/reclamations?status=pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Non traitées</option>
+                <option value="/market/admin/reclamations?status=processed" <?= $statusFilter === 'processed' ? 'selected' : '' ?>>Traitées</option>
             </select>
         </div>
     </div>
@@ -82,8 +82,8 @@ $complaints = $stmt->fetchAll();
                             <td><span class="tag <?= $complaint['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $complaint['status'] === 'pending' ? 'Non traitée' : 'Traitée' ?></span></td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <a href="/market/admin/reclamation-detail.php?id=<?= (int) $complaint['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                    <form method="post" action="/market/admin/reclamations.php<?= $statusFilter !== '' ? '?status=' . e($statusFilter) : '' ?>">
+                                    <a href="/market/admin/reclamation-detail?id=<?= (int) $complaint['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                    <form method="post" action="/market/admin/reclamations<?= $statusFilter !== '' ? '?status=' . e($statusFilter) : '' ?>">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="toggle_id" value="<?= (int) $complaint['id'] ?>">
                                         <button type="submit" class="btn btn-outline-primary btn-sm">

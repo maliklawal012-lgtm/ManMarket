@@ -20,7 +20,7 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'become_vendor') {
     $db->prepare('UPDATE users SET is_vendor = 1 WHERE id = :id')->execute(['id' => $user['id']]);
-    header('Location: /market/vendeur/demande-boutique.php');
+    header('Location: /market/vendeur/demande-boutique');
     exit;
 }
 
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             ]);
         }
 
-        header('Location: /market/vendeur/demande-boutique.php?submitted=1');
+        header('Location: /market/vendeur/demande-boutique?submitted=1');
         exit;
     }
 }
@@ -137,7 +137,7 @@ $shopRequest = $user['is_vendor'] ? current_vendor_shop_request((int) $user['id'
 $submitted = ($_GET['submitted'] ?? '') === '1';
 
 if ($shopRequest && $shopRequest['approval_status'] === 'approved') {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -158,7 +158,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <h2>Devenir vendeur</h2>
             </div>
             <p class="char-count">Pour créer une boutique, votre compte doit d'abord être un compte vendeur.</p>
-            <form method="post" action="/market/vendeur/demande-boutique.php" novalidate>
+            <form method="post" action="/market/vendeur/demande-boutique" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="become_vendor">
                 <button type="submit" class="btn btn-primary btn-block">Devenir vendeur</button>
@@ -189,7 +189,7 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             <?php endif; ?>
 
-            <form method="post" action="/market/vendeur/demande-boutique.php" enctype="multipart/form-data" novalidate>
+            <form method="post" action="/market/vendeur/demande-boutique" enctype="multipart/form-data" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="save">
 

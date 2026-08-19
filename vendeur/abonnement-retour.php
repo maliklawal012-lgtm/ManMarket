@@ -9,7 +9,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -58,26 +58,26 @@ require_once __DIR__ . '/../includes/vendor_header.php';
 
     <?php if (!$payment): ?>
         <p class="empty-state">Aucun paiement d'abonnement trouvé.</p>
-        <a href="/market/vendeur/abonnements.php" class="btn btn-primary">Retour à mon abonnement</a>
+        <a href="/market/vendeur/abonnements" class="btn btn-primary">Retour à mon abonnement</a>
     <?php elseif ($payment['status'] === 'completed'): ?>
         <div class="alert alert-success">
             <?= icon('check-circle', 18) ?>
             <span>Paiement confirmé ! Votre abonnement a été mis à jour.</span>
         </div>
-        <a href="/market/vendeur/abonnements.php" class="btn btn-primary">Voir mon abonnement</a>
+        <a href="/market/vendeur/abonnements" class="btn btn-primary">Voir mon abonnement</a>
     <?php elseif (in_array($payment['status'], ['pending', 'processing'], true)): ?>
         <div class="alert alert-info">
             <?= icon('clock', 18) ?>
             <span>Votre paiement est en cours de vérification. Cela peut prendre quelques instants.</span>
         </div>
-        <a href="/market/vendeur/abonnement-retour.php" class="btn btn-outline-primary">Actualiser le statut</a>
-        <a href="/market/vendeur/abonnements.php" class="btn btn-primary">Voir mon abonnement</a>
+        <a href="/market/vendeur/abonnement-retour" class="btn btn-outline-primary">Actualiser le statut</a>
+        <a href="/market/vendeur/abonnements" class="btn btn-primary">Voir mon abonnement</a>
     <?php else: ?>
         <div class="alert alert-error">
             <?= icon('x', 18) ?>
             <span><?= $payment['status'] === 'expired' ? 'Le lien de paiement a expiré.' : 'Le paiement a échoué ou a été annulé.' ?> Vous pouvez réessayer depuis la page abonnement.</span>
         </div>
-        <a href="/market/vendeur/abonnements.php" class="btn btn-primary">Réessayer</a>
+        <a href="/market/vendeur/abonnements" class="btn btn-primary">Réessayer</a>
     <?php endif; ?>
 </div>
 

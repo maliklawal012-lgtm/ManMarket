@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['action'
     } elseif (!$result->ok) {
         $actionError = $result->error;
     } else {
-        header('Location: /market/admin/retraits.php' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
+        header('Location: /market/admin/retraits' . (isset($_GET['status']) ? '?status=' . urlencode((string) $_GET['status']) : ''));
         exit;
     }
 }
@@ -89,9 +89,9 @@ $withdrawalMethodLabels = [
         <div class="filter-sort">
             <label for="status-filter">Statut</label>
             <select id="status-filter" onchange="location.href = this.value">
-                <option value="/market/admin/retraits.php" <?= $statusFilter === '' ? 'selected' : '' ?>>Tous</option>
+                <option value="/market/admin/retraits" <?= $statusFilter === '' ? 'selected' : '' ?>>Tous</option>
                 <?php foreach ($withdrawalStatuses as $s): ?>
-                    <option value="/market/admin/retraits.php?status=<?= e($s) ?>" <?= $statusFilter === $s ? 'selected' : '' ?>><?= e(wallet_withdrawal_status_label($s)) ?></option>
+                    <option value="/market/admin/retraits?status=<?= e($s) ?>" <?= $statusFilter === $s ? 'selected' : '' ?>><?= e(wallet_withdrawal_status_label($s)) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -127,48 +127,48 @@ $withdrawalMethodLabels = [
                             </td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <a href="/market/admin/retrait-detail.php?id=<?= (int) $w['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                    <a href="/market/admin/retrait-detail?id=<?= (int) $w['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
                                     <?php if ($w['status'] === 'PENDING'): ?>
-                                        <form method="post" action="/market/admin/retraits.php<?= $returnQs ?>">
+                                        <form method="post" action="/market/admin/retraits<?= $returnQs ?>">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= (int) $w['id'] ?>">
                                             <input type="hidden" name="action" value="approve">
                                             <button type="submit" class="btn btn-outline-primary btn-sm">Approuver</button>
                                         </form>
-                                        <form method="post" action="/market/admin/retraits.php<?= $returnQs ?>" onsubmit="return confirm('Rejeter cette demande de retrait ?');">
+                                        <form method="post" action="/market/admin/retraits<?= $returnQs ?>" onsubmit="return confirm('Rejeter cette demande de retrait ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= (int) $w['id'] ?>">
                                             <input type="hidden" name="action" value="reject">
                                             <button type="submit" class="btn btn-outline-primary btn-sm">Rejeter</button>
                                         </form>
                                     <?php elseif ($w['status'] === 'APPROVED'): ?>
-                                        <form method="post" action="/market/admin/retraits.php<?= $returnQs ?>">
+                                        <form method="post" action="/market/admin/retraits<?= $returnQs ?>">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= (int) $w['id'] ?>">
                                             <input type="hidden" name="action" value="processing">
                                             <button type="submit" class="btn btn-outline-primary btn-sm">Marquer en cours</button>
                                         </form>
-                                        <form method="post" action="/market/admin/retraits.php<?= $returnQs ?>" onsubmit="return confirm('Rejeter cette demande de retrait ?');">
+                                        <form method="post" action="/market/admin/retraits<?= $returnQs ?>" onsubmit="return confirm('Rejeter cette demande de retrait ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= (int) $w['id'] ?>">
                                             <input type="hidden" name="action" value="reject">
                                             <button type="submit" class="btn btn-outline-primary btn-sm">Rejeter</button>
                                         </form>
                                     <?php elseif ($w['status'] === 'PROCESSING'): ?>
-                                        <form method="post" action="/market/admin/retraits.php<?= $returnQs ?>" onsubmit="return confirm('Confirmer que l\'argent a bien été envoyé au vendeur ?');">
+                                        <form method="post" action="/market/admin/retraits<?= $returnQs ?>" onsubmit="return confirm('Confirmer que l\'argent a bien été envoyé au vendeur ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= (int) $w['id'] ?>">
                                             <input type="hidden" name="action" value="complete">
                                             <button type="submit" class="btn btn-outline-primary btn-sm">Marquer payé</button>
                                         </form>
-                                        <form method="post" action="/market/admin/retraits.php<?= $returnQs ?>" onsubmit="return confirm('Marquer ce transfert comme échoué ?');">
+                                        <form method="post" action="/market/admin/retraits<?= $returnQs ?>" onsubmit="return confirm('Marquer ce transfert comme échoué ?');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= (int) $w['id'] ?>">
                                             <input type="hidden" name="action" value="fail">
                                             <button type="submit" class="btn btn-outline-primary btn-sm">Échec</button>
                                         </form>
                                     <?php elseif ($w['status'] === 'COMPLETED'): ?>
-                                        <form method="post" action="/market/admin/retraits.php<?= $returnQs ?>" onsubmit="return confirm('Annuler ce retrait et recréditer le vendeur ? À utiliser uniquement en cas d\'erreur (argent jamais réellement envoyé).');">
+                                        <form method="post" action="/market/admin/retraits<?= $returnQs ?>" onsubmit="return confirm('Annuler ce retrait et recréditer le vendeur ? À utiliser uniquement en cas d\'erreur (argent jamais réellement envoyé).');">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= (int) $w['id'] ?>">
                                             <input type="hidden" name="action" value="reverse">

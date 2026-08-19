@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
         WHERE id = :id AND shop_id = :shop_id AND subject != 'Réclamation'
     ");
     $stmt->execute(['id' => $messageId, 'shop_id' => $shopId]);
-    header('Location: /market/vendeur/message-detail.php?id=' . $messageId);
+    header('Location: /market/vendeur/message-detail?id=' . $messageId);
     exit;
 }
 
@@ -41,7 +41,7 @@ $stmt->execute(['id' => $messageId, 'shop_id' => $shopId]);
 $message = $stmt->fetch() ?: null;
 
 if (!$message) {
-    header('Location: /market/vendeur/messages.php');
+    header('Location: /market/vendeur/messages');
     exit;
 }
 
@@ -67,7 +67,7 @@ $otherByCustomer = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/messages.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux messages</a>
+    <a href="/market/vendeur/messages" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux messages</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -75,7 +75,7 @@ $otherByCustomer = $stmt->fetchAll();
         <h2>Message #<?= $messageId ?></h2>
         <div class="admin-table-actions">
             <span class="tag <?= $message['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $message['status'] === 'pending' ? 'Non traité' : 'Traité' ?></span>
-            <form method="post" action="/market/vendeur/message-detail.php?id=<?= $messageId ?>">
+            <form method="post" action="/market/vendeur/message-detail?id=<?= $messageId ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="toggle_status" value="1">
                 <button type="submit" class="btn btn-outline-primary btn-sm"><?= $message['status'] === 'pending' ? 'Marquer traité' : 'Rouvrir' ?></button>
@@ -103,7 +103,7 @@ $otherByCustomer = $stmt->fetchAll();
                 <div class="admin-activity-item">
                     <span class="admin-activity-icon"><?= icon('send', 15) ?></span>
                     <div>
-                        <div class="admin-activity-text"><a href="/market/vendeur/message-detail.php?id=<?= (int) $m['id'] ?>" class="link-muted"><?= e($m['subject']) ?></a> — <?= e(mb_strimwidth($m['message'], 0, 60, '…')) ?></div>
+                        <div class="admin-activity-text"><a href="/market/vendeur/message-detail?id=<?= (int) $m['id'] ?>" class="link-muted"><?= e($m['subject']) ?></a> — <?= e(mb_strimwidth($m['message'], 0, 60, '…')) ?></div>
                         <div class="admin-activity-time"><span class="tag <?= $m['status'] === 'pending' ? 'tag-pending' : 'tag-green' ?>"><?= $m['status'] === 'pending' ? 'Non traité' : 'Traité' ?></span> · <?= e(date('d/m/Y', strtotime((string) $m['created_at']))) ?></div>
                     </div>
                 </div>

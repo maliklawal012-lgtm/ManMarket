@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     try {
         $stmt = $db->prepare('DELETE FROM categories WHERE id = :id');
         $stmt->execute(['id' => (int) $_POST['id']]);
-        header('Location: /market/admin/categories.php');
+        header('Location: /market/admin/categories');
         exit;
     } catch (PDOException $e) {
         $deleteError = 'Impossible de supprimer cette catégorie : des produits y sont encore associés.';
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
             ]);
         }
 
-        header('Location: /market/admin/categories.php');
+        header('Location: /market/admin/categories');
         exit;
     }
 }
@@ -101,10 +101,10 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2><?= ($editing['id'] ?? 0) ? 'Modifier la catégorie' : 'Nouvelle catégorie' ?></h2>
-            <a href="/market/admin/categories.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
+            <a href="/market/admin/categories" class="link-more"><?= icon('chevron-right', 14) ?> Retour à la liste</a>
         </div>
 
-        <form method="post" action="/market/admin/categories.php" novalidate>
+        <form method="post" action="/market/admin/categories" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($editing['id'] ?? 0) ?>">
@@ -149,7 +149,7 @@ if ($editing):
     <div class="card">
         <div class="admin-toolbar">
             <h2>Catégories (<?= count($categories) ?>)</h2>
-            <a href="/market/admin/categories.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle catégorie</a>
+            <a href="/market/admin/categories?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Nouvelle catégorie</a>
         </div>
 
         <?php if ($deleteError): ?>
@@ -175,9 +175,9 @@ if ($editing):
                             <td><?= (int) $cat['product_count'] ?></td>
                             <td>
                                 <div class="admin-table-actions">
-                                    <a href="/market/admin/categorie-detail.php?id=<?= (int) $cat['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
-                                    <a href="/market/admin/categories.php?action=edit&id=<?= (int) $cat['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-                                    <form method="post" action="/market/admin/categories.php" onsubmit="return confirm('Supprimer cette catégorie ?');">
+                                    <a href="/market/admin/categorie-detail?id=<?= (int) $cat['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a>
+                                    <a href="/market/admin/categories?action=edit&id=<?= (int) $cat['id'] ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                    <form method="post" action="/market/admin/categories" onsubmit="return confirm('Supprimer cette catégorie ?');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= (int) $cat['id'] ?>">

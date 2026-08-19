@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         delete_uploaded_image($row['image']);
     }
 
-    header('Location: /market/vendeur/produits.php');
+    header('Location: /market/vendeur/produits');
     exit;
 }
 
@@ -47,7 +47,7 @@ $stmt->execute(['id' => $productId, 'shop_id' => $shopId]);
 $product = $stmt->fetch() ?: null;
 
 if (!$product) {
-    header('Location: /market/vendeur/produits.php');
+    header('Location: /market/vendeur/produits');
     exit;
 }
 
@@ -82,15 +82,15 @@ $recentReviews = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/produits.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à mes produits</a>
+    <a href="/market/vendeur/produits" class="link-more"><?= icon('chevron-right', 14) ?> Retour à mes produits</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
     <div class="admin-toolbar">
         <h2><?= e($product['name']) ?></h2>
         <div class="admin-table-actions">
-            <a href="/market/vendeur/produits.php?action=edit&id=<?= $productId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-            <form method="post" action="/market/vendeur/produit-detail.php?id=<?= $productId ?>" onsubmit="return confirm('Supprimer ce produit ?');">
+            <a href="/market/vendeur/produits?action=edit&id=<?= $productId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+            <form method="post" action="/market/vendeur/produit-detail?id=<?= $productId ?>" onsubmit="return confirm('Supprimer ce produit ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Supprimer</button>
@@ -148,7 +148,7 @@ $recentReviews = $stmt->fetchAll();
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('cart', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/vendeur/commande-detail.php?id=<?= (int) $s['order_id'] ?>" class="link-muted">Commande #<?= (int) $s['order_id'] ?></a> — <?= (int) $s['quantity'] ?> x <?= format_price((int) round((float) $s['unit_price'])) ?></div>
+                            <div class="admin-activity-text"><a href="/market/vendeur/commande-detail?id=<?= (int) $s['order_id'] ?>" class="link-muted">Commande #<?= (int) $s['order_id'] ?></a> — <?= (int) $s['quantity'] ?> x <?= format_price((int) round((float) $s['unit_price'])) ?></div>
                             <div class="admin-activity-time"><span class="tag <?= vendor_item_status_tag_class($s['fulfillment_status']) ?>"><?= e(vendor_item_status_label($s['fulfillment_status'])) ?></span> · <?= e(date('d/m/Y', strtotime((string) $s['order_created_at']))) ?></div>
                         </div>
                     </div>
@@ -169,7 +169,7 @@ $recentReviews = $stmt->fetchAll();
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/vendeur/avis-detail.php?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
+                            <div class="admin-activity-text"><a href="/market/vendeur/avis-detail?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
                             <div class="admin-activity-time"><?= $r['comment'] ? e(mb_strimwidth($r['comment'], 0, 80, '…')) . ' · ' : '' ?><?= e(date('d/m/Y', strtotime((string) $r['created_at']))) ?></div>
                         </div>
                     </div>

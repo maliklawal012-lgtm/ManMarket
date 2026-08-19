@@ -8,7 +8,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -67,7 +67,7 @@ foreach ($products as $p) {
                                 <?= format_price((int) $p['price']) ?>
                                 <?php if ($p['original_price']): ?><br><span class="price-old"><?= format_price((int) $p['original_price']) ?></span><?php endif; ?>
                             </td>
-                            <td><?php if ($p['promotion_id']): ?><a href="/market/vendeur/promotion-detail.php?id=<?= (int) $p['promotion_id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a><?php endif; ?></td>
+                            <td><?php if ($p['promotion_id']): ?><a href="/market/vendeur/promotion-detail?id=<?= (int) $p['promotion_id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a><?php endif; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

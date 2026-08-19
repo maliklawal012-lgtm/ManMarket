@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         delete_uploaded_image($row['image']);
     }
 
-    header('Location: /market/admin/produits.php');
+    header('Location: /market/admin/produits');
     exit;
 }
 
@@ -40,7 +40,7 @@ $stmt->execute(['id' => $productId]);
 $product = $stmt->fetch() ?: null;
 
 if (!$product) {
-    header('Location: /market/admin/produits.php');
+    header('Location: /market/admin/produits');
     exit;
 }
 
@@ -75,15 +75,15 @@ $recentReviews = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/admin/produits.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux produits</a>
+    <a href="/market/admin/produits" class="link-more"><?= icon('chevron-right', 14) ?> Retour aux produits</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
     <div class="admin-toolbar">
         <h2><?= e($product['name']) ?></h2>
         <div class="admin-table-actions">
-            <a href="/market/admin/produits.php?action=edit&id=<?= $productId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
-            <form method="post" action="/market/admin/produit-detail.php?id=<?= $productId ?>" onsubmit="return confirm('Supprimer ce produit ?');">
+            <a href="/market/admin/produits?action=edit&id=<?= $productId ?>" class="btn btn-outline-primary btn-sm">Modifier</a>
+            <form method="post" action="/market/admin/produit-detail?id=<?= $productId ?>" onsubmit="return confirm('Supprimer ce produit ?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-outline-primary btn-sm">Supprimer</button>
@@ -94,7 +94,7 @@ $recentReviews = $stmt->fetchAll();
         <div class="product-thumb" style="width:80px; height:80px; flex-shrink:0;"><?= product_thumb_html($product, 40) ?></div>
         <ul class="account-info-list" style="flex:1; min-width:260px;">
             <li><span class="account-info-label"><?= icon('menu', 16) ?> Catégorie</span><span><?= e($product['category_name']) ?></span></li>
-            <li><span class="account-info-label"><?= icon('store', 16) ?> Boutique</span><span><a href="/market/admin/boutique-detail.php?id=<?= (int) $product['shop_id'] ?>" class="link-muted"><?= e($product['shop_name']) ?></a></span></li>
+            <li><span class="account-info-label"><?= icon('store', 16) ?> Boutique</span><span><a href="/market/admin/boutique-detail?id=<?= (int) $product['shop_id'] ?>" class="link-muted"><?= e($product['shop_name']) ?></a></span></li>
             <li><span class="account-info-label"><?= icon('cart', 16) ?> Prix</span><span><?= format_price((int) $product['price']) ?><?php if ($product['original_price']): ?> <span class="price-old"><?= format_price((int) $product['original_price']) ?></span><?php endif; ?></span></li>
             <li><span class="account-info-label"><?= icon('shopping-basket', 16) ?> Stock</span><span><?= (int) $product['stock'] > 0 ? (int) $product['stock'] . ' unité(s)' : '<span class="tag tag-closed">Rupture</span>' ?></span></li>
             <li><span class="account-info-label"><?= icon('zap', 16) ?> Vedette</span><span><?= $product['is_featured'] ? 'Oui' : 'Non' ?></span></li>
@@ -142,7 +142,7 @@ $recentReviews = $stmt->fetchAll();
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('cart', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/admin/commande-detail.php?id=<?= (int) $s['order_id'] ?>" class="link-muted">Commande #<?= (int) $s['order_id'] ?></a> — <?= (int) $s['quantity'] ?> x <?= format_price((int) round((float) $s['unit_price'])) ?></div>
+                            <div class="admin-activity-text"><a href="/market/admin/commande-detail?id=<?= (int) $s['order_id'] ?>" class="link-muted">Commande #<?= (int) $s['order_id'] ?></a> — <?= (int) $s['quantity'] ?> x <?= format_price((int) round((float) $s['unit_price'])) ?></div>
                             <div class="admin-activity-time"><span class="tag <?= vendor_item_status_tag_class($s['fulfillment_status']) ?>"><?= e(vendor_item_status_label($s['fulfillment_status'])) ?></span> · <?= e(date('d/m/Y', strtotime((string) $s['order_created_at']))) ?></div>
                         </div>
                     </div>
@@ -163,7 +163,7 @@ $recentReviews = $stmt->fetchAll();
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/admin/avis-detail.php?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
+                            <div class="admin-activity-text"><a href="/market/admin/avis-detail?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> <?= render_stars((float) $r['rating']) ?></div>
                             <div class="admin-activity-time"><?= $r['comment'] ? e(mb_strimwidth($r['comment'], 0, 80, '…')) . ' · ' : '' ?><?= e(date('d/m/Y', strtotime((string) $r['created_at']))) ?></div>
                         </div>
                     </div>

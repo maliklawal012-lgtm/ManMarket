@@ -19,11 +19,11 @@ if (!$vendorShop) {
         <?php elseif ($vendorShopRequest && $vendorShopRequest['approval_status'] === 'rejected'): ?>
             <h1>Demande refusée</h1>
             <p><?= $vendorShopRequest['rejection_reason'] ? e($vendorShopRequest['rejection_reason']) : "Votre demande de boutique n'a pas été retenue." ?> Vous pouvez corriger et resoumettre votre demande.</p>
-            <a href="/market/vendeur/demande-boutique.php" class="btn btn-primary">Modifier ma demande</a>
+            <a href="/market/vendeur/demande-boutique" class="btn btn-primary">Modifier ma demande</a>
         <?php else: ?>
             <h1>Créez votre boutique</h1>
             <p>Votre compte vendeur est actif. Créez votre boutique pour commencer à vendre sur ManMarket.</p>
-            <a href="/market/vendeur/demande-boutique.php" class="btn btn-primary">Créer ma boutique</a>
+            <a href="/market/vendeur/demande-boutique" class="btn btn-primary">Créer ma boutique</a>
         <?php endif; ?>
     </section>
     <?php
@@ -38,21 +38,21 @@ $stmt->execute(['shop_id' => (int) $vendorShop['id']]);
 $pendingVendorOrders = (int) $stmt->fetchColumn();
 
 $vendorNavItems = [
-    ['key' => 'index.php', 'href' => '/market/vendeur/index.php', 'icon' => 'menu', 'label' => 'Tableau de bord'],
-    ['key' => 'boutique.php', 'href' => '/market/vendeur/boutique.php', 'icon' => 'store', 'label' => 'Ma boutique'],
-    ['key' => 'produits.php', 'href' => '/market/vendeur/produits.php', 'icon' => 'shopping-basket', 'label' => 'Produits'],
-    ['key' => 'commandes.php', 'href' => '/market/vendeur/commandes.php', 'icon' => 'cart', 'label' => 'Commandes', 'badge' => $pendingVendorOrders],
-    ['key' => 'clients.php', 'href' => '/market/vendeur/clients.php', 'icon' => 'user', 'label' => 'Clients'],
-    ['key' => 'statistiques.php', 'href' => '/market/vendeur/statistiques.php', 'icon' => 'bar-chart', 'label' => 'Statistiques'],
-    ['key' => 'promotions.php', 'href' => '/market/vendeur/promotions.php', 'icon' => 'zap', 'label' => 'Promotions'],
-    ['key' => 'avis.php', 'href' => '/market/vendeur/avis.php', 'icon' => 'star-filled', 'label' => 'Avis & Notes'],
-    ['key' => 'messages.php', 'href' => '/market/vendeur/messages.php', 'icon' => 'send', 'label' => 'Messages'],
-    ['key' => 'livraisons.php', 'href' => '/market/vendeur/livraisons.php', 'icon' => 'truck', 'label' => 'Livraisons'],
-    ['key' => 'finances.php', 'href' => '/market/vendeur/finances.php', 'icon' => 'check-circle', 'label' => 'Finances'],
-    ['key' => 'commissions.php', 'href' => '/market/vendeur/commissions.php', 'icon' => 'shield', 'label' => 'Commissions'],
-    ['key' => 'retraits.php', 'href' => '/market/vendeur/retraits.php', 'icon' => 'shield', 'label' => 'Retraits'],
-    ['key' => 'abonnements.php', 'href' => '/market/vendeur/abonnements.php', 'icon' => 'clock', 'label' => 'Abonnement'],
-    ['key' => 'parametres.php', 'href' => '/market/vendeur/parametres.php', 'icon' => 'settings', 'label' => 'Paramètres'],
+    ['key' => 'index.php', 'href' => '/market/vendeur/index', 'icon' => 'menu', 'label' => 'Tableau de bord'],
+    ['key' => 'boutique.php', 'href' => '/market/vendeur/boutique', 'icon' => 'store', 'label' => 'Ma boutique'],
+    ['key' => 'produits.php', 'href' => '/market/vendeur/produits', 'icon' => 'shopping-basket', 'label' => 'Produits'],
+    ['key' => 'commandes.php', 'href' => '/market/vendeur/commandes', 'icon' => 'cart', 'label' => 'Commandes', 'badge' => $pendingVendorOrders],
+    ['key' => 'clients.php', 'href' => '/market/vendeur/clients', 'icon' => 'user', 'label' => 'Clients'],
+    ['key' => 'statistiques.php', 'href' => '/market/vendeur/statistiques', 'icon' => 'bar-chart', 'label' => 'Statistiques'],
+    ['key' => 'promotions.php', 'href' => '/market/vendeur/promotions', 'icon' => 'zap', 'label' => 'Promotions'],
+    ['key' => 'avis.php', 'href' => '/market/vendeur/avis', 'icon' => 'star-filled', 'label' => 'Avis & Notes'],
+    ['key' => 'messages.php', 'href' => '/market/vendeur/messages', 'icon' => 'send', 'label' => 'Messages'],
+    ['key' => 'livraisons.php', 'href' => '/market/vendeur/livraisons', 'icon' => 'truck', 'label' => 'Livraisons'],
+    ['key' => 'finances.php', 'href' => '/market/vendeur/finances', 'icon' => 'check-circle', 'label' => 'Finances'],
+    ['key' => 'commissions.php', 'href' => '/market/vendeur/commissions', 'icon' => 'shield', 'label' => 'Commissions'],
+    ['key' => 'retraits.php', 'href' => '/market/vendeur/retraits', 'icon' => 'shield', 'label' => 'Retraits'],
+    ['key' => 'abonnements.php', 'href' => '/market/vendeur/abonnements', 'icon' => 'clock', 'label' => 'Abonnement'],
+    ['key' => 'parametres.php', 'href' => '/market/vendeur/parametres', 'icon' => 'settings', 'label' => 'Paramètres'],
 ];
 ?>
 <!DOCTYPE html>
@@ -69,7 +69,7 @@ $vendorNavItems = [
 
 <div class="admin-shell">
     <aside class="admin-sidebar" id="admin-sidebar">
-        <a href="/market/vendeur/index.php" class="logo">
+        <a href="/market/vendeur/index" class="logo">
             <span class="logo-mark">M</span>
             <span class="logo-text light">Ma Boutique<small><?= e($vendorShop['name']) ?></small></span>
         </a>
@@ -91,9 +91,9 @@ $vendorNavItems = [
         </nav>
 
         <div class="admin-sidebar-footer">
-            <a href="/market/boutique.php?slug=<?= urlencode((string) $vendorShop['slug']) ?>" class="link-muted-light"><?= icon('chevron-right', 14) ?> Voir ma boutique</a>
-            <a href="/market/compte.php" class="link-muted-light">Mon compte</a>
-            <a href="/market/deconnexion.php" class="link-muted-light">Déconnexion</a>
+            <a href="/market/boutique?slug=<?= urlencode((string) $vendorShop['slug']) ?>" class="link-muted-light"><?= icon('chevron-right', 14) ?> Voir ma boutique</a>
+            <a href="/market/compte" class="link-muted-light">Mon compte</a>
+            <a href="/market/deconnexion" class="link-muted-light">Déconnexion</a>
         </div>
     </aside>
 
@@ -127,12 +127,12 @@ $vendorNavItems = [
                 if (!$vendorSub || $vendorSub['ends_at'] < $todayDate): ?>
                     <div class="alert alert-error">
                         <?= icon('x', 18) ?>
-                        <span>Votre boutique n'a pas d'abonnement actif : elle n'est plus visible sur le site public. <a href="/market/vendeur/abonnements.php" style="color:inherit; text-decoration:underline;">Voir comment renouveler</a></span>
+                        <span>Votre boutique n'a pas d'abonnement actif : elle n'est plus visible sur le site public. <a href="/market/vendeur/abonnements" style="color:inherit; text-decoration:underline;">Voir comment renouveler</a></span>
                     </div>
                 <?php elseif ($daysLeft !== null && $daysLeft <= 7): ?>
                     <div class="alert alert-warning">
                         <?= icon('clock', 18) ?>
-                        <span>Votre abonnement expire dans <?= $daysLeft ?> jour<?= $daysLeft > 1 ? 's' : '' ?> (le <?= e(date('d/m/Y', strtotime((string) $vendorSub['ends_at']))) ?>). <a href="/market/vendeur/abonnements.php" style="color:inherit; text-decoration:underline;">Renouveler mon abonnement</a></span>
+                        <span>Votre abonnement expire dans <?= $daysLeft ?> jour<?= $daysLeft > 1 ? 's' : '' ?> (le <?= e(date('d/m/Y', strtotime((string) $vendorSub['ends_at']))) ?>). <a href="/market/vendeur/abonnements" style="color:inherit; text-decoration:underline;">Renouveler mon abonnement</a></span>
                     </div>
                 <?php endif; ?>
             <?php } ?>

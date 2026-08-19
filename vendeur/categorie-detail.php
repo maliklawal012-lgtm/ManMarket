@@ -8,7 +8,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -21,7 +21,7 @@ $stmt->execute(['id' => $categoryId]);
 $category = $stmt->fetch() ?: null;
 
 if (!$category) {
-    header('Location: /market/vendeur/produits.php');
+    header('Location: /market/vendeur/produits');
     exit;
 }
 
@@ -59,7 +59,7 @@ $products = $stmt->fetchAll();
 ?>
 
 <div class="admin-toolbar" style="margin-bottom: var(--gap);">
-    <a href="/market/vendeur/produits.php" class="link-more"><?= icon('chevron-right', 14) ?> Retour à mes produits</a>
+    <a href="/market/vendeur/produits" class="link-more"><?= icon('chevron-right', 14) ?> Retour à mes produits</a>
 </div>
 
 <div class="card" style="margin-bottom: var(--gap);">
@@ -68,7 +68,7 @@ $products = $stmt->fetchAll();
             <span class="admin-stat-icon" style="width:28px; height:28px; display:inline-flex; vertical-align:middle; margin-right:8px; background:<?= e($category['color']) ?>1a; color:<?= e($category['color']) ?>;"><?= icon($category['icon'], 15) ?></span>
             <?= e($category['name']) ?>
         </h2>
-        <a href="/market/vendeur/produits.php?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Ajouter un produit</a>
+        <a href="/market/vendeur/produits?action=new" class="btn btn-primary btn-sm"><?= icon('plus', 14) ?> Ajouter un produit</a>
     </div>
     <p class="char-count">Vos produits dans cette catégorie, sur votre boutique.</p>
 </div>
@@ -96,7 +96,7 @@ $products = $stmt->fetchAll();
         <h2>Vos produits (<?= count($products) ?>)</h2>
     </div>
     <?php if (!$products): ?>
-        <p class="empty-state">Vous n'avez aucun produit dans cette catégorie. <a href="/market/vendeur/produits.php?action=new">Ajouter un produit</a></p>
+        <p class="empty-state">Vous n'avez aucun produit dans cette catégorie. <a href="/market/vendeur/produits?action=new">Ajouter un produit</a></p>
     <?php else: ?>
         <div class="table-responsive">
             <table class="admin-table">
@@ -116,7 +116,7 @@ $products = $stmt->fetchAll();
                             <td><?= e($p['name']) ?></td>
                             <td><?= format_price((int) $p['price']) ?></td>
                             <td><?= (int) $p['stock'] === 0 ? '<span class="tag tag-closed">Rupture</span>' : (int) $p['stock'] ?></td>
-                            <td><a href="/market/vendeur/produit-detail.php?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                            <td><a href="/market/vendeur/produit-detail?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

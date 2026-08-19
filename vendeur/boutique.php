@@ -8,7 +8,7 @@ $vendorUser = require_vendor();
 $vendorShop = current_vendor_shop((int) $vendorUser['id']);
 
 if (!$vendorShop) {
-    header('Location: /market/vendeur/index.php');
+    header('Location: /market/vendeur/index');
     exit;
 }
 
@@ -63,18 +63,18 @@ $recentReviews = $stmt->fetchAll();
         <div class="admin-table-actions">
             <span class="tag <?= $vendorShop['is_open'] ? 'tag-open' : 'tag-closed' ?>"><?= $vendorShop['is_open'] ? 'Ouverte' : 'Fermée' ?></span>
             <span class="tag <?= $activeSubscription ? 'tag-open' : 'tag-closed' ?>"><?= $activeSubscription ? 'Abonnement actif' : 'Sans abonnement (invisible sur le site)' ?></span>
-            <a href="/market/boutique.php?slug=<?= urlencode((string) $vendorShop['slug']) ?>" class="btn btn-outline-primary btn-sm" target="_blank"><?= icon('chevron-right', 14) ?> Voir ma page publique</a>
-            <a href="/market/vendeur/parametres.php" class="btn btn-outline-primary btn-sm">Modifier</a>
+            <a href="/market/boutique?slug=<?= urlencode((string) $vendorShop['slug']) ?>" class="btn btn-outline-primary btn-sm" target="_blank"><?= icon('chevron-right', 14) ?> Voir ma page publique</a>
+            <a href="/market/vendeur/parametres" class="btn btn-outline-primary btn-sm">Modifier</a>
         </div>
     </div>
     <p class="char-count">
         <?= e($vendorShop['neighborhood']) ?><?php if ($vendorShop['phone']): ?> · <?= e($vendorShop['phone']) ?><?php endif; ?><?php if ($vendorShop['whatsapp']): ?> · WhatsApp <?= e($vendorShop['whatsapp']) ?><?php endif; ?>
         <?php if ($activeSubscription): ?>
             <br>Abonnement <strong><?= e($activeSubscription['plan_name']) ?></strong> actif jusqu'au <?= e(date('d/m/Y', strtotime((string) $activeSubscription['ends_at']))) ?>.
-            <a href="/market/vendeur/abonnements.php" class="link-muted">Gérer <?= icon('chevron-right', 12) ?></a>
+            <a href="/market/vendeur/abonnements" class="link-muted">Gérer <?= icon('chevron-right', 12) ?></a>
         <?php else: ?>
             <br><span style="color:#dc2626;">Votre boutique n'apparaît plus sur le site public tant qu'aucun abonnement n'est actif.</span>
-            <a href="/market/vendeur/abonnements.php" class="link-muted">Renouveler <?= icon('chevron-right', 12) ?></a>
+            <a href="/market/vendeur/abonnements" class="link-muted">Renouveler <?= icon('chevron-right', 12) ?></a>
         <?php endif; ?>
     </p>
 </div>
@@ -106,10 +106,10 @@ $recentReviews = $stmt->fetchAll();
     <div class="card">
         <div class="admin-toolbar">
             <h2>Produits</h2>
-            <a href="/market/vendeur/produits.php" class="link-more">Gérer mes produits <?= icon('chevron-right', 14) ?></a>
+            <a href="/market/vendeur/produits" class="link-more">Gérer mes produits <?= icon('chevron-right', 14) ?></a>
         </div>
         <?php if (!$products): ?>
-            <p class="empty-state">Vous n'avez encore ajouté aucun produit. <a href="/market/vendeur/produits.php?action=new">Ajouter mon premier produit</a></p>
+            <p class="empty-state">Vous n'avez encore ajouté aucun produit. <a href="/market/vendeur/produits?action=new">Ajouter mon premier produit</a></p>
         <?php else: ?>
             <div class="table-responsive">
                 <table class="admin-table">
@@ -119,7 +119,7 @@ $recentReviews = $stmt->fetchAll();
                             <tr>
                                 <td><?= e($p['name']) ?></td>
                                 <td><?= (int) $p['stock'] === 0 ? '<span class="tag tag-closed">Rupture</span>' : (int) $p['stock'] ?></td>
-                                <td><a href="/market/vendeur/produit-detail.php?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
+                                <td><a href="/market/vendeur/produit-detail?id=<?= (int) $p['id'] ?>" class="btn btn-outline-primary btn-sm">Détail</a></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -132,7 +132,7 @@ $recentReviews = $stmt->fetchAll();
     <div class="card">
         <div class="admin-toolbar">
             <h2>Derniers avis</h2>
-            <a href="/market/vendeur/avis.php" class="link-more">Tout voir <?= icon('chevron-right', 14) ?></a>
+            <a href="/market/vendeur/avis" class="link-more">Tout voir <?= icon('chevron-right', 14) ?></a>
         </div>
         <?php if (!$recentReviews): ?>
             <p class="empty-state">Aucun avis pour le moment.</p>
@@ -142,7 +142,7 @@ $recentReviews = $stmt->fetchAll();
                     <div class="admin-activity-item">
                         <span class="admin-activity-icon"><?= icon('star-filled', 15) ?></span>
                         <div>
-                            <div class="admin-activity-text"><a href="/market/vendeur/avis-detail.php?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> — <?= e($r['product_name']) ?></div>
+                            <div class="admin-activity-text"><a href="/market/vendeur/avis-detail?id=<?= (int) $r['id'] ?>" class="link-muted"><?= e($r['name']) ?></a> — <?= e($r['product_name']) ?></div>
                             <div class="admin-activity-time"><?= render_stars((float) $r['rating']) ?></div>
                         </div>
                     </div>

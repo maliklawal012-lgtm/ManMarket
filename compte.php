@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'profile
             'avatar' => $finalAvatar,
             'id' => $user['id'],
         ]);
-        header('Location: /market/compte.php?profile=ok');
+        header('Location: /market/compte?profile=ok');
         exit;
     }
 }
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'passwor
             'id' => $user['id'],
         ]);
         security_log('Mot de passe change (auto-service)', ['user_id' => $user['id'], 'ip' => $_SERVER['REMOTE_ADDR'] ?? null]);
-        header('Location: /market/compte.php?password=ok');
+        header('Location: /market/compte?password=ok');
         exit;
     }
 }
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'resend_
     } else {
         $verifyToken = issue_email_verification_token((int) $user['id']);
         wallet_notification_service()->emailVerificationRequested((int) $user['id'], site_base_url() . '/verifier-email.php?token=' . $verifyToken);
-        header('Location: /market/compte.php?verification_sent=1');
+        header('Location: /market/compte?verification_sent=1');
         exit;
     }
 }
@@ -135,7 +135,7 @@ require_once __DIR__ . '/includes/header.php';
                     <?php if ($verificationSent): ?>
                         Un nouveau lien de vérification vient de vous être envoyé.
                     <?php else: ?>
-                        <form method="post" action="/market/compte.php" style="display:inline;">
+                        <form method="post" action="/market/compte" style="display:inline;">
                             <?= csrf_field() ?>
                             <input type="hidden" name="form" value="resend_verification">
                             <button type="submit" class="link-more" style="display:inline; background:none; border:none; padding:0; text-decoration:underline; cursor:pointer; color:inherit; font:inherit;">Renvoyer l'email de vérification</button>
@@ -160,14 +160,14 @@ require_once __DIR__ . '/includes/header.php';
 
             <div class="account-actions">
                 <?php if ($user['is_vendor']): ?>
-                    <a href="/market/vendeur/index.php" class="btn btn-outline-primary"><?= icon('store', 16) ?> Mon espace vendeur</a>
+                    <a href="/market/vendeur/index" class="btn btn-outline-primary"><?= icon('store', 16) ?> Mon espace vendeur</a>
                 <?php else: ?>
-                    <a href="/market/vendeur/demande-boutique.php" class="btn btn-outline-primary"><?= icon('store', 16) ?> Devenir vendeur</a>
+                    <a href="/market/vendeur/demande-boutique" class="btn btn-outline-primary"><?= icon('store', 16) ?> Devenir vendeur</a>
                 <?php endif; ?>
-                <a href="/market/commandes.php" class="btn btn-outline-primary"><?= icon('clock', 16) ?> Mes commandes</a>
-                <a href="/market/favoris.php" class="btn btn-outline-primary"><?= icon('heart', 16) ?> Mes favoris</a>
-                <a href="/market/panier.php" class="btn btn-outline-primary"><?= icon('cart', 16) ?> Mon panier</a>
-                <a href="/market/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+                <a href="/market/commandes" class="btn btn-outline-primary"><?= icon('clock', 16) ?> Mes commandes</a>
+                <a href="/market/favoris" class="btn btn-outline-primary"><?= icon('heart', 16) ?> Mes favoris</a>
+                <a href="/market/panier" class="btn btn-outline-primary"><?= icon('cart', 16) ?> Mon panier</a>
+                <a href="/market/deconnexion" class="btn btn-primary">Se déconnecter</a>
             </div>
         </div>
 
@@ -180,7 +180,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="alert alert-success"><?= icon('check-circle', 18) ?><span>Vos informations ont été mises à jour.</span></div>
             <?php endif; ?>
 
-            <form method="post" action="/market/compte.php" enctype="multipart/form-data" novalidate>
+            <form method="post" action="/market/compte" enctype="multipart/form-data" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="form" value="profile">
 
@@ -225,7 +225,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="alert alert-success"><?= icon('check-circle', 18) ?><span>Votre mot de passe a été modifié.</span></div>
             <?php endif; ?>
 
-            <form method="post" action="/market/compte.php" novalidate>
+            <form method="post" action="/market/compte" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="form" value="password">
 

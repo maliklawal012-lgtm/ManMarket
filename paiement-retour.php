@@ -35,26 +35,26 @@ require_once __DIR__ . '/includes/header.php';
         <div class="card auth-card">
             <?php if (!$payment): ?>
                 <p class="empty-state">Aucun paiement trouvé pour cette commande.</p>
-                <a href="/market/index.php" class="btn btn-primary">Retour à l'accueil</a>
+                <a href="/market/index" class="btn btn-primary">Retour à l'accueil</a>
             <?php elseif ($payment['status'] === 'completed'): ?>
                 <div class="alert alert-success">
                     <?= icon('check-circle', 18) ?>
                     <span>Paiement confirmé ! Votre commande est en cours de préparation.</span>
                 </div>
-                <a href="/market/commandes.php" class="btn btn-primary">Voir mes commandes</a>
+                <a href="/market/commandes" class="btn btn-primary">Voir mes commandes</a>
             <?php elseif (in_array($payment['status'], ['pending', 'processing'], true)): ?>
                 <div class="alert alert-info">
                     <?= icon('clock', 18) ?>
                     <span>Votre paiement est en cours de vérification. Cela peut prendre quelques instants.</span>
                 </div>
-                <a href="/market/paiement-retour.php?order=<?= $orderId ?>" class="btn btn-outline-primary">Actualiser le statut</a>
-                <a href="/market/commandes.php" class="btn btn-primary">Voir mes commandes</a>
+                <a href="/market/paiement-retour?order=<?= $orderId ?>" class="btn btn-outline-primary">Actualiser le statut</a>
+                <a href="/market/commandes" class="btn btn-primary">Voir mes commandes</a>
             <?php else: ?>
                 <div class="alert alert-error">
                     <?= icon('x', 18) ?>
                     <span><?= $payment['status'] === 'expired' ? 'Le lien de paiement a expiré.' : 'Le paiement a échoué ou a été annulé.' ?></span>
                 </div>
-                <a href="/market/commandes.php" class="btn btn-primary">Voir mes commandes</a>
+                <a href="/market/commandes" class="btn btn-primary">Voir mes commandes</a>
             <?php endif; ?>
         </div>
     </div>
