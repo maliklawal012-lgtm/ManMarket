@@ -1,0 +1,11 @@
+# Barriere supplementaire avant meme la page de connexion admin
+# (/admin/connexion.php) : un visiteur doit connaitre ce mot de passe HTTP
+# en plus d'avoir un vrai compte admin (is_admin=1) + le code 2FA envoye par
+# email. AuthUserFile est volontairement place HORS du dossier web (jamais
+# servi par Apache, contrairement a un fichier a l'interieur de market/) —
+# chemin specifique a cet environnement WAMP, a adapter sur un nouveau
+# serveur (voir DEPLOYMENT.md).
+AuthType Basic
+AuthName "Acces reserve - ManMarket Admin"
+AuthUserFile "C:/wamp64/.htpasswd-manmarket-admin"
+Require valid-user

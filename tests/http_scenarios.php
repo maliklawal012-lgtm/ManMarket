@@ -42,6 +42,13 @@ $db = get_db();
 // de cookies, exactement comme des onglets prives differents)
 // ----------------------------------------------------------------------
 
+/**
+ * Si ADMIN_BASIC_AUTH_USER/ADMIN_BASIC_AUTH_PASS sont definis dans .env
+ * (jamais commite), les requetes vers /admin/* incluent ces identifiants
+ * HTTP — necessaire sur les environnements ou admin/.htaccess ajoute une
+ * couche Basic Auth en amont de la page de connexion (voir DEPLOYMENT.md
+ * §13). Absent sur un environnement sans cette protection : aucun effet.
+ */
 function http_actor(): \CurlHandle
 {
     $ch = curl_init();
@@ -56,6 +63,12 @@ function http_actor(): \CurlHandle
         // propre timeout interne va jusqu'a 20s si l'API est injoignable/lente.
         CURLOPT_TIMEOUT => 25,
     ]);
+
+    $basicAuthUser = env('ADMIN_BASIC_AUTH_USER');
+    $basicAuthPass = env('ADMIN_BASIC_AUTH_PASS');
+    if ($basicAuthUser !== null && $basicAuthPass !== null) {
+        curl_setopt($ch, CURLOPT_USERPWD, "{$basicAuthUser}:{$basicAuthPass}");
+    }
 
     return $ch;
 }
