@@ -128,6 +128,10 @@ Sous Windows (Planificateur de tâches), déclencheur horaire exécutant :
 C:\wamp64\bin\php\php8.4.15\php.exe C:\wamp64\www\market\cron\release_wallet_holds.php
 ```
 
+✅ **Déjà configuré** sur cet environnement (19 août 2026), via `schtasks /create` pointant vers `cron\windows\run_release_wallet_holds.cmd` (wrapper qui ajoute la redirection de sortie vers `logs\wallet_release_cron.log`, `>>` n'étant pas interprété nativement par `schtasks`). Vérifier avec `schtasks /query /tn "ManMarket - Liberation soldes vendeurs" /v`.
+
+**Limite connue** : cette tâche a été créée sans compte élevé (pas d'accès administrateur au moment de la configuration), elle tourne donc en mode « Exécuter uniquement si l'utilisateur est connecté ». Sur un vrai serveur de production, la reconfigurer pour qu'elle tourne indépendamment de toute session ouverte : `schtasks /change /tn "<nom>" /ru SYSTEM` (nécessite une invite PowerShell/cmd lancée en administrateur) — sinon la tâche ne s'exécute pas si la session Windows est fermée ou verrouillée.
+
 Ce job bascule `pending_balance` → `available_balance` pour toute commande livrée dont le délai `settings.wallet_hold_days` est écoulé. Idempotent (rejouable sans risque). Le déclenchement horaire est largement suffisant puisque le délai se compte en jours entiers.
 
 ## 10. Tâche planifiée (cron) — rappel d'expiration d'abonnement
@@ -141,6 +145,8 @@ Sous Windows (Planificateur de tâches), déclencheur quotidien exécutant :
 ```
 C:\wamp64\bin\php\php8.4.15\php.exe C:\wamp64\www\market\cron\notify_expiring_subscriptions.php
 ```
+
+✅ **Déjà configuré** sur cet environnement (19 août 2026), via `cron\windows\run_notify_expiring_subscriptions.cmd` (déclenché tous les jours à 08:00). Même limite « session ouverte uniquement » que ci-dessus.
 
 Ce job envoie un email au propriétaire de chaque boutique dont l'abonnement expire dans exactement 3 jours. Une exécution quotidienne suffit (le seuil « = 3 jours » garantit un envoi unique par cycle d'abonnement, jamais de doublon).
 
@@ -166,7 +172,11 @@ Points identifiés lors de l'audit de sécurité (18 août 2026) qui dépendent 
   C:\wamp64\bin\php\php8.4.15\php.exe C:\wamp64\www\market\cron\backup_database.php
   ```
   **Ce script seul ne suffit pas** : `backups/` doit être synchronisé après chaque exécution vers un stockage séparé du serveur applicatif (rsync, upload S3/Backblaze...), et une restauration doit être testée régulièrement. Si `mysqldump` n'est pas dans le `PATH` (fréquent sous WAMP), définir `MYSQLDUMP_BIN` dans `.env` avec le chemin complet.
+
+  ✅ **Déjà configuré** sur cet environnement (19 août 2026) : tâche planifiée quotidienne (03:00) via `cron\windows\run_backup_database.cmd`, `MYSQLDUMP_BIN` fixé explicitement dans `.env` (`C:\wamp64\bin\mysql\mysql8.4.7\bin\mysqldump.exe`), premier backup réel vérifié (gzip valide, contenu SQL correct). **Reste à faire avant un vrai lancement public** : synchroniser `backups/` vers un stockage distant (aucune synchronisation externe en place actuellement — en cas de panne disque, la sauvegarde locale est perdue avec le reste), et lever la limite « session ouverte uniquement » (voir §9).
 - **Durcissement `php.ini`** — en production : `display_errors = Off`, `log_errors = On`, désactiver toute variable de debug, fixer explicitement `post_max_size`/`upload_max_filesize` à des valeurs raisonnables (aucune limite explicite n'est fixée dans le code, uniquement les valeurs par défaut du serveur).
+
+  ✅ **Appliqué** sur cet environnement (19 août 2026) dans `C:\wamp64\bin\apache\apache2.4.65\bin\php.ini` : `display_errors = Off`, `display_startup_errors = Off`, `expose_php = Off` (`log_errors` était déjà `On`, `error_log` déjà pointé vers `c:/wamp64/logs/php_error.log`). **Nécessite un redémarrage du service `wampapache64` pour prendre effet** — non fait automatiquement (droits administrateur requis, non disponibles au moment du changement).
 - **Rotation des secrets** — définir une politique de rotation périodique (ex. annuelle) des clés Genius Pay (`GENIUSPAY_SECRET_KEY`, `GENIUSPAY_WEBHOOK_SECRET`) et du secret de session, en coordination avec Genius Pay pour éviter toute interruption de service au moment du changement.
 
 ## 12. Vérifications post-déploiement (smoke tests)

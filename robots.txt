@@ -6,4 +6,5 @@ Disallow: /favoris.php
 Disallow: /compte.php
 Disallow: /commandes.php
 
-Sitemap: https://VOTRE-DOMAINE/market/sitemap.php
+# Sitemap: https://VOTRE-VRAI-DOMAINE/market/sitemap.php
+# ^ A decommenter et completer avec le vrai domaine une fois le site deploye publiquement (voir DEPLOYMENT.md).
