@@ -1,4 +1,13 @@
 {
     "version": "0.2",
-    "language": "en,fr"
+    "language": "en,fr",
+    "words": [
+        "lngs",
+        "beaute",
+        "electronique",
+        "sante",
+        "categorie",
+        "actualites",
+        "coordonnees"
+    ]
 }
