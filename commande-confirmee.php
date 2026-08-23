@@ -8,14 +8,21 @@ require_once __DIR__ . '/includes/wallet_bootstrap.php';
 
 $orderId = (int) ($_GET['order'] ?? 0);
 $paymentError = isset($_GET['payment_error']);
+$currentUser = current_user();
 
 $order = null;
 $items = [];
 if ($orderId > 0) {
-    $order = wallet_order_repo()->findById($orderId);
+    $candidate = wallet_order_repo()->findById($orderId);
 
-    if ($order) {
-        $items = wallet_order_item_repo()->findByOrderId($orderId);
+    if ($candidate) {
+        $ownedByUser = $currentUser && (int) $candidate['customer_user_id'] === (int) $currentUser['id'];
+        $ownedByGuestSession = in_array($orderId, $_SESSION['own_order_ids'] ?? [], true);
+
+        if ($ownedByUser || $ownedByGuestSession) {
+            $order = $candidate;
+            $items = wallet_order_item_repo()->findByOrderId($orderId);
+        }
     }
 }
 

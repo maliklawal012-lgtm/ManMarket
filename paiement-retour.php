@@ -7,7 +7,11 @@ require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/wallet_bootstrap.php';
 
 $orderId = (int) ($_GET['order'] ?? 0);
-$payment = $orderId > 0 ? wallet_payment_repo()->findByOrderId($orderId) : null;
+$currentUser = current_user();
+$order = $orderId > 0 ? wallet_order_repo()->findById($orderId) : null;
+$ownedByUser = $order && $currentUser && (int) $order['customer_user_id'] === (int) $currentUser['id'];
+$ownedByGuestSession = $order && in_array($orderId, $_SESSION['own_order_ids'] ?? [], true);
+$payment = ($order && ($ownedByUser || $ownedByGuestSession)) ? wallet_payment_repo()->findByOrderId($orderId) : null;
 
 if ($payment) {
     $realStatus = wallet_payment_service()->verifyAndSync($payment['provider_reference']);

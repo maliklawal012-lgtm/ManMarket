@@ -215,6 +215,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $orderId = $orderResult->orderId;
             $orderTotal = $orderResult->totalAmount;
 
+            $_SESSION['own_order_ids'] = array_slice(
+                [...($_SESSION['own_order_ids'] ?? []), $orderId],
+                -50
+            );
+
             if ($old['payment_choice'] === 'online' && $orderTotal >= 200) {
                 $baseUrl = site_base_url();
                 $paymentResult = wallet_payment_service()->createForOrder($orderId, $orderTotal, [
