@@ -2,3 +2,5 @@
 logs/*.log
 .claude/settings.local.json
 backups/*.sql.gz
+assets/uploads/*
+!assets/uploads/.htaccess
