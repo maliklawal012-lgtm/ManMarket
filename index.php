@@ -47,8 +47,8 @@ $lngMax = $lngs ? max($lngs) + 0.006 : 1;
 
 function map_position(float $lat, float $lng, float $latMin, float $latMax, float $lngMin, float $lngMax): array
 {
-    $x = $lngMax > $lngMin ? (($lng - $lngMin) / ($lngMax - $lngMin)) * 100 : 50;
-    $y = $latMax > $latMin ? 100 - ((($lat - $latMin) / ($latMax - $latMin)) * 100) : 50;
+    $x = $lngMax > $lngMin ? ($lng - $lngMin) / ($lngMax - $lngMin) * 100 : 50;
+    $y = $latMax > $latMin ? 100 - ($lat - $latMin) / ($latMax - $latMin) * 100 : 50;
 
     return [max(6, min(94, $x)), max(6, min(94, $y))];
 }
